@@ -3,7 +3,7 @@
     <div class="col-lg-12 col-md-12 row">
     <div class="col-md-12">
       <header>
-        <div class="col-md-12 p-5">
+        <div class="col-md-12">
           <div class="col-md-1 float-end pb-3">
             <button class="btn btn-light float-end w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling"><span class="material-symbols-outlined align-bottom">menu</span></button>
           </div>
@@ -44,6 +44,12 @@
         <RouterLink to="/subProcess" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">account_tree</span>Setup Sub-Process</RouterLink>
       </div>
       <div class="p-1">
+        <RouterLink to="/processFlow" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">account_tree</span>Setup Process Flow</RouterLink>
+      </div>
+      <div class="p-1">
+        <RouterLink to="/processFlowv2" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">account_tree</span>Setup Process Flow v2</RouterLink>
+      </div>
+      <div class="p-1">
         <RouterLink to="/formAssignment" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">assignment</span>Form-Assignment</RouterLink>
       </div>
     </div>
@@ -63,11 +69,11 @@ export default {
     }
   },
   async created() {
-    const sectionUrl = axios.get('http://172.16.2.69/tpcrequesthandlers/sectionView.php');
-    const keyProcessUrl = axios.get('http://172.16.2.69/tpcrequesthandlers/keyProcessView.php');
-    const subProcessUrl = axios.get('http://172.16.2.69/tpcrequesthandlers/subProcessView.php');
-    const formAssignmentUrl = axios.get('http://172.16.2.69/tpcrequesthandlers/formAssignment.php');
-    const processFlow = axios.get('http://172.16.2.69/tpcrequesthandlers/processFlowView.php');
+    const sectionUrl = axios.get('http://localhost/tpcrequesthandlers/sectionView.php');
+    const keyProcessUrl = axios.get('http://localhost/tpcrequesthandlers/keyProcessView.php');
+    const subProcessUrl = axios.get('http://localhost/tpcrequesthandlers/subProcessView.php');
+    const formAssignmentUrl = axios.get('http://localhost/tpcrequesthandlers/formAssignment.php');
+    const processFlow = axios.get('http://localhost/tpcrequesthandlers/processFlowView.php');
     await Promise.all([sectionUrl, keyProcessUrl,subProcessUrl, formAssignmentUrl, processFlow])
     .then(responses => {
       this.sectionResponse = responses[0].data;

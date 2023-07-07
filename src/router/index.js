@@ -33,6 +33,16 @@ const router = createRouter({
       component: () => import('../views/SubProcessView.vue')
     },
     {
+      path: '/processFlow',
+      name: 'processFlow',
+      component: () => import('../views/ProcessFlowView.vue')
+    },
+    {
+      path: '/processFlowv2',
+      name: 'processFlowv2',
+      component: () => import('../views/ProcessFlowViewv2.vue')
+    },
+    {
       path: '/formAssignment',
       name: 'formAssignment',
       component: () => import('../views/formAssignmentView.vue')

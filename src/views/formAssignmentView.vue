@@ -27,7 +27,7 @@
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">feed</span>New</button>
                     </div>
                     <div class="col-md-4 p-1">
-                        <button class="btn btn-lg btn-primary w-100" data-bs-target="#reviewForm" data-bs-toggle="modal">
+                        <button ref="save" class="btn btn-lg btn-primary w-100" data-bs-target="#reviewForm" data-bs-toggle="modal">
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">save</span>Save</button>
                     </div>
                     <div class="col-md-4 p-1">
@@ -43,19 +43,20 @@
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">folder_special</span>Special Instruction</button>
                     </div>
                     <div class="col-md-4 p-1">
-                        <button ref="attachmentBtn" class="btn btn-lg btn-primary w-100" data-bs-target="#attachmentView" data-bs-toggle="modal" disabled>
+                        <button ref="attachmentBtn" class="btn btn-lg btn-primary w-100" disabled>
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">attach_file</span>Attachment</button>
                     </div>
                 </div>
                 <hr>
                 <div class="col-md-6 mx-auto px-1 row">
-                    <h4 class="text-primary">Form Assignment Number : <strong>{{ formAssignmentId }}</strong></h4>
+                    <h4 class="text-primary text-center">Form Assignment Number : <strong>{{ formAssignmentId }}</strong></h4>
+                    <p ref="announcement" class="text-center text-success"></p>
                 </div>
                 <hr>
                 <div class="col-md-12 row p-1 mx-auto">
                     <div class="col-md-4">
                         <label for="status">Status</label>
-                        <select ref="status" id="status" class="form-select" disabled>
+                        <select ref="status" v-model="formAssignmentStatus" id="status" class="form-select" disabled>
                             <option value="Unposted">Unposted</option>
                             <option value="Posted">Posted</option>
                         </select>
@@ -91,14 +92,14 @@
                     </div>
                     <div class="col-md-4 p-1">
                         <label for="input_parts_number">Parts Number</label>
-                        <input ref="parts_number" id="input_parts_number" v-model="partsNumber" class="form-select" list="parts_number" type="text" @input="getItemCodeAndLotNumber(selectedSection, partsNumber)">
+                        <input ref="parts_number" id="input_parts_number" v-model="partsNumber" class="form-select" list="parts_number" type="text" @input="getItemCodeAndLotNumber(selectedSection, partsNumber)" autocomplete="off">
                         <datalist id="parts_number">
                             <option :value="value.item_parts_number"  v-for="value in partsNumberOptions">{{ value.item_parts_number }}</option>
                         </datalist>
                     </div>
                     <div class="col-md-4 p-1">
                         <label for="lot_number">Lot Number</label>
-                        <select ref="lot_number" v-model="lotNumber" class="form-select" id="lot_number">
+                        <select ref="lot_number" v-model="lotNumber" class="form-select" id="lot_number" @change="getMaterialLotNoAndQty" autocomplete="off">
                             <option :value="value.lot_number" v-for="value in lotNumberOptions">{{ value.lot_number }}</option>
                         </select>
                     </div>
@@ -123,14 +124,14 @@
                     </div>
                     <div class="col-md-8 p-1">
                         <label for="input_item_code">Item Code</label>
-                        <input ref="item_code" id="input_item_code" v-model="itemCode" type="text" class="form-select" list="item_code" @input="getRevisionNumber(selectedSection, partsNumber, itemCode, keyProcess, subProcess, )">
+                        <input ref="item_code" id="input_item_code" v-model="itemCode" type="text" class="form-select" list="item_code" @input="getRevisionNumber(selectedSection, partsNumber, itemCode, keyProcess, subProcess, )" autocomplete="off">
                         <datalist id="item_code">
                             <option :value="value.item_code" v-for="value in itemCodeOptions">{{ value.item_code }}</option>
                         </datalist>
                     </div> 
                     <div class="col-md-4 p-1">
                         <label for="material_lot_no">Material Lot Number</label>
-                        <input ref="material_lot_no" id="material_lot_no" type="text" class="form-control" readonly>
+                        <input ref="material_lot_no" id="material_lot_no" type="text" class="form-control" v-model="materialLotNo" readonly>
                     </div>
                     <div v-if="selectedSection === 'CCI'" class="col-md-3 p-1 animate__animated animate__zoomIn">
                         <label for="customer_pn">Customer PN</label>
@@ -427,10 +428,7 @@
             <div class="col-md-4">
                 <div class="col-md-12 row">
                     <div class="col-md-4">
-                        <button class="btn btn-primary w-100">Save</button>
-                    </div>
-                    <div class="col-md-4">
-                        <button @click="createCard(attachmentSelectedSubPid)" class="btn btn-primary w-100">Add New</button>
+                        <button class="btn btn-primary w-100" @click="saveAttachments">Save</button>
                     </div>
                     <div class="col-md-4">
                         <button class="btn btn-primary w-100">Close</button>
@@ -480,13 +478,27 @@
         </div>
         <hr>
         <template v-for="attached in attachmentDetails">
-            <div class="col-md-12 row" v-show="attachmentSelectedSubPid == attached.SubPid" :id="'card'+attached.SubPid">
-                
+            <div class="col-md-12 row mx-auto" v-show="attachmentSelectedSubPid == attached.SubPid" :id="'card'+attached.SubPid">
+                <div class="input-group mb-2">
+                  <input type="file" class="form-control" id="inputGroupFile" multiple @change="handleFileUpload">
+                  <label class="input-group-text" for="inputGroupFile">Upload</label>
+                </div>
+                <div v-for="(file, index) in selectedFiles" :key="index" class="col-md-2 card" v-show="file.SubPid == attachmentSelectedSubPid">
+                  <img :src="file.src" v-if="file.type == 'image/png' || file.type == 'image/jpeg'" :width="200" :height="200" class="card-img-top p-2" :on-error="handleImageError"  alt="Preview">
+                  <img v-else src="src\assets\logo.svg"  :width="200" :height="200" class="card-img-top p-2" :on-error="handleImageError"  alt="Preview">
+                  <div class="card-body">
+                    <input class="form-control" v-model="file.remarks">
+                    <p class="card-text">{{ file.size }} bytes</p>
+                    <button @click="removeAttachment(index)" class="btn btn-warning w-100">
+                        Remove
+                    </button>
+                  </div>
+                </div>
             </div>
         </template>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" data-bs-target="#createFormAssignment" data-bs-toggle="modal">Back to first</button>
+        <button ref="clear" class="btn btn-primary" data-bs-target="#viewForm" data-bs-toggle="modal">Back to first</button>
       </div>
     </div>
   </div>
@@ -502,11 +514,11 @@
             <div class="col-md-5 border rounded">
                 <div class="col-md-12 row mx-auto p-3">
                     <div class="col-md-4 p-1">
-                        <button ref="new" class="btn btn-lg btn-primary w-100">
+                        <button class="btn btn-lg btn-primary w-100">
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">delete</span>Delete</button>
                     </div>
                     <div class="col-md-4 p-1">
-                        <button class="btn btn-lg btn-primary w-100" data-bs-target="#reviewForm" data-bs-toggle="modal">
+                        <button class="btn btn-lg btn-primary w-100">
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">save</span>Save</button>
                     </div>
                     <div class="col-md-4 p-1">
@@ -518,11 +530,11 @@
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">qr_code_2_add</span>Generate QR Code</button>
                     </div>
                     <div class="col-md-4 p-1">
-                        <button class="btn btn-lg btn-primary w-100" disabled>
+                        <button ref="viewInstructionBtn" class="btn btn-lg btn-primary w-100" disabled>
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">folder_special</span>Special Instruction</button>
                     </div>
                     <div class="col-md-4 p-1">
-                        <button class="btn btn-lg btn-primary w-100" data-bs-target="#attachmentView" data-bs-toggle="modal" disabled>
+                        <button ref="viewAttachmentBtn" class="btn btn-lg btn-primary w-100" id="viewattachmentSwitch" data-bs-toggle="modal" data-bs-target="#attachmentView" disabled>
                             <span class="material-symbols-outlined align-bottom pb-1 px-1">attach_file</span>Attachment</button>
                     </div>
                 </div>
@@ -549,13 +561,13 @@
                     </div>
                     <div class="col-md-6 p-3">
                         <div class="form-check form-switch">
-                          <input class="form-check-input" ref="viewhasAttachment" type="checkbox" role="switch" v-model="hasAttachment" id="viewattachmentSwitch">
+                          <input class="form-check-input" ref="viewhasAttachment" type="checkbox" role="switch" disabled>
                           <label class="form-check-label" for="viewattachmentSwitch">With Attachment</label>
                         </div>
                     </div>
                     <div class="col-md-6 p-3">
                         <div class="form-check form-switch">
-                          <input class="form-check-input" ref="viewhasInstruction" type="checkbox" role="switch" v-model="hasInstruction" id="viewinstructionSwitch">
+                          <input class="form-check-input" ref="viewhasInstruction" type="checkbox" role="switch" id="viewinstructionSwitch" disabled>
                           <label class="form-check-label" for="viewinstructionSwitch">With Special Instruction</label>
                         </div>
                     </div>
@@ -636,7 +648,7 @@
                         <p class="float-end">Date : {{ currentDate }}</p>
                     </div>
                     <div class="col-md-12">
-                        <h5 class="text-center pb-2 animate__animated animate__backInLeft" v-if="sectionDescription != null">{{ sectionDescription }} - PROCESS FLOW ASSIGNMENT</h5>
+                        <h5 class="text-center pb-2 animate__animated animate__backInLeft" v-if="viewSection_Code != null">{{ viewSection_Code }} - PROCESS FLOW ASSIGNMENT</h5>
                     </div>
                     <table class="table table-responsive table-hover">
                         <thead class="animate__animated animate__backInLeft">
@@ -651,35 +663,31 @@
                                 <th>Instruction Count</th>
                                 <th>Assignment Status</th>
                                 <th></th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody class="animate__animated animate__backInLeft">
-                            <template v-for="flowSub in processFlowSub" :key="flowSub.flow_sub_id">
+                            <template v-for="flowSub in viewProcessFlowSub" :key="flowSub.viewFlow_sub_id">
                                 <tr>
-                                <td>{{ flowSub.sequence_number }}</td>
-                                <td>{{ flowSub.Pname }}</td>
-                                <td>{{ flowSub.SubPname }}</td>
-                                <td>{{ flowSub.process_type }}</td>
-                                <td>{{ flowSub.standard_time }}</td>
-                                <td>{{ flowSub.machine_time }}</td>
-                                <td></td>
-                                <td></td>
+                                <td>{{ flowSub.viewSequence_number }}</td>
+                                <td>{{ flowSub.viewPname }}</td>
+                                <td>{{ flowSub.viewSubPname }}</td>
+                                <td>{{ flowSub.viewProcess_type }}</td>
+                                <td>{{ flowSub.viewStandard_time }}</td>
+                                <td>{{ flowSub.viewMachine_time }}</td>
+                                <td><button class="btn btn-light w-100" @click="viewAttachments(flowSub.viewSubPid)" data-bs-toggle="modal" data-bs-target="#fileView">{{ flowSub.viewAttachment_Count }}</button></td>
+                                <td>{{ flowSub.viewInstruction_Count }}</td>
+                                <td>{{ flowSub.viewAssignment_Status }}</td>
                                 <td>
-                                    <div class="form-check form-switch">
-                                        <input :ref="'status-'+flowSub.flow_sub_id" class="form-check-input" type="checkbox" role="switch" :id="'status-'+flowSub.flow_sub_id" @change="changeStatus(flowSub.flow_sub_id)" checked>
-                                        <label class="form-check-label" :for="'status-'+flowSub.flow_sub_id" :id="'label-'+flowSub.flow_sub_id">Active</label>
-                                    </div>
-                                </td>
-                                <td>
-                                    <button class="btn w-100" @click="showDetails(flowSub.SubPid)">
+                                    <button class="btn w-100" @click="viewDetails(flowSub.viewSubPid)">
                                         <span class="material-symbols-outlined">
-                                            {{ show[flowSub.SubPid]? 'expand_less' : 'expand_more' }}
+                                            {{ view[flowSub.viewSubPid]? 'expand_less' : 'expand_more' }}
                                         </span>
                                     </button>
                                 </td>
                                 
                             </tr>
-                            <tr class="animate__animated animate__slideInDown" v-show="show[flowSub.SubPid]">
+                            <tr class="animate__animated animate__slideInDown" v-show="view[flowSub.viewSubPid]">
                                 <td colspan="10" class="p-3">
                                    <div class="table-responsive">
                                     <table class="table table-borderless table-hover ">
@@ -689,22 +697,15 @@
                                             <th><small>Typical Value</small></th>
                                             <th><small>Minimum Value</small></th>
                                             <th><small>Maximum Value</small></th>
-                                            <th><small>Condition Status</small></th>
                                         </thead>
                                         <tbody class="animate__animated animate__backInLeft">
-                                            <template v-for="condition in itemConditions" :key="condition.item_id">
-                                                <tr v-if="condition.SubPid == flowSub.SubPid">
-                                                    <td><small>{{ condition.sequence_number }}</small></td>
-                                                    <td><small>{{ condition.detail_description }}</small></td>
-                                                    <td><small>{{ condition.typical_value }}</small></td>
-                                                    <td><small>{{ condition.min_value }}</small></td>
-                                                    <td><small>{{ condition.max_value }}</small></td>
-                                                    <td>
-                                                        <div class="form-check form-switch">
-                                                            <input class="form-check-input" type="checkbox" role="switch" :id="'itemStatus-'+condition.item_id" @change="changeItemStatus(condition.item_id)" checked>
-                                                            <label class="form-check-label" :for="'itemStatus-'+condition.item_id" :id="'itemLabel-'+condition.item_id">Active</label>
-                                                        </div>
-                                                    </td>
+                                            <template v-for="condition in viewItemConditions" :key="condition.viewItem_id">
+                                                <tr v-if="condition.viewSubPid == flowSub.viewSubPid">
+                                                    <td><small>{{ condition.viewSequence_number }}</small></td>
+                                                    <td><small>{{ condition.viewDetail_description }}</small></td>
+                                                    <td><small>{{ condition.viewTypical_value }}</small></td>
+                                                    <td><small>{{ condition.viewMin_value }}</small></td>
+                                                    <td><small>{{ condition.viewMax_value }}</small></td>
                                                 </tr>
                                             </template>
                                         </tbody>
@@ -726,23 +727,56 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="fileView" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">New message</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="col-md-12 row p-5 border rounded">
+            <div v-for="file in this.viewFiles" class="col-md-3">
+                <div class="card" style="width: 18rem;">
+                  <img :src="file.actual_file_directory" class="card-img-top" :height="200" :width="200" alt="...">
+                  <div class="card-body">
+                    <p class="card-text">{{file.attachment_remarks}}</p>
+                  </div>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#viewForm">Return</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 </template>
 <script>
+import { Splide, SplideSlide } from '@splidejs/vue-splide';
+import { Grid } from '@splidejs/splide-extension-grid';
 import DataTablesCore from 'datatables.net-bs5';
 import DataTable from 'datatables.net-vue3';
 import 'datatables.net-responsive';
 import 'datatables.net-select';
 import axios from 'axios';
-
+import '@splidejs/vue-splide/css/core';
 DataTable.use(DataTablesCore);
 export default {
 props: ['keyProcessResponse','subProcessResponse','formAssignmentResponse', 'sectionResponse','processFlowResponse'],
 components: {
     DataTable,
+    Splide,
+    SplideSlide
 },
 data() {
     return {
         show: {},
+        view: {},
         itemStatus: {},
         status: {},
         formAssignmentId: 0,
@@ -759,14 +793,14 @@ data() {
         customerPn: '',
         customerName: '',
         deliveryDate: '',
-        orderQuantity: '',
+        orderQuantity: 0,
         waferNoFrom: '',
         waferNoTo: '',
         orderPn: '',
         dateIssued: '',
         assignedBy: '3141 - CASUL',
         materialLotNo: '',
-        formAssignmentStatus: 'Posted',
+        formAssignmentStatus: 'Unposted',
         hasAttachment: Boolean,
         hasInstruction: Boolean,
         AttachmentVal: 0,
@@ -774,6 +808,7 @@ data() {
 
         viewAssignment_id: '',
         viewSection_id: '',
+        viewSection_Code: '',
         viewLot_Number: '',
         viewPo_Number: '',
         viewItem_Parts_Number: '',
@@ -791,6 +826,9 @@ data() {
         viewAttachment: '',
         viewSpecial_Instruction: '',
 
+        viewProcessFlowSub: [],
+        viewItemConditions: [],
+
         attachmentDetails: [],
         customerDetails: [],
         section: [],
@@ -807,6 +845,9 @@ data() {
         keyProcess: [],
         subProcess: [],
 
+        selectedFiles: [],
+        Files: [],
+        viewFiles: [],
         columns: [
           { title: 'Assign No.', data: 'assignment_id'},
           { title: 'Status', data: 'assignment_status' },
@@ -835,9 +876,160 @@ data() {
     }
 },
 methods: {
-    getRowData(event){
+    viewAttachments(SubPid){
+        this.viewFiles = [];
+        console.log(this.viewAssignment_id);
+        axios.get('http://172.16.2.69/tpcrequesthandlers/getAttachmentCount.php', {
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/x-www-form-urlencoded'
+            },
+            params: {
+                SubPid: SubPid,
+                assignment_id: this.viewAssignment_id,
+                lot_number: this.viewLot_Number,
+                parts_number: this.viewItem_Parts_Number,
+                item_code: this.viewItem_Code,
+                revision_number: this.viewRevision_Number
+            }
+        }).then(response => {
+            console.log(response.data);
+            this.viewFiles = response.data
+        }).catch(error => {
+            console.log(error)
+        });
+    },
+    handleFileUpload(event) {
+        for(const attached of this.attachmentDetails){
+            if(attached.SubPid === this.attachmentSelectedSubPid){
+                attached.files = event.target.files;
+                    for(let i = 0; i < attached.files.length; i++){
+                        const file = attached.files[i];
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                            this.selectedFiles.push({
+                            SubPid: this.attachmentSelectedSubPid,
+                            src: event.target.result,
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            remarks: '',
+                        });
+                        }
+                    reader.readAsDataURL(file);
+                    }
+            }
+        }
+
+    },
+    removeAttachment(index) {
+        this.selectedFiles.splice(index, 1);
+    },
+    saveAttachments(){
+       for(const att of this.attachmentDetails){
+        for(const sel of this.selectedFiles){
+            if(att.SubPid == sel.SubPid){
+                for(const file of att.files){
+                    if(file.name == sel.name){
+                        file.remarks = sel.remarks;
+                    }
+                }
+            }
+        }
+        for(let i = 0; i < att.files.length; i++){
+            const file = att.files[i];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('Data', JSON.stringify({
+                SubPid: att.SubPid,
+                assignment_id: this.viewAssignment_id,
+                lot_number: this.viewLot_Number,
+                item_parts_number: this.viewItem_Parts_Number,
+                item_code: this.viewItem_Code,
+                revision_number: this.viewRevision_Number,
+                assignment_status: this.viewAssignment_Status,
+                attachment_remarks: att.files[i].remarks
+            }))
+            axios.post('http://172.16.2.69/tpcrequesthandlers/handleFileUpload.php', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            }
+            }).then(response => {
+                console.log(response.data);
+            })
+        }
+       }
+        
+    },
+    getMaterialLotNoAndQty(){
+        let POLTotalQty = 0;
+        if(this.selectedSection.split('-').includes('CWP')){
+            axios.get('http://172.16.2.69/tpcrequesthandlers/CWPGetMaterialLotNoAndQty.php', {
+                 method: 'GET',
+                 headers: {
+                     'Content-type': 'application/x-www-form-urlencoded'
+                 },
+                 params: {
+                     parts_number: this.partsNumber,
+                     lot_number: this.lotNumber,
+                 }
+            }).then(response => {
+                this.$refs.material_lot_no.disabled = false;
+                for(const res of response.data){
+                    this.materialLotNo = res.cwp_input_plan_materialno;
+                    this.orderQuantity = res.cwp_input_plan_wfr;
+                }
+            }).catch(error => {
+                console.log(error);
+            })
+        } else if(this.selectedSection.split('-').includes('POL')){
+            axios.get('http://172.16.2.69/tpcrequesthandlers/POLGetMaterialLotNoAndQty.php', {
+                 method: 'GET',
+                 headers: {
+                     'Content-type': 'application/x-www-form-urlencoded'
+                 },
+                 params: {
+                     parts_number: this.partsNumber,
+                     lot_number: this.lotNumber,
+                 }
+            }).then(response => {
+                this.$refs.material_lot_no.disabled = false;
+                for(const res of response.data){
+                    this.materialLotNo = res.cwp_input_plan_pol_matLotno;
+                    POLTotalQty += parseInt(res.cwp_input_plan_pol_qty);
+                    this.orderQuantity = POLTotalQty;
+                }
+            }).catch(error => {
+                console.log(error);
+            })
+        } else if(this.selectedSection.split('-').includes('SWP')){
+            axios.get('http://172.16.2.69/tpcrequesthandlers/SWPGetMaterialLotNoAndQty.php', {
+                 method: 'GET',
+                 headers: {
+                     'Content-type': 'application/x-www-form-urlencoded'
+                 },
+                 params: {
+                     parts_number: this.partsNumber,
+                     lot_number: this.lotNumber,
+                 }
+            }).then(response => {
+                this.$refs.material_lot_no.disabled = true;
+                this.materialLotNo = '-';
+                for(const res of response.data){
+                    this.orderQuantity = res.wafer_quantity;
+                }
+            }).catch(error => {
+                console.log(error);
+            })
+        } else if(this.selectedSection.split('-').includes('CCI')){
+                this.$refs.material_lot_no.disabled = true;
+                this.materialLotNo = '-';
+        } 
+    },
+    async getRowData(event){
         this.viewAssignment_id = '';
         this.viewSection_id = '';
+        this.viewSection_Code = '';
         this.viewLot_Number = '';
         this.viewPo_Number = '';
         this.viewItem_Parts_Number = '';
@@ -854,6 +1046,9 @@ methods: {
         this.viewAssignment_Status = '';
         this.viewAttachment = '';
         this.viewSpecial_Instruction = '';
+        this.viewProcessFlowSub = [];
+        this.viewItemConditions = [];
+        this.attachmentDetails = [];
         if(event.target.tagName === 'SPAN'){
             const row = event.target.parentNode.parentNode.parentNode;
             const cell = row.querySelector('td');
@@ -861,6 +1056,7 @@ methods: {
             for(const form of this.formAssignment){
                 if(assignment_id == form.assignment_id){
                     this.viewAssignment_id = form.assignment_id,
+                    this.viewSection_id = form.section_id,
                     this.viewSection_Code = form.section_code,
                     this.viewLot_Number = form.lot_number,
                     this.viewPo_Number = form.po_number,
@@ -887,7 +1083,8 @@ methods: {
             for(const form of this.formAssignment){
                 if(assignment_id == form.assignment_id){
                     this.viewAssignment_id = form.assignment_id,
-                    this.viewSection_id = form.section_code,
+                    this.viewSection_id = form.section_id,
+                    this.viewSection_Code = form.section_code,
                     this.viewLot_Number = form.lot_number,
                     this.viewPo_Number = form.po_number,
                     this.viewItem_Parts_Number = form.item_parts_number,
@@ -906,53 +1103,212 @@ methods: {
                     this.viewSpecial_Instruction = form.special_instruction
                 }
             }
-        }
+        } 
+            await axios.get('http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowSub.php', {
+                 method: 'GET',
+                 headers: {
+                     'Content-type': 'application/x-www-form-urlencoded'
+                 },
+                 params: {
+                     assignment_id: this.viewAssignment_id
+                 }
+             })
+             .then(response => {
+                 for(const flowSub of response.data){
+                    for(const key of this.keyProcess){
+                        if(flowSub.Pid == key.Pid){
+                            for(const sub of this.subProcess){
+                                if(flowSub.SubPid == sub.SubPid){
+                                    axios.get('http://172.16.2.69/tpcrequesthandlers/getAttachmentCount.php', {
+                                        method: 'GET',
+                                        headers: {
+                                            'Content-type': 'application/x-www-form-urlencoded'
+                                        },
+                                        params: {
+                                            SubPid: sub.SubPid,
+                                            assignment_id: this.viewAssignment_id,
+                                            lot_number: this.viewLot_Number,
+                                            parts_number: this.viewItem_Parts_Number,
+                                            item_code: this.viewItem_Code,
+                                            revision_number: this.viewRevision_Number
+                                        }
+                                    }).then(response => {
+                                       let temp_rowCount = response.data.length;
+                                       this.viewProcessFlowSub.push({
+                                        viewFlow_sub_id: flowSub.flow_sub_id,
+                                        viewFlow_main_id: flowSub.flow_main_id,
+                                        viewPid: key.Pid,
+                                        viewPname: key.Pname,
+                                        viewSubPid: sub.SubPid,
+                                        viewSubPname: sub.SubPname,
+                                        viewProcess_type: sub.process_type,
+                                        viewSequence_number: flowSub.sequence_number,
+                                        viewStandard_time: flowSub.Stdtime,
+                                        viewMachine_time: flowSub.Machtime,
+                                        viewAttachment_Count: temp_rowCount,
+                                        viewAssignment_Status: flowSub.assignment_status
+                                    });
+                                    this.attachmentDetails.push({
+                                        SubPid: sub.SubPid,
+                                        SubPname: sub.SubPname,
+                                        files: [],
+                                    });
+                                    this.viewProcessFlowSub.sort((a, b) => a.viewSequence_number - b.viewSequence_number)
+                                    }).catch(error => {
+                                        console.log(error)
+                                    });
+                                    
+                                }
+                                
+                            }
+                        }
+                    }
+                 }
+             })
+            .catch(error => {
+                 console.log(error);
+             });
+             axios.get('http://172.16.2.69/tpcrequesthandlers/fetchItemCondition.php', {
+                 method: 'GET',
+                 headers: {
+                     'Content-type': 'application/x-www-form-urlencoded'
+                 },
+                 params: {
+                     assignment_id: this.viewAssignment_id
+                 }
+             })
+            .then(response => {
+                for(const item of response.data){
+                    this.viewItemConditions.push({
+                        viewItem_id: item.item_id,
+                        viewSubPid: item.SubPid,
+                        viewSequence_number: item.sequence_number,
+                        viewDetail_description: item.detail_description,
+                        viewField_type: item.field_type,
+                        viewTypical_value: item.typical_value,
+                        viewMin_value: item.min_value,
+                        viewMax_value: item.max_value,
+                    });   
+                    this.viewItemConditions.sort((a, b) => a.viewSequence_number - b.viewSequence_number)
+                }
+             })
+            .catch(error => {
+                 console.log(error);
+            });
+            if(this.viewAttachment == 1){
+                this.$refs.viewAttachmentBtn.disabled = false;
+                this.$refs.viewhasAttachment.checked = true;
+            } else {
+                this.$refs.viewAttachmentBtn.disabled = true;
+                this.$refs.viewhasAttachment.checked = false;
+            }
+            if(this.viewSpecial_Instruction == 1){
+                this.$refs.viewInstructionBtn.disabled = false;
+                this.$refs.viewhasInstruction.checked = true;
+            } else {
+                this.$refs.viewInstructionBtn.disabled = true;
+                this.$refs.viewhasInstruction.checked = false;
+            }     
+            if(this.viewAssignment_Status == 'Posted'){
+                this.$refs.viewstatus.disabled = true;
+            } else {
+                this.$refs.viewstatus.disabled = false;
+            }
     },
     newForm(){
-            this.$refs.section.disabled = false;
-            this.$refs.parts_number.disabled = false;
-            this.$refs.lot_number.disabled = false;
-            this.$refs.wafer_no_from.disabled = false;
-            this.$refs.wafer_no_to.disabled = false;
-            this.$refs.po_number.disabled = false;
-            this.$refs.order_pn.disabled = false;
-            this.$refs.item_code.disabled = false;
-            this.$refs.material_lot_no.disabled = false;
-            this.$refs.customer_pn.disabled = false;
-            this.$refs.customer_name.disabled = false;
-            this.$refs.delivery_date.disabled = false;
-            this.$refs.order_quantity.disabled = false;
-            this.$refs.jo_number.disabled = false;
-            this.$refs.revision_number.disabled = false;
-            this.$refs.date_issued.disabled = false;
-            this.$refs.status.disabled = true;
-            this.$refs.hasAttachment.disabled = false;
-            this.$refs.hasInstruction.disabled = false;
-            this.formAssignmentId += 1; 
-            this.selectedSection = '';
-            this.selectedSectionId = '';
-            this.partsNumber = '';
-            this.lotNumber = '';
-            this.waferNoFrom = '';
-            this.waferNoTo = '';
-            this.poNumber = '';
-            this.orderPn = '';
-            this.itemCode = '';
-            this.materialLotNo = '';
-            this.customerPn = '';
-            this.customerName = '';
-            this.deliveryDate = '';
-            this.orderQuantity = '';
-            this.joNumber = '';
-            this.revisionNumber = '';
-            this.dateIssued = '';
-            this.processFlowSub = [];
-            this.itemConditions = [];
-            this.$refs.new.disabled = true;
+            if(this.selectedSection === 'CCI'){
+                this.$refs.section.disabled = false;
+                this.$refs.parts_number.disabled = false;
+                this.$refs.lot_number.disabled = false;
+                this.$refs.wafer_no_from.disabled = false;
+                this.$refs.wafer_no_to.disabled = false;
+                this.$refs.po_number.disabled = false;
+                this.$refs.order_pn.disabled = false;
+                this.$refs.item_code.disabled = false;
+                this.$refs.material_lot_no.disabled = false;
+                this.$refs.customer_pn.disabled = false;
+                this.$refs.customer_name.disabled = false;
+                this.$refs.delivery_date.disabled = false;
+                this.$refs.order_quantity.disabled = false;
+                this.$refs.jo_number.disabled = false;
+                this.$refs.revision_number.disabled = false;
+                this.$refs.date_issued.disabled = false;
+                this.$refs.status.disabled = true;
+                this.$refs.hasAttachment.disabled = false;
+                this.$refs.hasInstruction.disabled = false;
+                this.formAssignmentId += 1; 
+                this.selectedSection = '';
+                this.selectedSectionId = '';
+                this.partsNumber = '';
+                this.lotNumber = '';
+                this.waferNoFrom = '';
+                this.waferNoTo = '';
+                this.poNumber = '';
+                this.orderPn = '';
+                this.itemCode = '';
+                this.materialLotNo = '';
+                this.customerPn = '';
+                this.customerName = '';
+                this.deliveryDate = '';
+                this.orderQuantity = '';
+                this.joNumber = '';
+                this.revisionNumber = '';
+                this.dateIssued = '';
+                this.formAssignmentStatus = 'Unposted';
+                this.processFlowSub = [];
+                this.itemConditions = [];
+                this.$refs.new.disabled = true;
+                this.$refs.announcement.innerText = '';
+                this.$refs.save.disabled = false;
+                this.$refs.save.setAttribute('data-bs-toggle', 'modal');
+                this.$refs.save.setAttribute('data-bs-target', '#reviewForm');
+            } else {
+                this.$refs.section.disabled = false;
+                this.$refs.parts_number.disabled = false;
+                this.$refs.lot_number.disabled = false;
+                this.$refs.wafer_no_from.disabled = false;
+                this.$refs.wafer_no_to.disabled = false;
+                this.$refs.item_code.disabled = false;
+                this.$refs.material_lot_no.disabled = false;
+                this.$refs.order_quantity.disabled = false;
+                this.$refs.jo_number.disabled = false;
+                this.$refs.revision_number.disabled = false;
+                this.$refs.date_issued.disabled = false;
+                this.$refs.status.disabled = true;
+                this.$refs.hasAttachment.disabled = false;
+                this.$refs.hasInstruction.disabled = false;
+                this.formAssignmentId += 1; 
+                this.selectedSection = '';
+                this.selectedSectionId = '';
+                this.partsNumber = '';
+                this.lotNumber = '';
+                this.waferNoFrom = '';
+                this.waferNoTo = '';
+                this.poNumber = '';
+                this.orderPn = '';
+                this.itemCode = '';
+                this.materialLotNo = '';
+                this.customerPn = '';
+                this.customerName = '';
+                this.deliveryDate = '';
+                this.orderQuantity = '';
+                this.joNumber = '';
+                this.revisionNumber = '';
+                this.dateIssued = '';
+                this.formAssignmentStatus = 'Unposted';
+                this.processFlowSub = [];
+                this.itemConditions = [];
+                this.$refs.new.disabled = true;
+                this.$refs.announcement.innerText = '';
+                this.$refs.save.disabled = false;
+                this.$refs.save.setAttribute('data-bs-toggle', 'modal');
+                this.$refs.save.setAttribute('data-bs-target', '#reviewForm');
+            }
     },
     async submitData(){
         const btnInstruction = this.$refs.instructionBtn;
         const btnAttachment = this.$refs.attachmentBtn;
+
         for(const section of this.section){
             if(this.selectedSection == section.section_code){
                 this.selectedSectionId = section.section_id;
@@ -979,7 +1335,7 @@ methods: {
             po_number: this.poNumber,
             parts_number: this.partsNumber,
             quantity: this.orderQuantity,
-            delivery_date: this.deliveryDate,
+            delivery_date: this.deliveryDate? this.deliveryDate: null,
             jo_number: this.joNumber,
             revision_number: this.revisionNumber,
             date_issued: this.dateIssued,
@@ -993,27 +1349,8 @@ methods: {
             has_instruction: this.instructionVal
         })
         .then(response => {
-            console.log(response.data)
+          console.log(response.data)
           if(response.data.message === 'Form Assignment inserted successfully'){
-            this.$refs.section.disabled = true;
-            this.$refs.parts_number.disabled = true;
-            this.$refs.lot_number.disabled = true;
-            this.$refs.wafer_no_from.disabled = true;
-            this.$refs.wafer_no_to.disabled = true;
-            this.$refs.po_number.disabled = true;
-            this.$refs.order_pn.disabled = true;
-            this.$refs.item_code.disabled = true;
-            this.$refs.material_lot_no.disabled = true;
-            this.$refs.customer_pn.disabled = true;
-            this.$refs.customer_name.disabled = true;
-            this.$refs.delivery_date.disabled = true;
-            this.$refs.order_quantity.disabled = true;
-            this.$refs.jo_number.disabled = true;
-            this.$refs.revision_number.disabled = true;
-            this.$refs.date_issued.disabled = true;
-            this.$refs.status.disabled = false;
-            this.$refs.hasAttachment.disabled = true;
-            this.$refs.hasInstruction.disabled = true;
             const temp_append = {
                 assignment_id: this.formAssignmentId,
                 section_code: this.selectedSection,
@@ -1033,6 +1370,11 @@ methods: {
                 assignment_status: this.formAssignmentStatus
             };
             this.formAssignment.push(temp_append);
+            if(this.selectedSection === 'CCI'){
+                this.disableCCIFields();
+            } else {
+                this.disableOtherFields();
+            }
           }
             for(const flowSub of this.processFlowSub){
                 axios.post('http://172.16.2.69/tpcrequesthandlers/ProcessFlowSubPostRequestHandler.php', {
@@ -1065,7 +1407,7 @@ methods: {
                                             this.$refs.new.disabled = false;
                                         }
                                     }).catch(error => {
-                                    
+                                    console.log(error)
                                     });
                                 }
                             }
@@ -1080,6 +1422,103 @@ methods: {
         .catch(error => {
           console.log(error);
         });   
+    },
+    disableCCIFields(){
+        this.$refs.section.disabled = true;
+        this.$refs.parts_number.disabled = true;
+        this.$refs.lot_number.disabled = true;
+        this.$refs.wafer_no_from.disabled = true;
+        this.$refs.wafer_no_to.disabled = true;
+        this.$refs.po_number.disabled = true;
+        this.$refs.order_pn.disabled = true;
+        this.$refs.item_code.disabled = true;
+        this.$refs.material_lot_no.disabled = true;
+        this.$refs.customer_pn.disabled = true;
+        this.$refs.customer_name.disabled = true;
+        this.$refs.delivery_date.disabled = true;
+        this.$refs.order_quantity.disabled = true;
+        this.$refs.jo_number.disabled = true;
+        this.$refs.revision_number.disabled = true;
+        this.$refs.date_issued.disabled = true;
+        this.$refs.hasAttachment.disabled = true;
+        this.$refs.hasInstruction.disabled = true;
+        if(this.attachmentVal == 0 && this.InstructionVal == 0){
+            this.$refs.status.disabled = false;
+            this.$refs.save.removeAttribute('data-bs-toggle');
+            this.$refs.save.removeAttribute('data-bs-target');
+            this.$refs.status.addEventListener('change', () => {
+                if(this.$refs.status.value === 'Posted'){
+                    this.$refs.announcement.textContent  = 'THE FORM IS READY FOR POSTING PLEASE CLICK SAVE TO CONTINUE';
+                    this.$refs.status.disabled = true;
+                    this.$refs.save.addEventListener('click', () => {
+                        axios.put('http://172.16.2.69/tpcrequesthandlers/StatusUpdate.php', {
+                            assignment_id: this.formAssignmentId,
+                            status: this.$refs.status.value,
+                        }).then(response => {
+                            if(response.data.message == 'STATUS UPDATE SUCCESSFULLY'){
+                                this.$refs.save.disabled = true;
+                                this.$refs.announcement.innerText = 'THE FORM HAS BEEN POSTED PLEASE PROCEED TO THE NEXT PROCESS';
+                            }
+                        }).catch(error => {
+                            console.log(error)
+                        })
+                    })
+                }
+            })
+        } else {
+            this.$refs.new.disabled = false;
+            this.$refs.status.disabled = true;
+            this.$refs.save.removeAttribute('data-bs-toggle');
+            this.$refs.save.removeAttribute('data-bs-target');
+            this.$refs.save.disabled = true;
+        }
+        
+    },
+    disableOtherFields(){
+        this.$refs.section.disabled = true;
+        this.$refs.parts_number.disabled = true;
+        this.$refs.lot_number.disabled = true;
+        this.$refs.wafer_no_from.disabled = true;
+        this.$refs.wafer_no_to.disabled = true;
+        this.$refs.item_code.disabled = true;
+        this.$refs.material_lot_no.disabled = true;
+        this.$refs.order_quantity.disabled = true;
+        this.$refs.jo_number.disabled = true;
+        this.$refs.revision_number.disabled = true;
+        this.$refs.date_issued.disabled = true;
+        this.$refs.status.disabled = false;
+        this.$refs.hasAttachment.disabled = true;
+        this.$refs.hasInstruction.disabled = true;
+        if(this.attachmentVal == 0 && this.InstructionVal == 0){
+            this.$refs.status.disabled = false;
+            this.$refs.save.removeAttribute('data-bs-toggle');
+            this.$refs.save.removeAttribute('data-bs-target');
+            this.$refs.status.addEventListener('change', () => {
+                if(this.$refs.status.value === 'Posted'){
+                    this.$refs.status.disabled = true;
+                    this.$refs.announcement.textContent  = 'THE FORM IS READY FOR POSTING PLEASE CLICK SAVE TO CONTINUE';
+                    this.$refs.save.addEventListener('click', () => {
+                        axios.put('http://172.16.2.69/tpcrequesthandlers/StatusUpdate.php', {
+                            assignment_id: this.formAssignmentId,
+                            status: this.$refs.status.value,
+                        }).then(response => {
+                            if(response.data.message == 'STATUS UPDATE SUCCESSFULLY'){
+                                this.$refs.save.disabled = true;
+                                this.$refs.announcement.innerText = 'THE FORM HAS BEEN POSTED PLEASE PROCEED TO THE NEXT PROCESS';
+                            }
+                        }).catch(error => {
+                            console.log(error)
+                        })
+                    })
+                }
+            })
+        } else {
+            this.$refs.new.disabled = false;
+            this.$refs.status.disabled = true;
+            this.$refs.save.removeAttribute('data-bs-toggle');
+            this.$refs.save.removeAttribute('data-bs-target');
+            this.$refs.save.disabled = true;
+        }
     },
     getCCIdetails(parts_number,po_number){
         this.customerDetails = [];
@@ -1114,6 +1553,9 @@ methods: {
     },
     showDetails(SubPid){
         this.show[SubPid] = !this.show[SubPid]
+    },
+    viewDetails(SubPid){
+        this.view[SubPid] = !this.view[SubPid]
     },
     changeStatus(flowSubId){
         const flowStatusValue = document.getElementById(`status-${flowSubId}`).checked;
@@ -1164,10 +1606,13 @@ methods: {
         }
     },
     populatePartsNumber(selectedSection){
+
         this.partsNumber = '';
         this.itemCode = '';
         this.sectionDescription = '';
         this.revisionNumber = '';
+        this.orderQuantity = '';
+        this.materialLotNo = '';
         this.partsNumberOptions = [];
         this.itemCodeOptions = [];
         this.processFlowSub = [];
@@ -1359,11 +1804,7 @@ methods: {
                                                 machine_time: flowSub.machine_time,
                                                 assignment_status: 'Active',
                                             });
-                                            this.attachmentDetails.push({
-                                                SubPid: sub.SubPid,
-                                                SubPname: sub.SubPname,
-                                                files: [],
-                                            });
+                                            
                                             axios.get('http://172.16.2.69/tpcrequesthandlers/ItemConditionRequestHandler.php', {
                                                  method: 'GET',
                                                  headers: {
@@ -1428,4 +1869,5 @@ created() {
 @import 'datatables.net-bs5';
 @import 'animate.css';
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0');
+@import '@splidejs/vue-splide/css/sea-green';
 </style>
