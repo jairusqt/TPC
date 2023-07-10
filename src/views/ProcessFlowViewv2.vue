@@ -178,15 +178,18 @@
           <div class="modal-content">
             <div class="modal-header">
               <div class="col-md-12 row">
-                  <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Clear</button>
-                  </div>
-                  <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Save</button>
-                  </div>
-                  <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Close</button>
-                  </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-outline-primary w-100 h-100">Edit</button>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-outline-primary w-100 h-100">Save</button>
+                    </div>
+                    <div class="col-md-1">
+                      <button class="btn btn-outline-primary w-100 h-100">Delete</button>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-outline-primary w-100 h-100">Close</button>
+                    </div>
               </div>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
