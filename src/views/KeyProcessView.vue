@@ -1,6 +1,6 @@
 
 <template>
-    <div class="col-md-12 row mx-auto py-3">
+    <div class="col-md-12 row mx-auto py-3 container">
         <div class="col-md-9">
           <h3>TPC - Setup Key Process</h3>
         </div>
@@ -8,7 +8,7 @@
           <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
         </div>
     </div>
-<div class="border rounded p-3">
+<div class="border rounded p-3 container">
     <DataTable
         :data="keyProcess"
         :columns="columns"
@@ -108,35 +108,13 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <div class="col-md-12 row">
-                <div class="col-md-4">
-                    <label for="edit_section">Section:</label>
-                    <select id="edit_section" class="form-select" v-model="e_section_id">
-                        <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
-                    </select>
-                </div>
-                <div class="col-md-8">
-                    <label for="edit_keyProcessDescription">Key Process Description:</label>
-                    <input type="text" class="form-control" v-model="e_Pname">
-                </div>
-                <div class="col-md-7">
-                    <label for="edit_keyProcessStatus">Key Process Status:</label>
-                    <select id="edit_keyProcessStatus" class="form-control" v-model="e_key_status">
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-                </div>
-                <div class="col-md-5">
-                    <label for="edit_stock_point">Stock Point</label>
-                    <select id="edit_stock_point" class="form-select" v-model="e_stock_point">
-                        <option value="1">True</option>
-                        <option value="0">False</option>
-                    </select>
-                </div>
-            </div>
+            <div class="alert alert-warning text-center">
+                <p >YOU ARE GOING TO DELETE THIS PROCESS: "{{e_Pname}}"</p>
+                <h5 class="text-danger">Do you wish to proceed?</h5>
+              </div>
         </div>
         <div class="modal-footer">
-          <button ref="submit" type="submit" @click="editKeyProcess" class="btn btn-primary">Save changes</button>
+          <button ref="submit" type="submit" @click="deleteKeyProcess" class="btn btn-primary">Save changes</button>
         </div>
       </div>
     </div>
@@ -158,8 +136,9 @@ export default {
         return {
             sectionURL: 'http://192.168.1.97/TPC/GetSection.php',
             keyProcessURL: 'http://192.168.1.97/TPC/GetKeyProcess.php',
-            PostKeyProcessURL: 'http://192.168.1.97/TPC/PostKeyProcess.php',
+            KeyProcessPostURL: 'http://192.168.1.97/TPC/PostKeyProcess.php',
             KeyProcessPutURL: 'http://192.168.1.97/TPC/PutKeyProcess.php',
+            KeyProcessDeleteURL: 'http://192.168.1.97/TPC/DeleteKeyProcess.php',
 
             section: [],
             keyProcess: [],
@@ -223,7 +202,7 @@ export default {
             
         },
         submitKeyProcess(){
-            axios.post(this.PostKeyProcessURL, {
+            axios.post(this.KeyProcessPostURL, {
                 section_id: this.section_id,
                 Pname: this.Pname,
                 key_process_status: this.key_status,
@@ -241,6 +220,15 @@ export default {
                 Pname: this.e_Pname,
                 key_process_status: this.e_key_status,
                 stock_point: this.e_stock_point
+            }).then(response => {
+                console.log(response.data);
+            }).catch(error => {
+                console.log(error);
+            });
+        },
+        deleteKeyProcess(){
+            axios.post(this.KeyProcessDeleteURL, {
+                Pid: this.e_Pid
             }).then(response => {
                 console.log(response.data);
             }).catch(error => {

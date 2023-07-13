@@ -1,5 +1,5 @@
 <template>
-    <div class="col-md-12 row mx-auto py-3">
+    <div class="col-md-12 row mx-auto py-3 container">
         <div class="col-md-9">
           <h3>TPC - Setup Section</h3>
         </div>
@@ -8,7 +8,7 @@
         </div>
     </div>
     <!--Datatable-->
-    <div class="border rounded p-3">
+    <div class="border rounded p-3 container">
         <DataTable
         :data="section"
         :columns="columns"
