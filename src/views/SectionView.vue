@@ -28,17 +28,11 @@
             <div class="col-md-12 row mx-auto">
               <div class="col-md-9">
                 <label for="description">Description:</label>
-                <input @blur="validateDescription" @focus="resetValidateDescription" type="text" class="form-control" id="description" v-model="description" ref="description">
-                <div v-if="validateDescriptionErr" class="invalid-feedback">
-                  <p>The specified description '{{description}}' is already present in our system. Please select an alternative and unique description.</p>
-                </div>
+                <input type="text" class="form-control" id="description" v-model="description" ref="description">
               </div>
               <div class="col-md-3">
                 <label for="code">Code:</label>
-                <input @blur="validateCode" @focus="resetValidateCode" type="text" class="form-control" id="code" v-model="code" ref="code">
-                <div v-if="validateCodeErr" class="invalid-feedback">
-                  <p>The section code '{{code}}' is already present in our system.</p>
-                </div>
+                <input type="text" class="form-control" id="code" v-model="code" ref="code">
               </div>
               <div class="col-md-3">
                 <label for="status">Status:</label>
@@ -63,8 +57,8 @@
                 <input type="text" class="form-control" id="group" v-model="group" ref="group">
               </div>
               
-              <div class="p-3">
-                <div ref="alert" class="col-md-12">
+              <div class="pt-3">
+                <div ref="alert" class="col-md-12 pt-3">
                   <p class="text-center">{{submissionAlert}}</p>
                 </div>
               </div>
@@ -72,8 +66,8 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" @click="newSection" class="btn btn-primary" disabled>New</button>
-            <button ref="submit" type="submit" @click="submitSection" class="btn btn-primary">Save changes</button>
+            <button ref="newBtn" type="button" @click="newSection" class="btn btn-primary" disabled>New</button>
+            <button ref="saveBtn" type="submit" @click="submitSection" class="btn btn-primary">Save changes</button>
           </div>
         </div>
       </div>
@@ -128,7 +122,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button ref="submit" type="submit" @click="updateSection" class="btn btn-primary">Save changes</button>
+            <button type="submit" @click="updateSection" class="btn btn-primary">Save changes</button>
           </div>
         </div>
       </div>
@@ -148,7 +142,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button ref="submit" type="submit" @click="deleteSection" class="btn btn-outline-primary">Delete</button>
+            <button type="submit" @click="deleteSection" class="btn btn-outline-primary">Delete</button>
           </div>
         </div>
       </div>
@@ -178,8 +172,6 @@
         sectionDeleteURL: 'http://192.168.1.97/TPC/DeleteSection.php',
         section: [],
 
-        validateDescriptionErr: false,
-        validateCodeErr: false,
         submissionAlert: '',
 
         //Entry 
@@ -227,6 +219,17 @@
       
     },
     methods: {
+      newSection(){
+        this.description = '';
+        this.code = '';
+        this.status = 'Active';
+        this.shared = 0;
+        this.class = 'Parent';
+        this.group = 0;
+        this.$refs.newBtn.disabled = true;
+        this.$refs.saveBtn.disabled = false;
+        this.submissionAlert = '';
+      },
       getSection_id(event){
         let row = null;
         let cell = null;
@@ -254,59 +257,43 @@
         }
 
       },
-      resetValidateCode(){
-        this.$refs.code.className = 'form-control';
-        this.validateCodeErr = false;
-      },
-      resetValidateDescription(){
-        this.$refs.description.className = 'form-control'
-        this.validateDescriptionErr = false;
-      },
-      validateCode(){
-        for(const section of this.section){
-          if(this.code.toUpperCase() == section.section_code.toUpperCase()){
-            this.$refs.code.className = 'form-control is-invalid';
-            this.validateCodeErr = true;
-          } 
+      submitSection() {
+        if (!this.description || !this.code) {
+          this.submissionAlert = 'Both Description and Code must be filled';
+          this.$refs.alert.className = 'alert alert-warning mx-auto';
+        } else {
+          axios.post(this.sectionPostURL, {
+            section_description: this.description,
+            section_code: this.code,
+            shared_section: this.shared,
+            section_class: this.class,
+            shared_group_no: this.group,
+            section_status: this.status
+          }).then(response => {
+            console.log(response.data);
+            if(response.data.message == 'Section inserted successfully') {
+              this.$refs.saveBtn.disabled = true;
+              this.$refs.newBtn.disabled = false;
+              this.submissionAlert = 'Submission Success';
+              this.section.push({
+                section_description: this.description,
+                section_code: this.code,
+                shared_section: this.shared,
+                section_class: this.class,
+                shared_group_no: this.group,
+                section_status: this.status
+              });
+            } 
+            if(response.data.message == 'Duplicate entry'){
+              this.submissionAlert = 'Duplicate entry';
+            }
+          }).catch(error => {
+            console.error(error);
+          });
         }
       },
-      validateDescription(){
-        for(const section of this.section){
-          if(this.description.toUpperCase() == section.section_description.toUpperCase()){
-            this.$refs.description.className = 'form-control is-invalid';
-            this.validateDescriptionErr = true;
-          } 
-        }
-      },
-      submitSection(){
-       if(this.validateDescriptionErr == true || this.validateCodeErr == true){
-        this.submissionAlert = 'Submission Error'
-        this.$refs.alert.className = 'alert alert-danger mx-auto';
-       } else {
-        axios.post(this.sectionPostURL, {
-          section_description: this.description,
-          section_code: this.code,
-          shared_section: this.shared,
-          section_class: this.class,
-          shared_group_no: this.group,
-          section_status: this.status
-        }).then(response => {
-          if(response.data.message == 'Section inserted successfully'){
-            this.submissionAlert = 'Submission Success'
-            this.$refs.alert.className = 'alert alert-success mx-auto';
-            this.section.push({
-              section_description: this.description,
-              section_code: this.code,
-              shared_section: this.shared,
-              section_class: this.class,
-              shared_group_no: this.group,
-              section_status: this.status
-            });
-          }
-        }).catch(error => {
-          console.error(error);
-        }); 
-       }
+      submitted(){
+        console.log('data submitted');
       },
       updateSection(){
         axios.put(this.sectionPutURL,{

@@ -5,7 +5,7 @@
       <h3>TPC - Setup Sub Process</h3>
     </div>
     <div class="col-md-3">
-      <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Update</button>
+      <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#update"><span class=" align-bottom material-symbols-outlined">update</span>Update</button>
     </div>
     <div class="col-md-3 float-end">
       <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
@@ -93,9 +93,69 @@
     </div>
   </div>
 
+  <div class="modal fade" id="update" tabindex="-1" aria-labelledby="updateModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="updateModal">Create New Key Process!</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="col-md-12 row mx-auto p-1">
+                <div class="col-md-4">
+                    <label for="section">Section:</label>
+                    <select @change="FetchKeyOptions(section_id)" id="section" class="form-select" v-model="section_id">
+                        <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label for="key">Key Process:</label>
+                    <select @change="FetchSubOrder(orderPid)" id="key" class="form-select" v-model="orderPid">
+                        <option v-for="key in keyProcessOptions" :value="key.Pid">{{key.Pname}}</option>
+                    </select>
+                </div>
+                
+            </div>
+            <div v-if="validateSubPname" class="alert alert-warning col-md-12 p-3">
+              <p class="text-center">The input for this field "Sub Process" is mandatory.</p>
+            </div>
+            <hr>
+              <div class="col-md-12 row">
+                <div class="col-md-6">
+                  <h6 class="text-center">Sub-Process Name</h6>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-center">Sequence Number</h6>
+                </div>
+              </div>
+              <div class="col-md-12 border-rounded px-3">
+                <draggable :list="subProcessOrder" 
+                         item-key="name"
+                         @change="onChange">
+                  <template #item="{ element }">
+                      <div class="col-md-12 row p-1 border-top rounded">
+                          <div class="col-md-6">
+                            {{ element.SubPname }}
+                          </div>
+                          <div class="col-md-6 text-center">
+                            {{ element.sequence_number }}
+                          </div>
+                      </div>
+                  </template>
+              </draggable>
+              </div>
+        </div>
+        <div class="modal-footer">
+          <button ref="submit" type="submit" @click="updateSubOrder" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 <script>
 import axios from 'axios';
+import draggable from 'vuedraggable';
 import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
 import 'datatables.net-responsive';
@@ -103,7 +163,8 @@ import 'datatables.net-select';
 DataTable.use(DataTablesCore);
 export default {
 components: {
-  DataTable
+  DataTable,
+  draggable
 },
 data() {
   return {
@@ -113,9 +174,11 @@ data() {
     SectionGetURL: 'http://192.168.1.97/TPC/GetSection.php',
     KeyProcessOptionsGetURL: 'http://192.168.1.97/TPC/GetKeyProcessOptions.php',
     SubProcessOptionsGetURL: 'http://192.168.1.97/TPC/GetSubProcessOptions.php',
+    SubProcessOrderPutURL: 'http://192.168.1.97/TPC/PutSubProcessOrder.php',
 
     section_id: null,
     Pid: null,
+    OrderPid: null,
     SubPname: '',
     sub_process_type: 'Production',
     sub_process_status: 'Active',
@@ -132,6 +195,8 @@ data() {
 
     subProcessNewList: [],
 
+    subProcessOrder: [],
+
     columns: [
       { title: 'Section Code', data: 'section_code' },
       { title: 'Process Description', data: 'Pname' },
@@ -141,15 +206,24 @@ data() {
       { title: 'Status', data: 'sub_process_status' },
       { title: 'Date Created', data: 'date_created' },
       // Add more columns as needed
-    ]
+    ],
+    items: [],
+
   }
 },
 computed: {
   SortSubProcessList(){
     return this.subProcessList.sort((a, b) => a.sequence_number - b.sequence_number);
-  }
+  },
 },
 methods: {
+  onChange(event) {
+      this.reorder()
+      console.log(this.subProcessOrder);
+  },
+  reorder() {
+      this.subProcessOrder.forEach((sub, index) => (sub.sequence_number = index + 1))
+  },
   submitSubProcess(){
     for(const sub of this.subProcessNewList){
       axios.post(this.SubProcessPostURL, {
@@ -164,6 +238,19 @@ methods: {
       }).catch(error => {
         console.log(error);
       });
+    }
+  },
+  updateSubOrder(){
+    console.log(this.subProcessOrder);
+    for(const sub of this.subProcessOrder){
+        axios.put(this.SubProcessOrderPutURL, {
+          SubPid: sub.SubPid,
+          sequence_number: sub.sequence_number,
+        }).then(response => {
+          console.log(response.data);
+        }).catch(error => {
+          console.log(error);
+        });
     }
   },
   addSubProcess(){
@@ -190,6 +277,7 @@ methods: {
     }
   },
   FetchKeyOptions(section_id){
+    this.subProcessOrder = [];
     this.subProcessList = [];
     this.keyProcessOptions = [];
     this.subProcessNewList = [];
@@ -226,12 +314,31 @@ methods: {
       }, 0);
       
       this.sequence_number = maxSequenceNo + 1;
-      console.log(this.sequence_number);
     }).catch(error => {
       console.log(error);
     });
   },
+  FetchSubOrder(Pid){
+    axios.get(this.SubProcessOptionsGetURL, {
+      method: 'GET',
+        headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+        },
+        params: {
+            Pid: Pid
+        }
+    }).then(response => {
+      this.subProcessOrder = response.data;
+      this.subProcessOrder.sort((a, b) => a.sequence_number - b.sequence_number); 
+      // this.subProcessOrder = response.data;
+      // console.log(this.subProcessOrder);
+    }).catch(error => {
+      console.log(error);
+    });
+  },
+
 },
+
 async created() {
   await axios.get(this.SectionGetURL, {
     }).then(response => {
