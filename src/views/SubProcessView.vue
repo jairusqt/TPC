@@ -168,13 +168,13 @@ components: {
 },
 data() {
   return {
-    SubProcessGetURL: 'http://192.168.1.97/TPC/GetSubProcess.php',
-    SubProcessPostURL: 'http://192.168.1.97/TPC/PostSubProcess.php',
-    KeyProcessGetURL: 'http://192.168.1.97/TPC/GetKeyProcess.php',
-    SectionGetURL: 'http://192.168.1.97/TPC/GetSection.php',
-    KeyProcessOptionsGetURL: 'http://192.168.1.97/TPC/GetKeyProcessOptions.php',
-    SubProcessOptionsGetURL: 'http://192.168.1.97/TPC/GetSubProcessOptions.php',
-    SubProcessOrderPutURL: 'http://192.168.1.97/TPC/PutSubProcessOrder.php',
+    SubProcessGetURL: 'http://172.16.2.69/TPC/GetSubProcess.php',
+    SubProcessPostURL: 'http://172.16.2.69/TPC/PostSubProcess.php',
+    KeyProcessGetURL: 'http://172.16.2.69/TPC/GetKeyProcess.php',
+    SectionGetURL: 'http://172.16.2.69/TPC/GetSection.php',
+    KeyProcessOptionsGetURL: 'http://172.16.2.69/TPC/GetKeyProcessOptions.php',
+    SubProcessOptionsGetURL: 'http://172.16.2.69/TPC/GetSubProcessOptions.php',
+    SubProcessOrderPutURL: 'http://172.16.2.69/TPC/PutSubProcessOrder.php',
 
     section_id: null,
     Pid: null,

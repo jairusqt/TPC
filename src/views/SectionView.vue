@@ -166,10 +166,10 @@
     },
     data() {
       return {
-        sectionURL: 'http://192.168.1.97/TPC/GetSection.php',
-        sectionPostURL: 'http://192.168.1.97/TPC/PostSection.php',
-        sectionPutURL: 'http://192.168.1.97/TPC/PutSection.php',
-        sectionDeleteURL: 'http://192.168.1.97/TPC/DeleteSection.php',
+        sectionURL: 'http://172.16.2.69/TPC/GetSection.php',
+        sectionPostURL: 'http://172.16.2.69/TPC/PostSection.php',
+        sectionPutURL: 'http://172.16.2.69/TPC/PutSection.php',
+        sectionDeleteURL: 'http://172.16.2.69/TPC/DeleteSection.php',
         section: [],
 
         submissionAlert: '',

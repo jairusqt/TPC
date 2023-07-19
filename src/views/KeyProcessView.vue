@@ -134,11 +134,11 @@ export default {
     },
     data() {
         return {
-            sectionURL: 'http://192.168.1.97/TPC/GetSection.php',
-            keyProcessURL: 'http://192.168.1.97/TPC/GetKeyProcess.php',
-            KeyProcessPostURL: 'http://192.168.1.97/TPC/PostKeyProcess.php',
-            KeyProcessPutURL: 'http://192.168.1.97/TPC/PutKeyProcess.php',
-            KeyProcessDeleteURL: 'http://192.168.1.97/TPC/DeleteKeyProcess.php',
+            sectionURL: 'http://172.16.2.69/TPC/GetSection.php',
+            keyProcessURL: 'http://172.16.2.69/TPC/GetKeyProcess.php',
+            KeyProcessPostURL: 'http://172.16.2.69/TPC/PostKeyProcess.php',
+            KeyProcessPutURL: 'http://172.16.2.69/TPC/PutKeyProcess.php',
+            KeyProcessDeleteURL: 'http://172.16.2.69/TPC/DeleteKeyProcess.php',
 
             section: [],
             keyProcess: [],

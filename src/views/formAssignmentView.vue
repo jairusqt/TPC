@@ -124,7 +124,7 @@
                     </div>
                     <div class="col-md-8 p-1">
                         <label for="input_item_code">Item Code</label>
-                        <input ref="item_code" id="input_item_code" v-model="itemCode" type="text" class="form-select" list="item_code" @input="getRevisionNumber(selectedSection, partsNumber, itemCode, keyProcess, subProcess, )" autocomplete="off">
+                        <input ref="item_code" id="input_item_code" v-model="itemCode" type="text" class="form-select" list="item_code" @input="getRevisionNumber(selectedSection, partsNumber, itemCode)" autocomplete="off">
                         <datalist id="item_code">
                             <option :value="value.item_code" v-for="value in itemCodeOptions">{{ value.item_code }}</option>
                         </datalist>
@@ -485,7 +485,7 @@
                 </div>
                 <div v-for="(file, index) in selectedFiles" :key="index" class="col-md-2 card" v-show="file.SubPid == attachmentSelectedSubPid">
                   <img :src="file.src" v-if="file.type == 'image/png' || file.type == 'image/jpeg'" :width="200" :height="200" class="card-img-top p-2" :on-error="handleImageError"  alt="Preview">
-                  <img v-else src="src\assets\logo.svg"  :width="200" :height="200" class="card-img-top p-2" :on-error="handleImageError"  alt="Preview">
+                  <img v-else src=""  :width="200" :height="200" class="card-img-top p-2" :on-error="handleImageError"  alt="Preview">
                   <div class="card-body">
                     <input class="form-control" v-model="file.remarks">
                     <p class="card-text">{{ file.size }} bytes</p>
@@ -767,7 +767,6 @@ import axios from 'axios';
 import '@splidejs/vue-splide/css/core';
 DataTable.use(DataTablesCore);
 export default {
-props: ['keyProcessResponse','subProcessResponse','formAssignmentResponse', 'sectionResponse','processFlowResponse'],
 components: {
     DataTable,
     Splide,
@@ -775,6 +774,12 @@ components: {
 },
 data() {
     return {
+        formAssignmentURL: 'http://172.16.2.69/tpcrequesthandlers/formAssignment.php',
+        sectionURL: 'http://172.16.2.69/tpcrequesthandlers/sectionView.php',
+        processFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
+        keyProcessURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
+        subProcessURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
+
         show: {},
         view: {},
         itemStatus: {},
@@ -1606,7 +1611,13 @@ methods: {
         }
     },
     populatePartsNumber(selectedSection){
-
+        let selectedSection_id = '';
+        for(const section of this.section){
+            if(section.section_code == selectedSection){
+                selectedSection_id = section.section_id;
+            }
+        }
+        console.log(selectedSection_id);
         this.partsNumber = '';
         this.itemCode = '';
         this.sectionDescription = '';
@@ -1619,7 +1630,7 @@ methods: {
         this.itemConditions = [];
         const selectedPartsNumber = new Set();
         for(const flow of this.processFlow){    
-            if(selectedSection === flow.section_code && flow.flow_status === 'Posted'){
+            if(parseInt(selectedSection_id) === flow.section_id && flow.flow_status === 'Posted'){
                 const partsNumber = flow.item_parts_number;
                 if(!selectedPartsNumber.has(partsNumber)){
                     this.partsNumberOptions.push({item_parts_number: partsNumber});
@@ -1635,6 +1646,12 @@ methods: {
         
     },
     getItemCodeAndLotNumber(selectedSection,partsNumber){
+        let selectedSection_id = '';
+        for(const section of this.section){
+            if(section.section_code == selectedSection){
+                selectedSection_id = section.section_id;
+            }
+        }
         this.itemCode = '';
         this.revisionNumber = '';
         this.itemCodeOptions = [];
@@ -1646,8 +1663,9 @@ methods: {
         const selectedLotNumber = new Set();
         const selectedPoNumber = new Set();
         for(const flow of this.processFlow){
-            if(selectedSection === flow.section_code && partsNumber === flow.item_parts_number && flow.flow_status === 'Posted'){
+            if(parseInt(selectedSection_id) === flow.section_id && partsNumber === flow.item_parts_number && flow.flow_status === 'Posted'){
                 const itemCode = flow.item_code;
+                console.log(partsNumber);
                 if(!selectedItemCode.has(itemCode)){
                     this.itemCodeOptions.push({item_code: itemCode});
                     selectedItemCode.add(itemCode);
@@ -1759,6 +1777,12 @@ methods: {
         }
     },
     getRevisionNumber(selectedSection, partsNumber, itemCode){
+        let selectedSection_id = '';
+        for(const section of this.section){
+            if(section.section_code == selectedSection){
+                selectedSection_id = section.section_id;
+            }
+        }
         this.revisionNumber = '';
         this.flowMainId = '';
         this.processFlowSub = [];
@@ -1766,7 +1790,7 @@ methods: {
         this.attachmentDetails = [];
         let latestRevisionNumber = -1;
         for(const flow of this.processFlow){
-            if(selectedSection === flow.section_code && partsNumber === flow.item_parts_number && itemCode === flow.item_code && flow.flow_status === 'Posted'){
+            if(parseInt(selectedSection_id) === flow.section_id && partsNumber === flow.item_parts_number && itemCode === flow.item_code && flow.flow_status === 'Posted'){
                 if(parseInt(flow.revision_number) > latestRevisionNumber){
                     latestRevisionNumber = flow.revision_number;
                     this.revisionNumber = latestRevisionNumber;
@@ -1786,6 +1810,7 @@ methods: {
                          }
                      })
                      .then(response => {
+                        console.log(response.data);
                          for(const flowSub of response.data){
                             for(const key of this.keyProcess){
                                 if(flowSub.Pid == key.Pid){
@@ -1815,6 +1840,7 @@ methods: {
                                                  }
                                              })
                                             .then(response => {
+                                                console.log(response.data);
                                                 for(const item of response.data){
                                                     this.itemConditions.push({
                                                         item_id: item.item_id,
@@ -1850,12 +1876,55 @@ methods: {
     },
     
 },
-created() {
-    this.formAssignment = this.formAssignmentResponse;
-    this.section = this.sectionResponse;
-    this.processFlow = this.processFlowResponse;
-    this.keyProcess = this.keyProcessResponse;
-    this.subProcess = this.subProcessResponse;
+async created() {
+    await axios.get(this.sectionURL, {
+
+    }).then(response => {
+        this.section = response.data;
+    }).catch(error => {
+    
+    });
+
+    await axios.get(this.processFlowURL, {
+
+    }).then(response => {
+        this.processFlow = response.data;
+    }).catch(error => {
+        console.log(error);
+    });
+
+    await axios.get(this.formAssignmentURL, {
+
+    }).then(response => {
+        this.formAssignment = response.data;
+        for(const fa of this.formAssignment){
+            for(const sec of this.section){
+                if(sec.section_id === fa.section_id){
+                    Object.assign(fa, {section_code: sec.section_code});
+                }
+            }
+        }
+    }).catch(error => {
+        console.log(error)
+    });
+
+
+    await axios.get(this.keyProcessURL, {
+
+    }).then(response => {
+        this.keyProcess = response.data;
+    }).catch(error => {
+        console.log(error);
+    });
+
+    await axios.get(this.subProcessURL, {
+
+    }).then(response => {
+        this.subProcess = response.data;
+    }).catch(error => {
+        console.log(error);
+    });
+    
     this.formAssignmentId = this.formAssignment.length + 1;
     this.currentDate = new Date().toJSON().slice(0, 10);
     this.hasAttachment = false;

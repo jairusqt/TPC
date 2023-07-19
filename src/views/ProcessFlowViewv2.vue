@@ -1,24 +1,26 @@
 
 <template>
-    <div class="col-md-12 px-5">
-        <h3 class="text-center">Tablet Process Card - Setup Process Flow</h3>
-    </div>
-    <div class="col-md-12">
-        <div class="col-md-2 p-2 pb-3 ms-auto">
-            <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createProcessFlow">
+
+    <div class="col-md-12 row mx-auto p-3 container">
+        <div class="col-md-9">
+            <h3>Tablet Process Card - Setup Process Flow</h3>
+        </div>
+        <div class="col-md-3 float-end">
+            <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#createProcessFlow">
                 Create Process Flow
             </button>
         </div>
+        <div class="p-3">
+            <DataTable
+            :data="processFlow"
+            :columns="columns"
+            class="display table"
+            @click="getFlowId"
+        />
+        </div>
     </div>
 
-    <div class="p-5">
-        <DataTable
-        :data="processFlow"
-        :columns="columns"
-        class="display table"
-        @click="getFlowId"
-    />
-    </div>
+    
 
     <div class="modal fade" id="createProcessFlow" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
@@ -339,6 +341,14 @@
         },
         data() {
             return {
+
+                requestFlowKeyURL: 'http://172.16.2.69/tpcrequesthandlers/requestFlowKey.php',
+                requestFlowSubURL: 'http://172.16.2.69/tpcrequesthandlers/requestFlowSub.php',
+                requestKeyURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
+                requestSubURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
+                SectionGetURL: 'http://172.16.2.69/TPC/GetSection.php',
+                requestItemMasterURL: 'http://172.16.2.69/tpcrequesthandlers/requestItemMasterMain.php',
+                fetchProcessFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
                 //objects
                 section: [],
                 processFlow: [],
@@ -432,7 +442,7 @@
                         this.viewFlowStatus = flow.flow_status;
                         this.viewRemarks = flow.flow_remarks;
                         
-                        axios.get('http://localhost/tpcrequesthandlers/requestFlowKey.php', {
+                        axios.get(this.requestFlowKeyURL, {
                             method: 'GET',
                             headers: {
                                 'Content-type': 'application/x-www-form-urlencoded'
@@ -447,7 +457,7 @@
                             console.log(error);
                         });
 
-                        axios.get('http://localhost/tpcrequesthandlers/requestFlowSub.php', {
+                        axios.get(this.requestFlowSubURL, {
                             method: 'GET',
                             headers: {
                                 'Content-type': 'application/x-www-form-urlencoded'
@@ -458,7 +468,7 @@
                         }).then(response => {
                             this.flowSub = response.data;
                             for(const sub of this.flowSub){
-                                axios.get('http://localhost/tpcrequesthandlers/requestSubProcess.php',{
+                                axios.get('',{
                                     method: 'GET',
                                     headers: {
                                         'Content-type': 'application/x-www-form-urlencoded'
@@ -481,7 +491,7 @@
                         });
 
 
-                        axios.get('http://localhost/tpcrequesthandlers/requestKeyProcess.php', {
+                        axios.get(this.requestKeyURL, {
                             method: 'GET',
                             headers: {
                                 'Content-type': 'application/x-www-form-urlencoded'
@@ -557,7 +567,7 @@
                 for(const sec of this.section){
                     if(this.mainSection == sec.section_id){
                         this.mainSectionCode = sec.section_code;
-                        axios.get('http://localhost/tpcrequesthandlers/requestKeyProcess.php', {
+                        axios.get(this.requestKeyURL, {
                             method: 'GET',
                             headers: {
                                 'Content-type': 'application/x-www-form-urlencoded'
@@ -577,7 +587,7 @@
             fetchSubProcess(){
                 this.subProcessFlow = [];
                 for(const [order, key] of Object.entries(this.keyProcessFlow)){
-                    axios.get('http://localhost/tpcrequesthandlers/requestSubProcess.php',{
+                    axios.get(this.requestSubURL,{
                         method: 'GET',
                         headers: {
                             'Content-type': 'application/x-www-form-urlencoded'
@@ -616,23 +626,23 @@
                 return this.flowSub.sort((a, b) => a.sequence_number - b.sequence_number);
             }
         },
-        created(){
+        async created(){
 
-            axios.get('http://localhost/tpcrequesthandlers/sectionView.php',{
+            await axios.get(this.SectionGetURL,{
             }).then(response => {
                 this.section = response.data;
             }).catch(error => {
                 console.log(error)
             });
 
-            axios.get('http://localhost/tpcrequesthandlers/requestItemMasterMain.php', {
+            await axios.get(this.requestItemMasterURL, {
             }).then(response => {
                 this.itemMaster = response.data;
             }).catch(error => {
                 console.log(error)
             })
 
-            axios.get('http://localhost/tpcrequesthandlers/fetchProcessFlowMain.php', {
+            await axios.get(this.fetchProcessFlowURL, {
             }).then(response => {
                 this.processFlow = response.data;
                 for(const flow of this.processFlow){
