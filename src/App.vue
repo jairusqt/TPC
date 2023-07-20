@@ -44,6 +44,9 @@
       <div class="p-1">
         <RouterLink to="/formAssignment" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">assignment</span>Form-Assignment</RouterLink>
       </div>
+      <div class="p-1">
+        <RouterLink to="/formAssignmentv2" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">assignment</span>Form-Assignment v2</RouterLink>
+      </div>
     </div>
   </div>
 </template>
