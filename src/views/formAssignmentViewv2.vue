@@ -96,15 +96,43 @@
                     </div>
                     <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
                         <label for="order_pn">Order PN:</label>
-                        <input type="text" class="form-control">
+                        <input type="text" id="order_pn" class="form-control">
                     </div>
                     <div class="col-md-8 p-2">
                         <label for="item_code">Item Code:</label>
                         <input type="text" id="item_code" class="form-select">
                     </div>
                     <div class="col-md-4 p-2">
-                        <label for="">Material Lot Number:</label>
+                        <label for="material_lot_number">Material Lot Number:</label>
+                        <input type="text" id="material_lot_number" class="form-control">
+                    </div>
+                    <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
+                        <label for="customer_pn">Customer PN:</label>
                         <input type="text" class="form-control">
+                    </div>
+                    <div v-if="section_code ==='CCI'" class="col-md-6 p-2">
+                        <label for="customer_name">Customer Name:</label>
+                        <input type="text" class="form-control">
+                    </div>
+                    <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
+                        <label for="delivery_date">Delivery Date:</label>
+                        <input type="text" id="delivery_date" class="form-control">
+                    </div>
+                    <div class="col-md-4 p-2">
+                        <label for="order_quantity">Order Quantity:</label>
+                        <input type="text" id="order_quantity" class="form-control">
+                    </div>
+                    <div class="col-md-8 p-2">
+                        <label for="jo_number">JO number: </label>
+                        <input type="text" class="form-control">
+                    </div>
+                    <div class="col-md-6 p-2">
+                        <label for="revision_number">Revision Number: </label>
+                        <input type="text" id="revision_number" class="form-control">
+                    </div>
+                    <div class="col-md-6 p-2">
+                        <label for="date_issued">Date Issued: </label>
+                        <input type="text" id="date_issued" class="form-control">
                     </div>
                 </div>
 
@@ -252,50 +280,6 @@
                     }).catch(error => {
                         console.log(error);
                     })
-                    // await axios.get(this.CCILotRequestURL, {
-                    //     method: 'GET',
-                    //     headers: {
-                    //         'Content-type': 'application/x-www-form-urlencoded'
-                    //     },
-                    //     params: {
-                    //         parts_number: parts_number
-                    //     }
-                    // }).then(response => {
-                    //     if(response.data === null || (Array.isArray(response.data) && response.data.length === 0)){
-                    //         this.lotNumber = [];
-                    //     } else {
-                    //         for(const lot of response.data){
-                    //             if(!selectedLotNumber.has(lot.lotno)){
-                    //                 this.lotNumber.push({lot_number: lot.lotno})
-                    //                 selectedLotNumber.add(lot.lotno);
-                    //             }
-                    //         }
-                    //     }
-                    // }).catch(error => {
-                    //     console.log(error);
-                    // });
-                    // await axios.get(this.CCIPoRequestURL, {
-                    //     method: 'GET',
-                    //     headers: {
-                    //         'Content-type': 'application/x-www-form-urlencoded'
-                    //     },
-                    //     params: {
-                    //         parts_number: parts_number
-                    //     }
-                    // }).then(response => {
-                    //     if(response.data === null || (Array.isArray(response.data) && response.data.length === 0)){
-                    //         this.poNumber = [];
-                    //     } else {
-                    //         for(const po of response.data){
-                    //             if(!selectedPoNumber.has(po.po_no)){
-                    //                 this.poNumber.push({po_number: po.po_no})
-                    //                 selectedPoNumber.add(po.po_no);
-                    //             }
-                    //         }
-                    //     }
-                    // }).catch(error => {
-                    //     console.log(error);
-                    // });
                 }
             }
         }
