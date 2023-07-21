@@ -1665,7 +1665,6 @@ methods: {
         for(const flow of this.processFlow){
             if(parseInt(selectedSection_id) === flow.section_id && partsNumber === flow.item_parts_number && flow.flow_status === 'Posted'){
                 const itemCode = flow.item_code;
-                console.log(partsNumber);
                 if(!selectedItemCode.has(itemCode)){
                     this.itemCodeOptions.push({item_code: itemCode});
                     selectedItemCode.add(itemCode);

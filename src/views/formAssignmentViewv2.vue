@@ -22,124 +22,129 @@
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-body">
-              <div class="col-md-12 row">
-                <div class="col-md-5 mx-auto row border-end">
-                    <div class="col-md-4 p-2">
-                        <button class="btn btn-outline-primary w-100">Save</button>
+              <form autocomplete="off">
+                <div class="col-md-12 row">
+                    <div class="col-md-5 mx-auto row border-end">
+                        <div class="col-md-4 p-2">
+                            <button class="btn btn-outline-primary w-100">Save</button>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <button class="btn btn-outline-primary w-100">Save</button>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <button class="btn btn-outline-primary w-100">Save</button>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <button class="btn btn-outline-primary w-100">Save</button>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <button class="btn btn-outline-primary w-100">Save</button>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <button class="btn btn-outline-primary w-100">Save</button>
+                        </div>
+                        <hr>
+                        <div class="col-md-3">
+                            <p>Form Assignment No: </p>
+                        </div>
+                        <hr>
+                        <div class="col-md-4 p-2">
+                            <label for="status">Form Status:</label>
+                            <input type="text" class="form-control" disabled>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <label for="status">Assigned By:</label>
+                            <input type="text" class="form-control" disabled>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <label for="status">Date Created:</label>
+                            <input type="text" class="form-control" disabled>
+                        </div>
+                        <hr>
+                        <div class="col-md-2 p-2">
+                            <label for="section_code">Section:</label>
+                            <select id="section_code" class="form-select" v-model="section_id" @change="generatePartsNumber(section_id)">
+                                <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5 p-2">
+                            <label for="parts_number">Parts Number: </label>
+                            <input list="parts_number_list" type="text" id="parts_number" v-model="parts_number" class="form-select" autocomplete="off" @input="generateSectionRequest(section_id, parts_number)">
+                            <datalist id="parts_number_list">
+                                <option v-for="pn in partsNumber" :value="pn.parts_number">{{pn.parts_number}}</option>
+                            </datalist>
+                        </div>
+                        <div class="col-md-5 p-2">
+                            <label for="lot_number">Lot Number: </label>
+                            <select id="lot_number" class="form-select" v-model="lot_number">
+                                <option v-for="ln in lotNumber" :value="ln.lot_number">{{ln.lot_number}}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 p-2">
+                            <label for="wafer_no_from">Wafer Number From:</label>
+                            <input id="wafer_no_from" type="text" class="form-control">
+                        </div>
+                        <div class="col-md-6 p-2">
+                            <label for="wafer_no_to">Wafer Number To:</label>
+                            <input id="wafer_no_to" type="text" class="form-control">
+                        </div>
+                        <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
+                            <label for="po_number">PO Number: </label>
+                            <input list="po_number_list" type="text" id="po_number" v-model="po_number" class="form-select" autocomplete="off" >
+                            <datalist id="po_number_list">
+                                <option v-for="po in poNumber" :value="po.po_number">{{po.po_number}}</option>
+                            </datalist>
+                        </div>
+                        <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
+                            <label for="order_pn">Order PN:</label>
+                            <input type="text" id="order_pn" class="form-control">
+                        </div>
+                        <div class="col-md-8 p-2">
+                            <label for="item_code">Item Code:</label>
+                            <input @input="requestProcessFlowSub" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code">
+                            <datalist id="item_code_list">
+                                <option v-for="ic in itemCode" :value="ic.item_code">{{ic.item_code}}</option>
+                            </datalist>
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <label for="material_lot_number">Material Lot Number:</label>
+                            <input type="text" id="material_lot_number" class="form-control">
+                        </div>
+                        <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
+                            <label for="customer_pn">Customer PN:</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div v-if="section_code ==='CCI'" class="col-md-6 p-2">
+                            <label for="customer_name">Customer Name:</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
+                            <label for="delivery_date">Delivery Date:</label>
+                            <input type="text" id="delivery_date" class="form-control">
+                        </div>
+                        <div class="col-md-4 p-2">
+                            <label for="order_quantity">Order Quantity:</label>
+                            <input type="text" id="order_quantity" class="form-control">
+                        </div>
+                        <div class="col-md-8 p-2">
+                            <label for="jo_number">JO number: </label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="col-md-6 p-2">
+                            <label for="revision_number">Revision Number: </label>
+                            <input type="text" id="revision_number" class="form-control">
+                        </div>
+                        <div class="col-md-6 p-2">
+                            <label for="date_issued">Date Issued: </label>
+                            <input type="text" id="date_issued" class="form-control">
+                        </div>
                     </div>
-                    <div class="col-md-4 p-2">
-                        <button class="btn btn-outline-primary w-100">Save</button>
+    
+                    <div class="col-md-7">
+    
                     </div>
-                    <div class="col-md-4 p-2">
-                        <button class="btn btn-outline-primary w-100">Save</button>
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <button class="btn btn-outline-primary w-100">Save</button>
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <button class="btn btn-outline-primary w-100">Save</button>
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <button class="btn btn-outline-primary w-100">Save</button>
-                    </div>
-                    <hr>
-                    <div class="col-md-3">
-                        <p>Form Assignment No: </p>
-                    </div>
-                    <hr>
-                    <div class="col-md-4 p-2">
-                        <label for="status">Form Status:</label>
-                        <input type="text" class="form-control" disabled>
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <label for="status">Assigned By:</label>
-                        <input type="text" class="form-control" disabled>
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <label for="status">Date Created:</label>
-                        <input type="text" class="form-control" disabled>
-                    </div>
-                    <hr>
-                    <div class="col-md-2 p-2">
-                        <label for="section_code">Section:</label>
-                        <select id="section_code" class="form-select" v-model="section_id" @change="generatePartsNumber(section_id)">
-                            <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
-                        </select>
-                    </div>
-                    <div class="col-md-5 p-2">
-                        <label for="parts_number">Parts Number: </label>
-                        <input list="parts_number_list" type="text" id="parts_number" v-model="parts_number" class="form-select" autocomplete="off" @input="generateSectionRequest(section_id, parts_number)">
-                        <datalist id="parts_number_list">
-                            <option v-for="pn in partsNumber" :value="pn.parts_number">{{pn.parts_number}}</option>
-                        </datalist>
-                    </div>
-                    <div class="col-md-5 p-2">
-                        <label for="lot_number">Lot Number: </label>
-                        <select id="lot_number" class="form-select" v-model="lot_number">
-                            <option v-for="ln in lotNumber" :value="ln.lot_number">{{ln.lot_number}}</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 p-2">
-                        <label for="wafer_no_from">Wafer Number From:</label>
-                        <input id="wafer_no_from" type="text" class="form-control">
-                    </div>
-                    <div class="col-md-6 p-2">
-                        <label for="wafer_no_to">Wafer Number To:</label>
-                        <input id="wafer_no_to" type="text" class="form-control">
-                    </div>
-                    <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
-                        <label for="po_number">PO Number: </label>
-                        <input list="po_number_list" type="text" id="po_number" v-model="po_number" class="form-select" autocomplete="off" >
-                        <datalist id="po_number_list">
-                            <option v-for="po in poNumber" :value="po.po_number">{{po.po_number}}</option>
-                        </datalist>
-                    </div>
-                    <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
-                        <label for="order_pn">Order PN:</label>
-                        <input type="text" id="order_pn" class="form-control">
-                    </div>
-                    <div class="col-md-8 p-2">
-                        <label for="item_code">Item Code:</label>
-                        <input type="text" id="item_code" class="form-select">
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <label for="material_lot_number">Material Lot Number:</label>
-                        <input type="text" id="material_lot_number" class="form-control">
-                    </div>
-                    <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
-                        <label for="customer_pn">Customer PN:</label>
-                        <input type="text" class="form-control">
-                    </div>
-                    <div v-if="section_code ==='CCI'" class="col-md-6 p-2">
-                        <label for="customer_name">Customer Name:</label>
-                        <input type="text" class="form-control">
-                    </div>
-                    <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
-                        <label for="delivery_date">Delivery Date:</label>
-                        <input type="text" id="delivery_date" class="form-control">
-                    </div>
-                    <div class="col-md-4 p-2">
-                        <label for="order_quantity">Order Quantity:</label>
-                        <input type="text" id="order_quantity" class="form-control">
-                    </div>
-                    <div class="col-md-8 p-2">
-                        <label for="jo_number">JO number: </label>
-                        <input type="text" class="form-control">
-                    </div>
-                    <div class="col-md-6 p-2">
-                        <label for="revision_number">Revision Number: </label>
-                        <input type="text" id="revision_number" class="form-control">
-                    </div>
-                    <div class="col-md-6 p-2">
-                        <label for="date_issued">Date Issued: </label>
-                        <input type="text" id="date_issued" class="form-control">
-                    </div>
-                </div>
-
-                <div class="col-md-7">
-
-                </div>
-              </div>
+                  </div>
+              </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -167,11 +172,18 @@
             formAssignmentURL: 'http://172.16.2.69/tpcrequesthandlers/formAssignment.php',
             sectionURL: 'http://172.16.2.69/tpcrequesthandlers/sectionView.php',
             processFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
+
             keyProcessURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
             subProcessURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
+            processFlowSubURL: 'http://172.16.2.69/tpc/requestProcessFlowSub.php',
 
             CCILotRequestURL: 'http://172.16.2.69/tpc/HandleCCILotRequest.php',
-            CCIPoRequstURL: 'http://172.16.2.69/tpc/HandleCCIPoRequest.php',
+            CCIPoRequestURL: 'http://172.16.2.69/tpc/HandleCCIPoRequest.php',
+            POLRequestURL: 'http://172.16.2.69/tpc/HandlePOLRequest.php',
+            CWPRequestURL: 'http://172.16.2.69/tpc/HandleCWPRequest.php',
+            SWPRequestURL: 'http://172.16.2.69/tpc/HandleSWPRequest.php',
+
+
 
             formAssignment: [],
             section: [],
@@ -182,12 +194,14 @@
             partsNumber: [],
             lotNumber: [],
             poNumber: [],
+            itemCode: [],
 
             parts_number: '',
             section_id: '',
             section_code: '',
             lot_number: '',
             po_number: '',
+            item_code: '',
 
             columns: [
               { title: 'Assign No.', data: 'assignment_id'},
@@ -219,6 +233,13 @@
     methods: {
        generatePartsNumber(section_id){
         this.partsNumber = [];
+        this.lotNumber = [];
+        this.poNumber = [];
+
+        this.parts_number = '';
+        this.lot_number = '';
+        this.po_number = '';
+
         const selectedPartsNumber = new Set();
         for(const flow of this.processFlow){    
             if(parseInt(section_id) === flow.section_id && flow.flow_status === 'Posted'){
@@ -239,31 +260,25 @@
         this.lotNumber = [];
         this.poNumber = [];
 
+        const axiosParams = {
+            method: 'GET',
+            headers: {
+                'Content-type': 'application/x-www-form-urlencoded'
+            },
+            params: {
+                parts_number: parts_number
+            }
+        };
+        
+        const selectedItemCode = new Set();
         const selectedLotNumber = new Set();
         const selectedPoNumber = new Set();
         for(const sec of this.section){
             if(section_id === sec.section_id){
                 if(sec.section_code.split('-').includes('CCI')){
-                    const lotRequest = axios.get(this.CCILotRequestURL, {
-                        method: 'GET',
-                        headers: {
-                            'Content-type': 'application/x-www-form-urlencoded'
-                        },
-                        params: {
-                            parts_number: parts_number
-                        }
-                    });
-                    const poRequest = axios.get(this.CCIPoRequstURL, {
-                        method: 'GET',
-                        headers: {
-                            'Content-type': 'application/x-www-form-urlencoded'
-                        },
-                        params: {
-                            parts_number: parts_number
-                        }
-                    });
-                    Promise.all([lotRequest, poRequest], {
-                    
+                    const lotRequest = axios.get(this.CCILotRequestURL, axiosParams);
+                    const poRequest = axios.get(this.CCIPoRequestURL, axiosParams);
+                   await Promise.all([lotRequest, poRequest], {
                     }).then(response => {
                         for(const lot of response[0].data){
                             if(!selectedLotNumber.has(lot.lotno)){
@@ -277,28 +292,65 @@
                                 selectedPoNumber.add(po.po_no);
                             }
                         }
-                    }).catch(error => {
-                        console.log(error);
-                    })
+                    }).catch(error => {console.log(error); });
+                } else if(sec.section_code.split('-').includes('POL')){
+                   await axios.get(this.POLRequestURL, axiosParams)
+                    .then(response => {
+                        for(const lot of response.data){
+                            if(!selectedLotNumber.has(lot.cwp_input_plan_pol_orderno)){
+                                this.lotNumber.push({lot_number: lot.cwp_input_plan_pol_orderno});
+                                selectedLotNumber.add(lot.cwp_input_plan_pol_orderno);
+                            }
+                         }
+                    }).catch(error => {console.log(error); });
+                } else if(sec.section_code.split('-').includes('CWP')){
+                   await axios.get(this.CWPRequestURL, axiosParams)
+                    .then(response => {
+                        for(const lot of response.data){
+                            if(!selectedLotNumber.has(lot.cwp_input_plan_lotno)){
+                                this.lotNumber.push({lot_number: lot.cwp_input_plan_lotno});
+                                selectedLotNumber.add(lot.cwp_input_plan_lotno);
+                            }
+                         }
+                    }).catch(error => {console.log(error); });
+                } else if(sec.section_code.split('-').includes('SWP')){
+                   await axios.get(this.SWPRequestURL, axiosParams)
+                    .then(response => {
+                        for(const lot of response.data){
+                            if(!selectedLotNumber.has(lot.lot_number)){
+                                this.lotNumber.push({lot_number: lot.lot_number});
+                                selectedLotNumber.add(lot.lot_number);
+                            }
+                         }
+                    }).catch(error => {console.log(error); });
+                }
+            }
+        }
+        for(const flow of this.processFlow){
+            if(parseInt(section_id) === flow.section_id && parts_number === flow.item_parts_number && flow.flow_status === 'Posted'){
+                if(!selectedItemCode.has(flow.item_code)){
+                    this.itemCode.push({item_code: flow.item_code});
+                    selectedItemCode.add(flow.item_code);
                 }
             }
         }
        },
        
+       generateProcessFlowSub(){
+        
+       }
         
     },
     async created() {
-        await axios.get(this.sectionURL, {
-    
-        }).then(response => {
+        await axios.get(this.sectionURL, {}).
+        then(response => {
             this.section = response.data;
         }).catch(error => {
             console.log(error);
         });
     
-        await axios.get(this.processFlowURL, {
-    
-        }).then(response => {
+        await axios.get(this.processFlowURL, {})
+        .then(response => {
             this.processFlow = response.data;
         }).catch(error => {
             console.log(error);
@@ -318,8 +370,7 @@
         }).catch(error => {
             console.log(error)
         });
-    
-    
+
         await axios.get(this.keyProcessURL, {
     
         }).then(response => {
