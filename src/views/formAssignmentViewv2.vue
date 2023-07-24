@@ -22,43 +22,42 @@
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-body">
-              <form autocomplete="off">
                 <div class="col-md-12 row">
-                    <div class="col-md-5 mx-auto row border-end">
+                    <div class="col-md-5 mx-auto row border-end h-100">
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Save</button>
+                            <button class="btn btn-outline-primary w-100">New</button>
                         </div>
                         <div class="col-md-4 p-2">
                             <button class="btn btn-outline-primary w-100">Save</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Save</button>
+                            <button class="btn btn-outline-primary w-100" data-bs-dismiss="modal">Close</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Save</button>
+                            <button class="btn btn-outline-primary w-100">Generate QR Code</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Save</button>
+                            <button class="btn btn-outline-primary w-100">Special Instructions</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Save</button>
+                            <button class="btn btn-outline-primary w-100">Attachments</button>
                         </div>
                         <hr>
-                        <div class="col-md-3">
-                            <p>Form Assignment No: </p>
+                        <div class="col-md-4">
+                            <p>Form Assignment No. : <strong>{{formAssignmentId}}</strong></p>
                         </div>
                         <hr>
                         <div class="col-md-4 p-2">
                             <label for="status">Form Status:</label>
-                            <input type="text" class="form-control" disabled>
+                            <input type="text" class="form-control" v-model="form_status" disabled>
                         </div>
                         <div class="col-md-4 p-2">
                             <label for="status">Assigned By:</label>
-                            <input type="text" class="form-control" disabled>
+                            <input type="text" class="form-control" v-model="assigned_by" disabled>
                         </div>
                         <div class="col-md-4 p-2">
                             <label for="status">Date Created:</label>
-                            <input type="text" class="form-control" disabled>
+                            <input type="text" class="form-control" v-model="date_created" disabled>
                         </div>
                         <hr>
                         <div class="col-md-2 p-2">
@@ -82,11 +81,11 @@
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="wafer_no_from">Wafer Number From:</label>
-                            <input id="wafer_no_from" type="text" class="form-control">
+                            <input id="wafer_no_from" type="number" class="form-control" v-model="wafer_number_from">
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="wafer_no_to">Wafer Number To:</label>
-                            <input id="wafer_no_to" type="text" class="form-control">
+                            <input id="wafer_no_to" type="number" class="form-control" v-model="wafer_number_to">
                         </div>
                         <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
                             <label for="po_number">PO Number: </label>
@@ -101,7 +100,7 @@
                         </div>
                         <div class="col-md-8 p-2">
                             <label for="item_code">Item Code:</label>
-                            <input @input="requestProcessFlowSub" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code">
+                            <input @input="generateRevisionNumber(section_id, parts_number, item_code)" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code">
                             <datalist id="item_code_list">
                                 <option v-for="ic in itemCode" :value="ic.item_code">{{ic.item_code}}</option>
                             </datalist>
@@ -132,7 +131,7 @@
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="revision_number">Revision Number: </label>
-                            <input type="text" id="revision_number" class="form-control">
+                            <input type="text" id="revision_number" v-model="revision_number" class="form-control" disabled>
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="date_issued">Date Issued: </label>
@@ -141,14 +140,78 @@
                     </div>
     
                     <div class="col-md-7">
-    
+                        <div class="row mx-auto">
+                            <p><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
+                        </div>
+                        <table class="table table-responsive">
+                            <thead>
+                                <tr>
+                                    <th>Seq No.</th>
+                                    <th>Key Process</th>
+                                    <th>Sub Process</th>
+                                    <th>Process Type</th>
+                                    <th>Standard Time</th>
+                                    <th>Machine Time</th>
+                                    <th>Attachment Count</th>
+                                    <th>Instruction Count</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-for="flowSub in processFlowSub" :key="flowSub.flow_main_id">
+                                    <tr>
+                                        <td>{{flowSub.sequence_number}}</td>
+                                        <td>{{flowSub.Pname}}</td>
+                                        <td>{{flowSub.SubPname}}</td>
+                                        <td>{{flowSub.process_type}}</td>
+                                        <td>{{flowSub.standard_time}}</td>
+                                        <td>{{flowSub.machine_time}}</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{flowSub.status}}</td>
+                                        <td>
+                                            <button @click="toggleItemCondition(flowSub.SubPid)" class="btn">
+                                                <span class="material-symbols-outlined">
+                                                    {{ toggle[flowSub.SubPid]? 'expand_less' : 'expand_more' }}
+                                                </span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr v-show="toggle[flowSub.SubPid]">
+                                        <td colspan="10">
+                                            <div class="p-3">
+                                                <table class="table table-responsive">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>No.</th>
+                                                            <th>Process Detail Description</th>
+                                                            <th>Typical Value</th>
+                                                            <th>Minimum Value</th>
+                                                            <th>Maximum Value</th>
+                                                            <th>Condition Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template v-for="item in itemCondition" :key="item.item_id">
+                                                            <tr v-if="flowSub.SubPid == item.SubPid">
+                                                                <td>{{item.sequence_number}}</td>
+                                                                <td>{{item.detail_description}}</td>
+                                                                <td>{{item.typical_value}}</td>
+                                                                <td>{{item.min_value}}</td>
+                                                                <td>{{item.max_value}}</td>
+                                                                <td>{{item.condition_status}}</td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
                     </div>
                   </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
             </div>
           </div>
         </div>
@@ -169,13 +232,13 @@
     },
     data() {
         return {
-            formAssignmentURL: 'http://172.16.2.69/tpcrequesthandlers/formAssignment.php',
-            sectionURL: 'http://172.16.2.69/tpcrequesthandlers/sectionView.php',
-            processFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
-
-            keyProcessURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
-            subProcessURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
+            formAssignmentURL: 'http://172.16.2.69/tpc/GetFormAssignment.php',
+            sectionURL: 'http://172.16.2.69/tpc/GetSection.php',
+            processFlowURL: 'http://172.16.2.69/tpc/GetProcessFlow.php',
+            keyProcessURL: 'http://172.16.2.69/tpc/GetKeyProcess.php',
+            subProcessURL: 'http://172.16.2.69/tpc/GetSubProcess.php',
             processFlowSubURL: 'http://172.16.2.69/tpc/requestProcessFlowSub.php',
+            itemConditionURL: 'http://172.16.2.69/tpc/requestItemCondition.php',
 
             CCILotRequestURL: 'http://172.16.2.69/tpc/HandleCCILotRequest.php',
             CCIPoRequestURL: 'http://172.16.2.69/tpc/HandleCCIPoRequest.php',
@@ -183,25 +246,35 @@
             CWPRequestURL: 'http://172.16.2.69/tpc/HandleCWPRequest.php',
             SWPRequestURL: 'http://172.16.2.69/tpc/HandleSWPRequest.php',
 
-
+            toggle: {},
 
             formAssignment: [],
             section: [],
             keyProcess: [],
             subProcess: [],
             processFlow: [],
+            processFlowSub: [],
+            itemCondition: [],
 
             partsNumber: [],
             lotNumber: [],
             poNumber: [],
             itemCode: [],
 
+            form_status: 'Unposted',
+            assigned_by: '3141 - Casul',
+            date_created: '',
             parts_number: '',
             section_id: '',
-            section_code: '',
             lot_number: '',
             po_number: '',
             item_code: '',
+            revision_number: '',
+            wafer_number_from: 0,
+            wafer_number_to: 0,
+
+            section_code: '',
+            flow_main_id: '',
 
             columns: [
               { title: 'Assign No.', data: 'assignment_id'},
@@ -235,14 +308,17 @@
         this.partsNumber = [];
         this.lotNumber = [];
         this.poNumber = [];
+        this.itemCode = [];
+        this.processFlowSub = [];
 
         this.parts_number = '';
         this.lot_number = '';
         this.po_number = '';
-
+        this.item_code = '';
+        this.revision_number = '';
         const selectedPartsNumber = new Set();
         for(const flow of this.processFlow){    
-            if(parseInt(section_id) === flow.section_id && flow.flow_status === 'Posted'){
+            if(parseInt(section_id) === parseInt(flow.section_id) && flow.flow_status === 'Posted'){
                 const partsNumber = flow.item_parts_number;
                 if(!selectedPartsNumber.has(partsNumber)){
                     this.partsNumber.push({parts_number: partsNumber});
@@ -253,13 +329,20 @@
         for(const sec of this.section){
             if(section_id === sec.section_id){
                 this.section_code = sec.section_code;
+                this.section_description = sec.section_description;
             }
         }
        },
        async generateSectionRequest(section_id, parts_number){
         this.lotNumber = [];
         this.poNumber = [];
+        this.itemCode = [];
+        this.processFlowSub = [];
 
+        this.lot_number = '';
+        this.po_number = '';
+        this.item_code = '';
+        this.revision_number = '';
         const axiosParams = {
             method: 'GET',
             headers: {
@@ -327,7 +410,7 @@
             }
         }
         for(const flow of this.processFlow){
-            if(parseInt(section_id) === flow.section_id && parts_number === flow.item_parts_number && flow.flow_status === 'Posted'){
+            if(parseInt(section_id) === parseInt(flow.section_id) && parts_number === flow.item_parts_number && flow.flow_status === 'Posted'){
                 if(!selectedItemCode.has(flow.item_code)){
                     this.itemCode.push({item_code: flow.item_code});
                     selectedItemCode.add(flow.item_code);
@@ -335,10 +418,79 @@
             }
         }
        },
-       
-       generateProcessFlowSub(){
-        
-       }
+       generateRevisionNumber(section_id, parts_number, item_code){
+        this.processFlowSub = [];
+        this.revision_number = '';
+        let latestRevNo = -1;
+        for(const flow of this.processFlow){
+            if(parseInt(section_id) === parseInt(flow.section_id) && parts_number === flow.item_parts_number && item_code === flow.item_code && flow.flow_status === 'Posted'){
+                if(flow.revision_number > latestRevNo){
+                    latestRevNo = flow.revision_number;
+                    this.revision_number = latestRevNo;
+                    this.flow_main_id = flow.flow_main_id;
+                }
+            }
+        }
+        if(this.revision_number){
+            axios.get(this.processFlowSubURL,{
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/x-www-form-urlencoded'
+                },
+                params: {
+                    section_id: section_id,
+                    parts_number: parts_number,
+                    flow_main_id: this.flow_main_id,
+                    revision_number: this.revision_number
+                }
+            }).then(response => {
+                this.processFlowSub = response.data;
+                for(const flowSub of this.processFlowSub){
+                    console.log(flowSub);
+                    for(const key of this.keyProcess){
+                        if(flowSub.Pid === parseInt(key.Pid)){
+                            Object.assign(flowSub, {Pname: key.Pname});
+                        }
+                    }
+                    for(const sub of this.subProcess){
+                        if(flowSub.SubPid === parseInt(sub.SubPid)){
+                            Object.assign(flowSub, {
+                                SubPname: sub.SubPname,
+                                process_type: sub.process_type,
+                                status: 'Active'
+                            });
+                        }
+                    }
+                    axios.get(this.itemConditionURL, {
+                        method: 'GET',
+                        headers: {
+                            'Content-type': 'application/x-www-form-urlencoded'
+                        },
+                        params: {
+                            SubPid: flowSub.SubPid
+                        }
+                    }).then(response => {
+                        for(const item of response.data){
+                            this.itemCondition.push(item);
+                            this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
+                            Object.assign(item, {condition_status: 'Active'});
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                    });
+                }
+            }).catch(error => {
+                console.log(error);
+            });
+        } else {
+            this.revision_number = '-';
+            console.log('revision number is missing apply an error message');
+        }
+       },
+
+       toggleItemCondition(SubPid){
+            this.toggle[SubPid] = !this.toggle[SubPid];
+       },
         
     },
     async created() {
@@ -349,8 +501,8 @@
             console.log(error);
         });
     
-        await axios.get(this.processFlowURL, {})
-        .then(response => {
+        await axios.get(this.processFlowURL, {}).
+        then(response => {
             this.processFlow = response.data;
         }).catch(error => {
             console.log(error);
@@ -388,7 +540,7 @@
         });
         
         this.formAssignmentId = this.formAssignment.length + 1;
-        this.currentDate = new Date().toJSON().slice(0, 10);
+        this.date_created = new Date().toJSON().slice(0, 10);
         this.hasAttachment = false;
         this.hasInstruction = false;
     },
