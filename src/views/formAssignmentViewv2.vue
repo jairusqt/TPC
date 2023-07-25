@@ -23,7 +23,7 @@
           <div class="modal-content">
             <div class="modal-body">
                 <div class="col-md-12 row">
-                    <div class="col-md-5 mx-auto row border-end h-100">
+                    <div class="col-md-5 mx-auto row h-100 sticky-top">
                         <div class="col-md-4 p-2">
                             <button class="btn btn-outline-primary w-100">New</button>
                         </div>
@@ -89,7 +89,7 @@
                         </div>
                         <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
                             <label for="po_number">PO Number: </label>
-                            <input list="po_number_list" type="text" id="po_number" v-model="po_number" class="form-select" autocomplete="off" >
+                            <input list="po_number_list" @input="generateCCICustomerDetails(parts_number, po_number)" type="text" id="po_number" v-model="po_number" class="form-select" autocomplete="off" >
                             <datalist id="po_number_list">
                                 <option v-for="po in poNumber" :value="po.po_number">{{po.po_number}}</option>
                             </datalist>
@@ -100,34 +100,38 @@
                         </div>
                         <div class="col-md-8 p-2">
                             <label for="item_code">Item Code:</label>
-                            <input @input="generateRevisionNumber(section_id, parts_number, item_code)" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code">
+                            <input @input="generateRevisionNumber(section_id, parts_number, item_code)" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code" autocomplete="off">
                             <datalist id="item_code_list">
                                 <option v-for="ic in itemCode" :value="ic.item_code">{{ic.item_code}}</option>
                             </datalist>
                         </div>
-                        <div class="col-md-4 p-2">
+                        <div v-if="section_code === 'CCI'" class="col-md-4 p-2">
+                            <label for="material_lot_number">Material Lot Number:</label>
+                            <input type="text" id="material_lot_number" class="form-control" disabled>
+                        </div>
+                        <div v-else class="col-md-4 p-2">
                             <label for="material_lot_number">Material Lot Number:</label>
                             <input type="text" id="material_lot_number" class="form-control">
                         </div>
                         <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
                             <label for="customer_pn">Customer PN:</label>
-                            <input type="text" class="form-control">
+                            <input type="text" v-model="customer_pn" class="form-control" disabled>
                         </div>
                         <div v-if="section_code ==='CCI'" class="col-md-6 p-2">
                             <label for="customer_name">Customer Name:</label>
-                            <input type="text" class="form-control">
+                            <input type="text" v-model="customer_name" class="form-control" disabled>
                         </div>
                         <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
                             <label for="delivery_date">Delivery Date:</label>
-                            <input type="text" id="delivery_date" class="form-control">
+                            <input type="text" v-model="delivery_date" id="delivery_date" class="form-control" disabled>
                         </div>
                         <div class="col-md-4 p-2">
                             <label for="order_quantity">Order Quantity:</label>
-                            <input type="text" id="order_quantity" class="form-control">
+                            <input type="text" v-model="order_quantity" id="order_quantity" class="form-control" disabled>
                         </div>
                         <div class="col-md-8 p-2">
                             <label for="jo_number">JO number: </label>
-                            <input type="text" class="form-control">
+                            <input type="text" v-model="jo_number" class="form-control">
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="revision_number">Revision Number: </label>
@@ -135,13 +139,13 @@
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="date_issued">Date Issued: </label>
-                            <input type="text" id="date_issued" class="form-control">
+                            <input type="date" v-model="date_issued" id="date_issued" class="form-control">
                         </div>
                     </div>
     
-                    <div class="col-md-7">
-                        <div class="row mx-auto">
-                            <p><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
+                    <div class="col-md-7 border rounded">
+                        <div class="row mx-auto p-3">
+                            <p v-if="section_code != null"><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
                         </div>
                         <table class="table table-responsive">
                             <thead>
@@ -155,6 +159,7 @@
                                     <th>Attachment Count</th>
                                     <th>Instruction Count</th>
                                     <th>Status</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -168,7 +173,12 @@
                                         <td>{{flowSub.machine_time}}</td>
                                         <td></td>
                                         <td></td>
-                                        <td>{{flowSub.status}}</td>
+                                        <td>
+                                            <div class="form-check form-switch">
+                                                <input :ref="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSub'+flowSub.flow_sub_id" @change="processFlowSubStatus(flowSub.flow_sub_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                <label class="form-check-label" :for="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSubLabel'+flowSub.flow_sub_id">{{flowSub.status}}</label>
+                                            </div>
+                                        </td>
                                         <td>
                                             <button @click="toggleItemCondition(flowSub.SubPid)" class="btn">
                                                 <span class="material-symbols-outlined">
@@ -183,23 +193,28 @@
                                                 <table class="table table-responsive">
                                                     <thead>
                                                         <tr>
-                                                            <th>No.</th>
-                                                            <th>Process Detail Description</th>
-                                                            <th>Typical Value</th>
-                                                            <th>Minimum Value</th>
-                                                            <th>Maximum Value</th>
-                                                            <th>Condition Status</th>
+                                                            <th><small>No.</small></th>
+                                                            <th><small>Process Detail Description</small></th>
+                                                            <th><small>Typical Value</small></th>
+                                                            <th><small>Minimum Value</small></th>
+                                                            <th><small>Maximum Value</small></th>
+                                                            <th><small>Condition Status</small></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <template v-for="item in itemCondition" :key="item.item_id">
                                                             <tr v-if="flowSub.SubPid == item.SubPid">
-                                                                <td>{{item.sequence_number}}</td>
-                                                                <td>{{item.detail_description}}</td>
-                                                                <td>{{item.typical_value}}</td>
+                                                                <td><small>{{item.sequence_number}} .</small></td>
+                                                                <td><small>{{item.detail_description}}</small></td>
+                                                                <td><small>{{item.typical_value}}</small></td>
                                                                 <td>{{item.min_value}}</td>
                                                                 <td>{{item.max_value}}</td>
-                                                                <td>{{item.condition_status}}</td>
+                                                                <td>
+                                                                    <div class="form-check form-switch">
+                                                                        <input :ref="'itemCondition'+item.item_id" :id="'itemCondition'+item.item_id" @change="itemConditonStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                                        <label class="form-check-label" :for="'itemCondition'+item.item_id" :id="'itemConditionLabel'+item.item_id">{{item.status}}</label>
+                                                                    </div>
+                                                                </td>
                                                             </tr>
                                                         </template>
                                                     </tbody>
@@ -242,6 +257,7 @@
 
             CCILotRequestURL: 'http://172.16.2.69/tpc/HandleCCILotRequest.php',
             CCIPoRequestURL: 'http://172.16.2.69/tpc/HandleCCIPoRequest.php',
+            CCICustomerDetailsURL: 'http://172.16.2.69/tpc/HandleCCICustomerDetails.php',
             POLRequestURL: 'http://172.16.2.69/tpc/HandlePOLRequest.php',
             CWPRequestURL: 'http://172.16.2.69/tpc/HandleCWPRequest.php',
             SWPRequestURL: 'http://172.16.2.69/tpc/HandleSWPRequest.php',
@@ -264,14 +280,20 @@
             form_status: 'Unposted',
             assigned_by: '3141 - Casul',
             date_created: '',
-            parts_number: '',
-            section_id: '',
+            parts_number: 'PZ6861B1(1)',
+            section_id: '675',
             lot_number: '',
             po_number: '',
-            item_code: '',
+            item_code: 'CODE-018',
             revision_number: '',
             wafer_number_from: 0,
             wafer_number_to: 0,
+            customer_pn: '',
+            order_quantity: 0,
+            customer_name: '',
+            delivery_date: '',
+            jo_number: '',
+            date_issued: '',
 
             section_code: '',
             flow_main_id: '',
@@ -473,7 +495,7 @@
                         for(const item of response.data){
                             this.itemCondition.push(item);
                             this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
-                            Object.assign(item, {condition_status: 'Active'});
+                            Object.assign(item, {status: 'Active'});
                         }
                     }).catch(error => {
                         console.log(error);
@@ -491,7 +513,53 @@
        toggleItemCondition(SubPid){
             this.toggle[SubPid] = !this.toggle[SubPid];
        },
-        
+
+       async generateCCICustomerDetails(parts_number, po_number){
+            if(this.section_code === 'CCI'){
+                axios.get(this.CCICustomerDetailsURL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-type': 'application/x-www-form-urlencoded'
+                    },
+                    params: {
+                        po_number: po_number,
+                        parts_number: parts_number
+                    }
+                }).then(response => {
+                    for(const details of response.data){
+                        this.customer_name = details.customer1;
+                        this.customer_pn = details.p_n_2;
+                        this.order_quantity = details.qty;
+                        this.delivery_date = details.request_del;
+                    }
+                    console.log(this.customer_pn);
+                    console.log(this.customer_name);
+                }).catch(error => {
+                    console.log(error);
+                })
+            } else {
+                this.customer_name = '',
+                this.customer_pn = '';
+                this.order_quantity = 0;
+                this.delivery_date = '';
+            }
+       },
+       
+       processFlowSubStatus(flow_sub_id){
+        const status = document.getElementById(`processFlowSub${flow_sub_id}`).checked;
+        for(const flowSub of this.processFlowSub){
+            if(flow_sub_id === flowSub.flow_sub_id){
+                if(status === false){
+                    flowSub.status = 'Inactive';
+                } else {
+                    flowSub.status = 'Active';
+                }
+            }
+        }
+       },
+       itemConditionStatus(item_id){
+
+       }
     },
     async created() {
         await axios.get(this.sectionURL, {}).

@@ -777,8 +777,8 @@ data() {
         formAssignmentURL: 'http://172.16.2.69/tpcrequesthandlers/formAssignment.php',
         sectionURL: 'http://172.16.2.69/tpcrequesthandlers/sectionView.php',
         processFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
-        keyProcessURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
-        subProcessURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
+        keyProcessURL: 'http://172.16.2.69/tpc/GetKeyProcess.php',
+        subProcessURL: 'http://172.16.2.69/tpc/GetSubProcess.php',
 
         show: {},
         view: {},
@@ -1776,6 +1776,7 @@ methods: {
         }
     },
     getRevisionNumber(selectedSection, partsNumber, itemCode){
+        
         let selectedSection_id = '';
         for(const section of this.section){
             if(section.section_code == selectedSection){
@@ -1828,7 +1829,7 @@ methods: {
                                                 machine_time: flowSub.machine_time,
                                                 assignment_status: 'Active',
                                             });
-                                            
+                                            console.log(this.processFlowSub);
                                             axios.get('http://172.16.2.69/tpcrequesthandlers/ItemConditionRequestHandler.php', {
                                                  method: 'GET',
                                                  headers: {
