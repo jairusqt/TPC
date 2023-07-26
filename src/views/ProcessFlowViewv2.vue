@@ -452,15 +452,15 @@
                         }
                         for(const sub of this.subProcessFlow){
                             axios.post(this.PostSubProcessFlowURL, {
-                                main_flow_id: this.mainFlowNo,
-                                section_id: this.selectedSection,
+                                main_flow_id: this.mainFlowId,
+                                section_id: this.mainSection,
                                 parts_number: this.mainPartsNumber,
                                 revision_number: this.mainRevisionNumber,
                                 Pid: sub.Pid,
                                 SubPid: sub.SubPid,
-                                sequence_number: sub.sub_sequence,
-                                standard_time: sub.standardTime,
-                                machine_time: sub.machineTime,
+                                sequence_number: sub.sequence_no,
+                                standard_time: sub.standard_time,
+                                machine_time: sub.machine_time,
                                 item_code: this.mainItemCode,                                
                             }).then(response => {
                                 console.log(response.data);
