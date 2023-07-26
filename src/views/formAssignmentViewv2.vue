@@ -13,7 +13,7 @@
         <DataTable
         :data="formAssignment"
         :columns="columns"
-        class="display table"
+        class="display table table-responsive"
         @click="getRowData"
         />
     </div>
@@ -25,28 +25,40 @@
                 <div class="col-md-12 row">
                     <div class="col-md-5 mx-auto row h-100 sticky-top">
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">New</button>
+                            <button class="btn btn-outline-primary w-100" disabled>New</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Save</button>
+                            <button class="btn btn-outline-primary w-100" @click="submitFormAssignment">Save</button>
                         </div>
                         <div class="col-md-4 p-2">
                             <button class="btn btn-outline-primary w-100" data-bs-dismiss="modal">Close</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Generate QR Code</button>
+                            <button class="btn btn-outline-primary w-100" disabled>Generate QR Code</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Special Instructions</button>
+                            <button class="btn btn-outline-primary w-100" disabled>Special Instructions</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100">Attachments</button>
+                            <button class="btn btn-outline-primary w-100" disabled>Attachments</button>
                         </div>
                         <hr>
                         <div class="col-md-4">
                             <p>Form Assignment No. : <strong>{{formAssignmentId}}</strong></p>
                         </div>
                         <hr>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" @change="instructionSwitch" type="checkbox" role="switch" id="special_instruction">
+                                <label class="form-check-label" for="special_instruction">Special Instruction</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input ref="attachment" class="form-check-input" @change="attachmentSwitch" type="checkbox" role="switch" id="attachment">
+                                <label class="form-check-label" for="attachment">Attachment</label>
+                            </div>
+                        </div>
                         <div class="col-md-4 p-2">
                             <label for="status">Form Status:</label>
                             <input type="text" class="form-control" v-model="form_status" disabled>
@@ -144,9 +156,10 @@
                     </div>
     
                     <div class="col-md-7 border rounded">
-                        <div class="row mx-auto p-3">
-                            <p v-if="section_code != null"><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
+                        <div class="row mx-auto p-2 text-center" v-if="section_code !== ''">
+                            <p class="fs-3"><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
                         </div>
+                        <hr>
                         <table class="table table-responsive">
                             <thead>
                                 <tr>
@@ -165,7 +178,7 @@
                             <tbody>
                                 <template v-for="flowSub in processFlowSub" :key="flowSub.flow_main_id">
                                     <tr>
-                                        <td>{{flowSub.sequence_number}}</td>
+                                        <td>{{flowSub.sequence_number}} .</td>
                                         <td>{{flowSub.Pname}}</td>
                                         <td>{{flowSub.SubPname}}</td>
                                         <td>{{flowSub.process_type}}</td>
@@ -176,7 +189,10 @@
                                         <td>
                                             <div class="form-check form-switch">
                                                 <input :ref="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSub'+flowSub.flow_sub_id" @change="processFlowSubStatus(flowSub.flow_sub_id)" class="form-check-input" type="checkbox" role="switch" checked>
-                                                <label class="form-check-label" :for="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSubLabel'+flowSub.flow_sub_id">{{flowSub.status}}</label>
+                                                <label class="form-check-label" :for="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSubLabel'+flowSub.flow_sub_id">
+                                                    <span v-if="flowSub.status === 'Active'" class="badge rounded-pill text-bg-primary">{{flowSub.status}}</span>
+                                                    <span v-if="flowSub.status === 'Inactive'" class="badge rounded-pill text-bg-secondary">{{flowSub.status}}</span>
+                                                </label>
                                             </div>
                                         </td>
                                         <td>
@@ -211,8 +227,11 @@
                                                                 <td>{{item.max_value}}</td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
-                                                                        <input :ref="'itemCondition'+item.item_id" :id="'itemCondition'+item.item_id" @change="itemConditonStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
-                                                                        <label class="form-check-label" :for="'itemCondition'+item.item_id" :id="'itemConditionLabel'+item.item_id">{{item.status}}</label>
+                                                                        <input :ref="'itemCondition'+item.item_id" :id="'itemCondition'+item.item_id" @change="itemConditionStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                                        <label class="form-check-label" :for="'itemCondition'+item.item_id" :id="'itemConditionLabel'+item.item_id">
+                                                                            <span v-if="item.status === 'Active'" class="badge rounded-pill text-bg-primary">{{item.status}}</span>
+                                                                            <span v-if="item.status === 'Inactive'" class="badge rounded-pill text-bg-secondary">{{item.status}}</span>
+                                                                        </label>
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -280,11 +299,11 @@
             form_status: 'Unposted',
             assigned_by: '3141 - Casul',
             date_created: '',
-            parts_number: 'PZ6861B1(1)',
-            section_id: '675',
+            parts_number: '',
+            section_id: '',
             lot_number: '',
             po_number: '',
-            item_code: 'CODE-018',
+            item_code: '',
             revision_number: '',
             wafer_number_from: 0,
             wafer_number_to: 0,
@@ -294,6 +313,9 @@
             delivery_date: '',
             jo_number: '',
             date_issued: '',
+
+            hasAttachment: 0,
+            hasInstruction: 0,
 
             section_code: '',
             flow_main_id: '',
@@ -332,6 +354,7 @@
         this.poNumber = [];
         this.itemCode = [];
         this.processFlowSub = [];
+        this.itemCondition = [];
 
         this.parts_number = '';
         this.lot_number = '';
@@ -354,6 +377,18 @@
                 this.section_description = sec.section_description;
             }
         }
+       },
+       attachmentSwitch(){
+        const switchValue = this.$refs.attachment.checked;
+            if(switchValue === false){
+                this.hasAttachment = 0;
+            } else {
+                this.hasAttachment = 1;
+            }
+        console.log(this.hasAttachment);
+       },
+       instructionSwitch(){
+            //still planning
        },
        async generateSectionRequest(section_id, parts_number){
         this.lotNumber = [];
@@ -468,7 +503,6 @@
             }).then(response => {
                 this.processFlowSub = response.data;
                 for(const flowSub of this.processFlowSub){
-                    console.log(flowSub);
                     for(const key of this.keyProcess){
                         if(flowSub.Pid === parseInt(key.Pid)){
                             Object.assign(flowSub, {Pname: key.Pname});
@@ -532,8 +566,6 @@
                         this.order_quantity = details.qty;
                         this.delivery_date = details.request_del;
                     }
-                    console.log(this.customer_pn);
-                    console.log(this.customer_name);
                 }).catch(error => {
                     console.log(error);
                 })
@@ -549,16 +581,36 @@
         const status = document.getElementById(`processFlowSub${flow_sub_id}`).checked;
         for(const flowSub of this.processFlowSub){
             if(flow_sub_id === flowSub.flow_sub_id){
-                if(status === false){
-                    flowSub.status = 'Inactive';
-                } else {
-                    flowSub.status = 'Active';
+                for(const item of this.itemCondition){
+                    if(flowSub.SubPid === item.SubPid){
+                        const itemEl = document.getElementById(`itemCondition${item.item_id}`);
+                        if(status === false){
+                            flowSub.status = 'Inactive';
+                            item.status = 'Inactive';
+                            itemEl.checked = false;
+                            itemEl.disabled = true;
+                        } else {
+                            flowSub.status = 'Active';
+                            item.status = 'Active';
+                            itemEl.checked = true;
+                            itemEl.disabled = false;
+                        }
+                    }
                 }
             }
         }
        },
        itemConditionStatus(item_id){
-
+        const status = document.getElementById(`itemCondition${item_id}`).checked;
+        for(const item of this.itemCondition){
+            if(item_id === item.item_id){
+                if(status === false){
+                    item.status = 'Inactive';
+                } else {
+                    item.status = 'Active';
+                }
+            }
+        }
        }
     },
     async created() {

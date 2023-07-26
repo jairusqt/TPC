@@ -31,7 +31,7 @@
                       <button class="btn btn-outline-primary w-100 h-100">Clear</button>
                   </div>
                   <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Save</button>
+                      <button @click="submitProcessFlow" class="btn btn-outline-primary w-100 h-100">Save</button>
                   </div>
                   <div class="col-md-1">
                       <button class="btn btn-outline-primary w-100 h-100">Close</button>
@@ -349,6 +349,10 @@
                 SectionGetURL: 'http://172.16.2.69/TPC/GetSection.php',
                 requestItemMasterURL: 'http://172.16.2.69/tpcrequesthandlers/requestItemMasterMain.php',
                 fetchProcessFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
+
+                PostProcessFlowURL: 'http://172.16.2.69/tpc/PostProcessFlow.php',
+                PostKeyProcessFlowURL: 'http://172.16.2.69/tpc/PostKeyProcessFlow.php',
+                PostSubProcessFlowURL: 'http://172.16.2.69/tpc/PostSubProcessFlow.php',
                 //objects
                 section: [],
                 processFlow: [],
@@ -414,6 +418,62 @@
         },
        
         methods: {
+            submitProcessFlow(){
+                axios.post(this.PostProcessFlowURL, {
+                    main_flow_id: this.mainFlowId,
+                    parts_number: this.mainPartsNumber,
+                    item_code: this.mainItemCode,
+                    item_description: this.mainItemDescription,
+                    section_id: this.mainSection,
+                    revision_number: this.mainRevisionNumber,
+                    flow_status: this.mainFlowStatus,
+                    remarks: this.mainRemarks,
+                    encoded_by: this.mainEncodedBy,
+                    date_encoded: this.mainDateEncoded,
+                    flow_type: this.mainFlowType,
+                }).then(response => {
+                    if(response.data.message == 'Process Flow inserted successfully'){
+                        for(const key of this.keyProcessFlow){
+                            axios.post(this.PostKeyProcessFlowURL, {
+                                main_flow_id: this.mainFlowId,
+                                section_id: this.mainSection,
+                                parts_number: this.mainPartsNumber,
+                                revision_number: this.mainRevisionNumber,
+                                Pid: key.Pid,
+                                sequence_number: key.sequence_no,
+                                standard_time: key.standard_time,
+                                machine_time: key.machine_time,
+                                item_code: this.mainItemCode,   
+                            }).then(response => {
+                                console.log(response.data);
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+                        for(const sub of this.subProcessFlow){
+                            axios.post(this.PostSubProcessFlowURL, {
+                                main_flow_id: this.mainFlowNo,
+                                section_id: this.selectedSection,
+                                parts_number: this.mainPartsNumber,
+                                revision_number: this.mainRevisionNumber,
+                                Pid: sub.Pid,
+                                SubPid: sub.SubPid,
+                                sequence_number: sub.sub_sequence,
+                                standard_time: sub.standardTime,
+                                machine_time: sub.machineTime,
+                                item_code: this.mainItemCode,                                
+                            }).then(response => {
+                                console.log(response.data);
+                            }).catch(error => {
+                                console.log(error)
+                            });
+                        }
+                    }
+                }).catch(error => {
+                    console.log(error);
+                });
+                
+            },
             getFlowId(event){
                 if(event.target.tagName == 'BUTTON'){
                     const row = event.target.parentNode.parentNode;
