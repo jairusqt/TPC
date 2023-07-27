@@ -342,11 +342,12 @@
         data() {
             return {
 
-                requestFlowKeyURL: 'http://172.16.2.69/tpcrequesthandlers/requestFlowKey.php',
-                requestFlowSubURL: 'http://172.16.2.69/tpcrequesthandlers/requestFlowSub.php',
+                requestFlowKeyURL: 'http://172.16.2.69/tpc/requestKeyProcessFlow.php',
+                requestFlowSubURL: 'http://172.16.2.69/tpc/requestSubProcessFlow.php',
                 requestKeyURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
                 requestSubURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
                 SectionGetURL: 'http://172.16.2.69/TPC/GetSection.php',
+                SubProcessGetURL: 'http://172.16.2.69/tpc/GetSubProcess.php',
                 requestItemMasterURL: 'http://172.16.2.69/tpcrequesthandlers/requestItemMasterMain.php',
                 fetchProcessFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
 
@@ -358,6 +359,7 @@
                 processFlow: [],
                 itemMaster: [],
                 keyProcess: [],
+                subProcess: [],
                 tempKeyProcess: [],
                 keyProcessFlow: [],
                 subProcessFlow: [],
@@ -419,59 +421,60 @@
        
         methods: {
             submitProcessFlow(){
-                axios.post(this.PostProcessFlowURL, {
-                    main_flow_id: this.mainFlowId,
-                    parts_number: this.mainPartsNumber,
-                    item_code: this.mainItemCode,
-                    item_description: this.mainItemDescription,
-                    section_id: this.mainSection,
-                    revision_number: this.mainRevisionNumber,
-                    flow_status: this.mainFlowStatus,
-                    remarks: this.mainRemarks,
-                    encoded_by: this.mainEncodedBy,
-                    date_encoded: this.mainDateEncoded,
-                    flow_type: this.mainFlowType,
-                }).then(response => {
-                    if(response.data.message == 'Process Flow inserted successfully'){
-                        for(const key of this.keyProcessFlow){
-                            axios.post(this.PostKeyProcessFlowURL, {
-                                main_flow_id: this.mainFlowId,
-                                section_id: this.mainSection,
-                                parts_number: this.mainPartsNumber,
-                                revision_number: this.mainRevisionNumber,
-                                Pid: key.Pid,
-                                sequence_number: key.sequence_no,
-                                standard_time: key.standard_time,
-                                machine_time: key.machine_time,
-                                item_code: this.mainItemCode,   
-                            }).then(response => {
-                                console.log(response.data);
-                            }).catch(error => {
-                                console.log(error);
-                            });
-                        }
-                        for(const sub of this.subProcessFlow){
-                            axios.post(this.PostSubProcessFlowURL, {
-                                main_flow_id: this.mainFlowId,
-                                section_id: this.mainSection,
-                                parts_number: this.mainPartsNumber,
-                                revision_number: this.mainRevisionNumber,
-                                Pid: sub.Pid,
-                                SubPid: sub.SubPid,
-                                sequence_number: sub.sequence_no,
-                                standard_time: sub.standard_time,
-                                machine_time: sub.machine_time,
-                                item_code: this.mainItemCode,                                
-                            }).then(response => {
-                                console.log(response.data);
-                            }).catch(error => {
-                                console.log(error)
-                            });
-                        }
-                    }
-                }).catch(error => {
-                    console.log(error);
-                });
+                console.log(this.subProcessFlow);
+                // axios.post(this.PostProcessFlowURL, {
+                //     main_flow_id: this.mainFlowId,
+                //     parts_number: this.mainPartsNumber,
+                //     item_code: this.mainItemCode,
+                //     item_description: this.mainItemDescription,
+                //     section_id: this.mainSection,
+                //     revision_number: this.mainRevisionNumber,
+                //     flow_status: this.mainFlowStatus,
+                //     remarks: this.mainRemarks,
+                //     encoded_by: this.mainEncodedBy,
+                //     date_encoded: this.mainDateEncoded,
+                //     flow_type: this.mainFlowType,
+                // }).then(response => {
+                //     if(response.data.message == 'Process Flow inserted successfully'){
+                //         for(const key of this.keyProcessFlow){
+                //             axios.post(this.PostKeyProcessFlowURL, {
+                //                 main_flow_id: this.mainFlowId,
+                //                 section_id: this.mainSection,
+                //                 parts_number: this.mainPartsNumber,
+                //                 revision_number: this.mainRevisionNumber,
+                //                 Pid: key.Pid,
+                //                 sequence_number: key.sequence_no,
+                //                 standard_time: key.standard_time,
+                //                 machine_time: key.machine_time,
+                //                 item_code: this.mainItemCode,   
+                //             }).then(response => {
+                //                 console.log(response.data);
+                //             }).catch(error => {
+                //                 console.log(error);
+                //             });
+                //         }
+                //         for(const sub of this.subProcessFlow){
+                //             axios.post(this.PostSubProcessFlowURL, {
+                //                 main_flow_id: this.mainFlowId,
+                //                 section_id: this.mainSection,
+                //                 parts_number: this.mainPartsNumber,
+                //                 revision_number: this.mainRevisionNumber,
+                //                 Pid: sub.Pid,
+                //                 SubPid: sub.SubPid,
+                //                 sequence_number: sub.sequence_no,
+                //                 standard_time: sub.standard_time,
+                //                 machine_time: sub.machine_time,
+                //                 item_code: this.mainItemCode,                                
+                //             }).then(response => {
+                //                 console.log(response.data);
+                //             }).catch(error => {
+                //                 console.log(error)
+                //             });
+                //         }
+                //     }
+                // }).catch(error => {
+                //     console.log(error);
+                // });
                 
             },
             getFlowId(event){
@@ -527,24 +530,12 @@
                             }
                         }).then(response => {
                             this.flowSub = response.data;
-                            for(const sub of this.flowSub){
-                                axios.get('',{
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-type': 'application/x-www-form-urlencoded'
-                                    },
-                                    params: {
-                                        Pid: sub.Pid
+                            for(const sub of this.subProcess){
+                                for(const flow of this.flowSub){
+                                    if(parseInt(flow.SubPid) === parseInt(sub.SubPid)){ 
+                                        Object.assign(flow, {SubPname: sub.SubPname});
                                     }
-                                }).then(response => {
-                                    for(const subProcess of response.data){
-                                        if(subProcess.SubPid == sub.SubPid){
-                                            Object.assign(sub, {SubPname: subProcess.SubPname});
-                                        }
-                                    }
-                                }).catch(error => {
-                                    console.log(error);
-                                });
+                                }
                             }
                         }).catch(error => {
                             console.log(error);
@@ -575,7 +566,6 @@
                 this.itemList = [];
                 for(const item of this.itemMaster){
                     if(parts_number === item.item_parts_number){
-                        console.log(item);
                         this.itemList.push(item);
                     }
                 }
@@ -584,7 +574,6 @@
                 for(const item of this.itemMaster){
                     if(parts_number === item.item_parts_number && item_code === item.item_code){
                         this.mainItemDescription = item.item_description;
-                        this.mainRevisionNumber = item.itemmaster_revision_no;
                     }
                 }
             },
@@ -643,6 +632,17 @@
 
                     }
                 }
+                let latestRevNo = -1;
+                for(const flow of this.processFlow){
+                    if(this.mainPartsNumber === flow.item_parts_number && this.mainItemCode === flow.item_code && parseInt(this.mainSection) === parseInt(flow.section_id) && flow.flow_status === 'Posted'){
+                        if(flow.revision_number > latestRevNo){
+                            latestRevNo = flow.revision_number;
+                        }
+                    }
+                }
+                this.mainRevisionNumber = latestRevNo + 1;
+                console.log(this.mainRevisionNumber);
+                
             },
             fetchSubProcess(){
                 this.subProcessFlow = [];
@@ -669,11 +669,11 @@
                             });
                         }
                         this.subProcessFlow.sort((a, b) => a.order - b.order);
+                        this.addSubSequenceNumber();
                     }).catch(error => {
                         console.log(error)
                     });
                 }
-                this.addSubSequenceNumber();
                 this.$refs.addKeyBtn.disabled = false;
             },
             
@@ -701,6 +701,14 @@
             }).catch(error => {
                 console.log(error)
             })
+
+            await axios.get(this.SubProcessGetURL, {
+
+            }).then(response => {
+                this.subProcess = response.data;
+            }).catch(error => {
+                console.log(error);
+            });
 
             await axios.get(this.fetchProcessFlowURL, {
             }).then(response => {
