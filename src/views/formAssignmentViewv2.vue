@@ -267,12 +267,15 @@
     data() {
         return {
             formAssignmentURL: 'http://172.16.2.69/tpc/GetFormAssignment.php',
+            formAssignmentPostURL: 'http://172.16.2.69/tpcrequesthandlers/FormAssignmentRequestHandler.php',
+            formAssignmentItemPostURL: 'http://172.16.2.69/tpcrequesthandlers/ProcessFlowSubPostRequestHandler.php',
+            itemConditionPostURL: 'http://172.16.2.69/tpcrequesthandlers/ItemConditionPostRequestHandler.php',
             sectionURL: 'http://172.16.2.69/tpc/GetSection.php',
             processFlowURL: 'http://172.16.2.69/tpc/GetProcessFlow.php',
             keyProcessURL: 'http://172.16.2.69/tpc/GetKeyProcess.php',
             subProcessURL: 'http://172.16.2.69/tpc/GetSubProcess.php',
             processFlowSubURL: 'http://172.16.2.69/tpc/requestProcessFlowSub.php',
-            itemConditionURL: 'http://172.16.2.69/tpc/requestItemCondition.php',
+            itemConditionURL: 'http://172.16.2.69/tpcrequesthandlers/ItemConditionRequestHandler.php',
 
             CCILotRequestURL: 'http://172.16.2.69/tpc/HandleCCILotRequest.php',
             CCIPoRequestURL: 'http://172.16.2.69/tpc/HandleCCIPoRequest.php',
@@ -476,7 +479,6 @@
         }
        },
        generateRevisionNumber(section_id, parts_number, item_code){
-        this.processFlowSub = [];
         this.revision_number = '';
         let latestRevNo = -1;
         for(const flow of this.processFlow){
@@ -485,63 +487,62 @@
                     latestRevNo = flow.revision_number;
                     this.revision_number = latestRevNo;
                     this.flow_main_id = flow.flow_main_id;
-                }
-            }
-        }
-        if(this.revision_number){
-            axios.get(this.processFlowSubURL,{
-                method: 'GET',
-                headers: {
-                    'Content-type': 'application/x-www-form-urlencoded'
-                },
-                params: {
-                    section_id: section_id,
-                    parts_number: parts_number,
-                    flow_main_id: this.flow_main_id,
-                    revision_number: this.revision_number
-                }
-            }).then(response => {
-                this.processFlowSub = response.data;
-                for(const flowSub of this.processFlowSub){
-                    for(const key of this.keyProcess){
-                        if(flowSub.Pid === parseInt(key.Pid)){
-                            Object.assign(flowSub, {Pname: key.Pname});
-                        }
-                    }
-                    for(const sub of this.subProcess){
-                        if(flowSub.SubPid === parseInt(sub.SubPid)){
-                            Object.assign(flowSub, {
-                                SubPname: sub.SubPname,
-                                process_type: sub.process_type,
-                                status: 'Active'
-                            });
-                        }
-                    }
-                    axios.get(this.itemConditionURL, {
+
+                    axios.get(this.processFlowSubURL,{
                         method: 'GET',
                         headers: {
                             'Content-type': 'application/x-www-form-urlencoded'
                         },
                         params: {
-                            SubPid: flowSub.SubPid
+                            section_id: section_id,
+                            parts_number: parts_number,
+                            flow_main_id: flow.flow_main_id,
+                            revision_number: this.revision_number
                         }
                     }).then(response => {
-                        for(const item of response.data){
-                            this.itemCondition.push(item);
-                            this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
-                            Object.assign(item, {status: 'Active'});
+                        for(const flowSub of response.data){
+                            for(const key of this.keyProcess){
+                                if(flowSub.Pid === parseInt(key.Pid)){
+                                    Object.assign(flowSub, {Pname: key.Pname});
+                                    for(const sub of this.subProcess){
+                                        if(flowSub.SubPid === parseInt(sub.SubPid)){
+                                            Object.assign(flowSub, {
+                                                SubPname: sub.SubPname,
+                                                process_type: sub.process_type,
+                                                status: 'Active'
+                                            });
+                                            console.log(flowSub);
+                                            axios.get(this.itemConditionURL, {
+                                                method: 'GET',
+                                                headers: {
+                                                    'Content-type': 'application/x-www-form-urlencoded'
+                                                },
+                                                params: {
+                                                    SubPid: sub.SubPid
+                                                }
+                                            }).then(response => {
+                                                for(const item of response.data){
+                                                    this.itemCondition.push(item);
+                                                    this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
+                                                }
+                                            }).catch(error => {
+                                                console.log(error);
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                            this.processFlowSub.push(flowSub)
                         }
+                        // this.processFlowSub.sort((a,b) => a.sequence_number - b.sequence_number);
                     }).catch(error => {
                         console.log(error);
                     });
                 }
-            }).catch(error => {
-                console.log(error);
-            });
-        } else {
-            this.revision_number = '-';
-            console.log('revision number is missing apply an error message');
+            }
+            
         }
+        
        },
 
        toggleItemCondition(SubPid){
@@ -576,7 +577,6 @@
                 this.delivery_date = '';
             }
        },
-       
        processFlowSubStatus(flow_sub_id){
         const status = document.getElementById(`processFlowSub${flow_sub_id}`).checked;
         for(const flowSub of this.processFlowSub){
@@ -611,7 +611,68 @@
                 }
             }
         }
-       }
+       },
+       async submitFormAssignment(){
+        console.log(this.processFlowSub);
+                await axios.post(this.formAssignmentPostURL, {
+                    assignment_id: this.formAssignmentId,
+                    section_id: this.section_id,
+                    lot_number: this.lot_number,
+                    po_number: this.po_number,
+                    parts_number: this.parts_number,
+                    quantity: this.order_quantity,
+                    delivery_date: this.delivery_date? this.delivery_date: null,
+                    jo_number: this.jo_number,
+                    revision_number: this.revision_number,
+                    date_issued: this.date_issued,
+                    assigned_by: this.assigned_by,
+                    date_created: this.date_created,
+                    wafer_number_from: this.wafer_number_from,
+                    wafer_number_to: this.wafer_number_to,
+                    item_code: this.item_code,
+                    assignment_status: this.form_status,
+                    has_attachment: this.hasAttachment,
+                    has_instruction: this.hasInstruction
+                }).then(response => {
+                    if(response.data.message === 'Form Assignment inserted successfully'){
+                        for(const flowSub of this.processFlowSub){
+                            axios.post(this.formAssignmentItemPostURL, {
+                                assignment_id: this.formAssignmentId,
+                                sequence_number: flowSub.sequence_number,
+                                Pid: flowSub.Pid,
+                                SubPid: flowSub.SubPid,
+                                standard_time: flowSub.standard_time,
+                                machine_time: flowSub.machine_time,
+                                assignment_status: flowSub.status
+                            }).then(response => {
+                                if(response.data.message === 'Process Flow Sub inserted successfully'){
+                                    for(const item of this.itemCondition){
+                                        console.log(response.data);
+                                        axios.post(this.itemConditionPostURL, {
+                                            assignment_id: this.formAssignmentId,
+                                            sequence_number: item.sequence_number,
+                                            SubPid: item.SubPid,
+                                            detail_description: item.detail_description,
+                                            field_type: item.field_type,
+                                            min_value: item.min_value,
+                                            max_value: item.max_value,
+                                            typical_value: item.typical_value,
+                                        }).then(response => {
+                                            console.log(response.data);
+                                        }).catch(error => {
+                                            console.log(error);
+                                        });
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+                    }
+                }).catch(error => {
+                    console.log(error);
+                });
+       },
     },
     async created() {
         await axios.get(this.sectionURL, {}).

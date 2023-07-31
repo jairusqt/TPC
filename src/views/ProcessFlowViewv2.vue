@@ -28,10 +28,10 @@
             <div class="modal-header">
               <div class="col-md-12 row">
                   <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Clear</button>
+                      <button @click="clearField" ref="clearBtn" class="btn btn-outline-primary w-100 h-100" disabled>Clear</button>
                   </div>
                   <div class="col-md-1">
-                      <button @click="submitProcessFlow" class="btn btn-outline-primary w-100 h-100">Save</button>
+                      <button @click="submitProcessFlow" ref="saveBtn" class="btn btn-outline-primary w-100 h-100">Save</button>
                   </div>
                   <div class="col-md-1">
                       <button class="btn btn-outline-primary w-100 h-100">Close</button>
@@ -47,52 +47,52 @@
                 </div>
                 <div class="col-md-1 p-1">
                     <label for="flow_type">Flow Type</label>
-                    <select id="flow_type" class="form-select" v-model="mainFlowType">
+                    <select id="flow_type" ref="flow_type" class="form-select" v-model="mainFlowType" >
                         <option value="Manual">Manual</option>
                         <option value="Auto">Auto</option>
                     </select>
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="parts_number">Parts Number</label>
-                    <select @change="getItemCode(mainPartsNumber)" id="parts_number"  class="form-select" v-model="mainPartsNumber">
+                    <select @change="getItemCode(mainPartsNumber)" id="parts_number" ref="parts_number"  class="form-select" v-model="mainPartsNumber">
                         <option v-for="item in itemMaster" :value="item.item_parts_number">{{ item.item_parts_number }}</option>
                     </select>
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="item_code">Item Code</label>
-                    <select @change="getItemDescriptionAndRevNo(mainPartsNumber, mainItemCode)" id="item_code"  type="text" class="form-control" v-model="mainItemCode">
+                    <select @change="getItemDescriptionAndRevNo(mainPartsNumber, mainItemCode)" id="item_code" ref="item_code"  type="text" class="form-control" v-model="mainItemCode">
                         <option v-for="itemCode in itemList" :value="itemCode.item_code">{{itemCode.item_code}}</option>
                     </select>
                 </div>
                 <div class="col-md-3 p-1">
                     <label for="item_description">Item Description</label>
-                    <input id="item_description"  type="text" class="form-control" v-model="mainItemDescription" disabled>
+                    <input id="item_description" ref="item_description"  type="text" class="form-control" v-model="mainItemDescription" disabled>
                 </div>
                 <div class="col-md-1 p-1">
                     <label for="encoded_by">Encoded By</label>
-                    <input id="encoded_by" type="text" class="form-control" v-model="mainEncodedBy" disabled>
+                    <input id="encoded_by" ref="encoded_by" type="text" class="form-control" v-model="mainEncodedBy" disabled>
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="date_encoded">Date Encoded</label>
-                    <input id="date_encoded"  type="text" class="form-control" v-model="mainDateEncoded" disabled>
+                    <input id="date_encoded" ref="date_encoded"  type="text" class="form-control" v-model="mainDateEncoded" disabled>
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="section">Section</label>
-                    <select @change="fetchKeyProcess" v-model="mainSection" class="form-select" id="section">
+                    <select @change="fetchKeyProcess" ref="section" v-model="mainSection" class="form-select" id="section">
                         <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
                     </select>
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="revision_number">Revision Number</label>
-                    <input id="revision_number"  type="text" class="form-control" v-model="mainRevisionNumber" disabled>
+                    <input id="revision_number" ref="revision_number" type="text" class="form-control" v-model="mainRevisionNumber" disabled>
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="flow_status">Flow Status</label>
-                    <input id="flow_status"  type="text" class="form-select" v-model="mainFlowStatus" disabled>
+                    <input id="flow_status" ref="flow_status" type="text" class="form-select" v-model="mainFlowStatus" disabled>
                 </div>
                 <div class="col-md-6 p-1">
                     <label for="remarks">Remarks</label>
-                    <input id="remarks"  type="text" class="form-control" v-model="mainRemarks">
+                    <input id="remarks" ref="remarks"  type="text" class="form-control" v-model="mainRemarks">
                 </div>
 
               </div>
@@ -115,18 +115,18 @@
                                 <td>{{index + 1}}</td>
                                 <td>{{ mainSectionCode }}</td>
                                 <td>
-                                    <select @change="fetchSubProcess" class="form-select" v-model="key.Pid">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid">
                                         <option v-for="key in keyProcess" :value="key.Pid">{{key.Pname}}</option>
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" v-model="key.standard_time">
+                                    <input ref="keyStandardTime" type="text" class="form-control" v-model="key.standard_time">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" v-model="key.machine_time">
+                                    <input ref="keyMachineTime" type="text" class="form-control" v-model="key.machine_time">
                                 </td>
                                 <td>
-                                    <button @click="removeKey(index)" class="btn btn-sm btn-outline-danger w-100">
+                                    <button ref="removeBtn" @click="removeKey(index)" class="btn btn-sm btn-outline-danger w-100">
                                         <span class="material-symbols-outlined">remove</span>
                                     </button>
                                 </td>
@@ -160,10 +160,10 @@
                                 <td>{{index + 1}}</td>
                                 <td>{{sub.SubPname}}</td>
                                 <td>
-                                    <input type="text" class="form-control" v-model="sub.standard_time">
+                                    <input ref="subStandardTime" type="text" class="form-control" v-model="sub.standard_time">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" v-model="sub.machine_time">
+                                    <input ref="subMachineTime" type="text" class="form-control" v-model="sub.machine_time">
                                 </td>                                
                             </tr>
                         </tbody>
@@ -181,13 +181,10 @@
             <div class="modal-header">
               <div class="col-md-12 row">
                     <div class="col-md-1">
-                        <button class="btn btn-outline-primary w-100 h-100">Edit</button>
+                        <button ref="viewSaveBtn" @click="updatePosting" class="btn btn-outline-primary w-100 h-100" disabled>Save</button>
                     </div>
                     <div class="col-md-1">
-                        <button class="btn btn-outline-primary w-100 h-100">Save</button>
-                    </div>
-                    <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Delete</button>
+                      <button ref="viewDeleteBtn" class="btn btn-outline-primary w-100 h-100">Delete</button>
                     </div>
                     <div class="col-md-1">
                         <button class="btn btn-outline-primary w-100 h-100">Close</button>
@@ -243,7 +240,10 @@
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="view_flow_status">Flow Status</label>
-                    <input id="view_flow_status"  type="text" class="form-select" v-model="viewFlowStatus" disabled>
+                    <select ref="viewFlowStatus" @change="posting" class="form-select" id="view_flow_status" v-model="viewFlowStatus">
+                        <option value="Posted">Posted</option>
+                        <option value="Unposted">Unposted</option>
+                    </select>
                 </div>
                 <div class="col-md-6 p-1">
                     <label for="view_remarks">Remarks</label>
@@ -261,7 +261,6 @@
                                 <th>Key Process Description</th>
                                 <th>Standard Time</th>
                                 <th>Machine Time</th>
-                                <th>Remove</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -269,30 +268,22 @@
                                 <td>{{ key.sequence_number }}</td>
                                 <td>{{ viewSectionCode }}</td>
                                 <td>
-                                    <select class="form-select" v-model="key.Pid">
+                                    <select class="form-select" v-model="key.Pid" disabled>
                                         <option v-for="tempKey in tempKeyProcess" :value="tempKey.Pid">{{tempKey.Pname}}</option>
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" v-model="key.standard_time">
+                                    <input v-if="viewFlowStatus == 'Unposted'" ref="viewKeyStandardTime" type="text" class="form-control" v-model="key.standard_time">
+                                    <p v-else>{{key.standard_time}}</p>
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" v-model="key.machine_time">
-                                </td>
-                                <td>
-                                    <button class="btn btn-outline-danger w-100">-</button>
+                                    <input v-if="viewFlowStatus == 'Unposted'" ref="viewKeyMachineTime" type="text" class="form-control" v-model="key.machine_time">
+                                    <p v-else>{{key.machine_time}}</p>
                                 </td>
                             </tr>
                         </tbody>
                         <tbody>
 
-                        </tbody>
-                        <tbody>
-                            <tr>
-                                <td colspan="6">
-                                    <button class="btn w-100 btn-outline-primary" disabled>Add Row</button>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -311,8 +302,14 @@
                             <tr v-for="sub in sortedSub">
                                 <td>{{sub.sequence_number}}</td>
                                 <td>{{sub.SubPname}}</td>
-                                <td><input type="text" class="form-control" v-model="sub.standard_time"></td>
-                                <td><input type="text" class="form-control" v-model="sub.machine_time"></td>
+                                <td>
+                                    <input v-if="viewFlowStatus == 'Unposted'" ref="viewSubStandardTime" type="text" class="form-control" v-model="sub.standard_time">
+                                    <p v-else>{{sub.standard_time}}</p>
+                                </td>
+                                <td>
+                                    <input v-if="viewFlowStatus == 'Unposted'" ref="viewSubMachineTime" type="text" class="form-control" v-model="sub.machine_time">
+                                    <p v-else>{{sub.machine_time}}</p>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -354,6 +351,10 @@
                 PostProcessFlowURL: 'http://172.16.2.69/tpc/PostProcessFlow.php',
                 PostKeyProcessFlowURL: 'http://172.16.2.69/tpc/PostKeyProcessFlow.php',
                 PostSubProcessFlowURL: 'http://172.16.2.69/tpc/PostSubProcessFlow.php',
+
+                PutProcessFlowKeyURL: 'http://172.16.2.69/tpc/PutProcessFlowKey.php',
+                PutProcessFlowSubURL: 'http://172.16.2.69/tpc/PutProcessFlowSub.php',
+                PutProcessFlowStatusURL: 'http://172.16.2.69/tpc/PutProcessFlowMainStatus.php',
                 //objects
                 section: [],
                 processFlow: [],
@@ -421,60 +422,93 @@
        
         methods: {
             submitProcessFlow(){
-                console.log(this.subProcessFlow);
-                // axios.post(this.PostProcessFlowURL, {
-                //     main_flow_id: this.mainFlowId,
-                //     parts_number: this.mainPartsNumber,
-                //     item_code: this.mainItemCode,
-                //     item_description: this.mainItemDescription,
-                //     section_id: this.mainSection,
-                //     revision_number: this.mainRevisionNumber,
-                //     flow_status: this.mainFlowStatus,
-                //     remarks: this.mainRemarks,
-                //     encoded_by: this.mainEncodedBy,
-                //     date_encoded: this.mainDateEncoded,
-                //     flow_type: this.mainFlowType,
-                // }).then(response => {
-                //     if(response.data.message == 'Process Flow inserted successfully'){
-                //         for(const key of this.keyProcessFlow){
-                //             axios.post(this.PostKeyProcessFlowURL, {
-                //                 main_flow_id: this.mainFlowId,
-                //                 section_id: this.mainSection,
-                //                 parts_number: this.mainPartsNumber,
-                //                 revision_number: this.mainRevisionNumber,
-                //                 Pid: key.Pid,
-                //                 sequence_number: key.sequence_no,
-                //                 standard_time: key.standard_time,
-                //                 machine_time: key.machine_time,
-                //                 item_code: this.mainItemCode,   
-                //             }).then(response => {
-                //                 console.log(response.data);
-                //             }).catch(error => {
-                //                 console.log(error);
-                //             });
-                //         }
-                //         for(const sub of this.subProcessFlow){
-                //             axios.post(this.PostSubProcessFlowURL, {
-                //                 main_flow_id: this.mainFlowId,
-                //                 section_id: this.mainSection,
-                //                 parts_number: this.mainPartsNumber,
-                //                 revision_number: this.mainRevisionNumber,
-                //                 Pid: sub.Pid,
-                //                 SubPid: sub.SubPid,
-                //                 sequence_number: sub.sequence_no,
-                //                 standard_time: sub.standard_time,
-                //                 machine_time: sub.machine_time,
-                //                 item_code: this.mainItemCode,                                
-                //             }).then(response => {
-                //                 console.log(response.data);
-                //             }).catch(error => {
-                //                 console.log(error)
-                //             });
-                //         }
-                //     }
-                // }).catch(error => {
-                //     console.log(error);
-                // });
+                let processFlowResponse = '';
+                let processFlowSubResponse = '';
+                let processFlowKeyResponse = '';
+                axios.post(this.PostProcessFlowURL, {
+                    main_flow_id: this.mainFlowId,
+                    parts_number: this.mainPartsNumber,
+                    item_code: this.mainItemCode,
+                    item_description: this.mainItemDescription,
+                    section_id: this.mainSection,
+                    revision_number: this.mainRevisionNumber,
+                    flow_status: this.mainFlowStatus,
+                    remarks: this.mainRemarks,
+                    encoded_by: this.mainEncodedBy,
+                    date_encoded: this.mainDateEncoded,
+                    flow_type: this.mainFlowType,
+                }).then(response => {
+                    if(response.data.message == 'Process Flow inserted successfully'){
+                        processFlowResponse = 'Data Submitted';
+                        this.$refs.flow_type.disabled = true;
+                        this.$refs.parts_number.disabled = true;
+                        this.$refs.item_code.disabled = true;
+                        this.$refs.section.disabled = true
+                        this.$refs.addKeyBtn.disabled = true;
+                        this.$refs.remarks.disabled = true;
+                        this.$refs.saveBtn.disabled = true;
+                        this.$refs.clearBtn.disabled = false;
+                        for(const key of this.keyProcessFlow){
+                            axios.post(this.PostKeyProcessFlowURL, {
+                                main_flow_id: this.mainFlowId,
+                                section_id: this.mainSection,
+                                parts_number: this.mainPartsNumber,
+                                revision_number: this.mainRevisionNumber,
+                                Pid: key.Pid,
+                                sequence_number: key.sequence_no,
+                                standard_time: key.standard_time,
+                                machine_time: key.machine_time,
+                                item_code: this.mainItemCode,   
+                            }).then(response => {
+                                if(response.data.message == 'Process Flow Key inserted successfully'){
+                                    processFlowKeyResponse = 'Data Submitted';
+                                    for(const processFlow of this.$refs.keyProcessFlow){
+                                        processFlow.disabled = true;
+                                    }
+                                    for(const keyStdTime of this.$refs.keyStandardTime){
+                                        keyStdTime.disabled = true;
+                                    }
+                                    for(const keyMachTime of this.$refs.keyMachineTime){
+                                        keyMachTime.disabled = true;
+                                    }
+                                    for(const removeBtn of this.$refs.removeBtn){
+                                        removeBtn.disabled = true;
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+                        for(const sub of this.subProcessFlow){
+                            axios.post(this.PostSubProcessFlowURL, {
+                                main_flow_id: this.mainFlowId,
+                                section_id: this.mainSection,
+                                parts_number: this.mainPartsNumber,
+                                revision_number: this.mainRevisionNumber,
+                                Pid: sub.Pid,
+                                SubPid: sub.SubPid,
+                                sequence_number: sub.sequence_no,
+                                standard_time: sub.standard_time,
+                                machine_time: sub.machine_time,
+                                item_code: this.mainItemCode,                                
+                            }).then(response => {
+                                if(response.data.message == 'Process Flow Sub inserted successfully'){
+                                    processFlowSubResponse = 'Data Submitted';
+                                    for(const subStdTime of this.$refs.subStandardTime){
+                                        subStdTime.disabled = true;
+                                    }
+                                    for(const subMachTime of this.$refs.subMachineTime){
+                                        subMachTime.disabled = true;
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error)
+                            });
+                        }
+                    }
+                }).catch(error => {
+                    console.log(error);
+                });
                 
             },
             getFlowId(event){
@@ -505,6 +539,16 @@
                         this.viewFlowStatus = flow.flow_status;
                         this.viewRemarks = flow.flow_remarks;
                         
+                        if(this.viewFlowStatus == 'Posted'){
+                            this.$refs.viewDeleteBtn.disabled = true;
+                            this.$refs.viewSaveBtn.disabled = true;
+                            this.$refs.viewFlowStatus.disabled = true;
+                            
+                        } else {
+                            this.$refs.viewDeleteBtn.disabled = false;
+                            this.$refs.viewFlowStatus.disabled = false;
+                        }
+
                         axios.get(this.requestFlowKeyURL, {
                             method: 'GET',
                             headers: {
@@ -658,7 +702,7 @@
                     }).then(response => {
                         for(const sub of response.data){
                             this.subProcessFlow.push({
-                                Pid: sub.SubPid,
+                                Pid: sub.Pid,
                                 SubPid: sub.SubPid,
                                 SubPname: sub.SubPname,
                                 sequence_number: sub.sequence_number,
@@ -676,7 +720,88 @@
                 }
                 this.$refs.addKeyBtn.disabled = false;
             },
-            
+            clearField(){
+                this.mainFlowId = this.mainFlowId + 1;
+                this.keyProcessFlow = [];
+                this.subProcessFlow = [];
+                this.$refs.flow_type.disabled = false;
+                this.$refs.parts_number.disabled = false;
+                this.$refs.item_code.disabled = false;
+                this.$refs.section.disabled = false;
+                this.$refs.addKeyBtn.disabled = false;
+                this.$refs.remarks.disabled = false;
+                this.$refs.saveBtn.disabled = false;
+                this.$refs.clearBtn.disabled = true;
+                this.mainFlowType = '';
+                this.mainPartsNumber = '';
+                this.mainItemCode = '';
+                this.mainItemDescription = '';
+                this.mainSection = '';
+                this.mainRevisionNumber = '';
+                this.mainRemarks = '';
+            },
+            posting(){
+                if(this.viewFlowStatus == 'Posted'){
+                    this.$refs.viewSaveBtn.disabled = false;
+                    this.$refs.viewDeleteBtn.disabled = true;
+                   
+                    for(const viewKeyStdTime of this.$refs.viewKeyStandardTime){
+                        viewKeyStdTime.disabled = true;
+                    }
+                    for(const viewKeyMachTime of this.$refs.viewKeyMachineTime){
+                        viewKeyMachTime.disabled = true;
+                    }
+                    for(const viewSubStdTime of this.$refs.viewSubStandardTime){
+                        viewSubStdTime.disabled = true;
+                    }
+                    for(const viewSubMachTime of this.$refs.viewSubMachineTime){
+                        viewSubMachTime.disabled = true;
+                    }
+                } else {
+                    this.$refs.viewSaveBtn.disabled = true;
+                    this.$refs.viewDeleteBtn.disabled = false;
+                }
+
+            },
+            updatePosting(){
+                axios.put(this.PutProcessFlowStatusURL, {
+                    flow_main_id: this.viewFlowId,
+                    flow_status: this.viewFlowStatus
+                }).then(response => {
+                    if(response.data.message === 'Process Flow Status updated successfully'){
+                        this.$refs.viewFlowStatus.disabled = true;
+
+                        for(const key of this.flowKey){
+                            axios.put(this.PutProcessFlowKeyURL, {
+                                standard_time: key.standard_time,
+                                machine_time: key.machine_time,
+                                flow_key_id: key.flow_key_id,
+                                Pid: key.Pid,
+                            }).then(response => {
+                                console.log(response.data);
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+                        
+                        for(const sub of this.flowSub){
+                            axios.put(this.PutProcessFlowSubURL, {
+                                standard_time: sub.standard_time,
+                                machine_time: sub.machine_time,
+                                flow_sub_id: sub.flow_sub_id,
+                                SubPid: sub.SubPid,
+                            }).then(response => {
+                                console.log(response.data);
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        }
+                    }
+                }).catch(error => {
+                    console.log(error)
+                });
+                
+            }
         },
         computed:{
             sortedKey(){
