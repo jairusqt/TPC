@@ -34,10 +34,9 @@
                       <button @click="submitProcessFlow" ref="saveBtn" class="btn btn-outline-primary w-100 h-100">Save</button>
                   </div>
                   <div class="col-md-1">
-                      <button class="btn btn-outline-primary w-100 h-100">Close</button>
+                      <button class="btn btn-outline-primary w-100 h-100" data-bs-dismiss="modal">Close</button>
                   </div>
               </div>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <div class="col-md-12 border rounded p-3 mx-auto row">
@@ -60,7 +59,7 @@
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="item_code">Item Code</label>
-                    <select @change="getItemDescriptionAndRevNo(mainPartsNumber, mainItemCode)" id="item_code" ref="item_code"  type="text" class="form-control" v-model="mainItemCode">
+                    <select @change="getItemDescriptionAndRevNo(mainPartsNumber, mainItemCode)" id="item_code" ref="item_code"  type="text" class="form-control" v-model="mainItemCode" disabled>
                         <option v-for="itemCode in itemList" :value="itemCode.item_code">{{itemCode.item_code}}</option>
                     </select>
                 </div>
@@ -78,7 +77,7 @@
                 </div>
                 <div class="col-md-2 p-1">
                     <label for="section">Section</label>
-                    <select @change="fetchKeyProcess" ref="section" v-model="mainSection" class="form-select" id="section">
+                    <select @change="fetchKeyProcess" ref="section" v-model="mainSection" class="form-select" id="section" disabled>
                         <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
                     </select>
                 </div>
@@ -110,12 +109,44 @@
                                 <th>Remove</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody v-if="mainSectionCode === 'SWP'">
+                            <tr v-for="(key, index) in keyProcessFlow">
+                                <td>{{index + 1}}</td>
+                                <td>
+                                    <select v-model="key.section_code" class="form-select">
+                                        <option value="SWP">SWP</option>
+                                        <option value="CCD">CCD</option>
+                                    </select>
+                                </td>
+                                <td v-if="key.section_code == 'SWP'">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid">
+                                        <option v-for="key in SWPOptions" :value="key.Pid">{{key.Pname}}</option>
+                                    </select>
+                                </td>   
+                                <td v-else-if="key.section_code == 'CCD'">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid">
+                                        <option v-for="key in CCDOptions" :value="key.Pid">{{key.Pname}}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input ref="keyStandardTime" type="text" class="form-control" v-model="key.standard_time">
+                                </td>
+                                <td>
+                                    <input ref="keyMachineTime" type="text" class="form-control" v-model="key.machine_time">
+                                </td>
+                                <td>
+                                    <button ref="removeBtn" @click="removeKey(index)" class="btn btn-sm btn-outline-danger w-100">
+                                        <span class="material-symbols-outlined">remove</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody v-else>
                             <tr v-for="(key, index) in keyProcessFlow">
                                 <td>{{index + 1}}</td>
                                 <td>{{ mainSectionCode }}</td>
                                 <td>
-                                    <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess(key.Pid)" class="form-select" v-model="key.Pid">
                                         <option v-for="key in keyProcess" :value="key.Pid">{{key.Pname}}</option>
                                     </select>
                                 </td>
@@ -132,9 +163,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                        <tbody>
-
-                        </tbody>
+                        
                         <tbody>
                             <tr>
                                 <td colspan="6">
@@ -153,6 +182,8 @@
                                 <th>Sub Process Description</th>
                                 <th>Standard Time</th>
                                 <th>Machine Time</th>
+                                <th class="text-center">Sampling</th>
+                                <th class="text-center">Uncontrolled Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -164,7 +195,17 @@
                                 </td>
                                 <td>
                                     <input ref="subMachineTime" type="text" class="form-control" v-model="sub.machine_time">
-                                </td>                                
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input ref="sampling" v-model="sub.sampling" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input ref="uncontrolled" v-model="sub.uncontrolled" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -184,10 +225,10 @@
                         <button ref="viewSaveBtn" @click="updatePosting" class="btn btn-outline-primary w-100 h-100" disabled>Save</button>
                     </div>
                     <div class="col-md-1">
-                      <button ref="viewDeleteBtn" class="btn btn-outline-primary w-100 h-100">Delete</button>
+                      <button ref="viewDeleteBtn" data-bs-target="#deletePrompt" data-bs-toggle="modal" class="btn btn-outline-primary w-100 h-100">Delete</button>
                     </div>
                     <div class="col-md-1">
-                        <button class="btn btn-outline-primary w-100 h-100">Close</button>
+                        <button data-bs-dismiss="modal" class="btn btn-outline-primary w-100 h-100">Close</button>
                     </div>
               </div>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -266,8 +307,18 @@
                         <tbody>
                             <tr v-for="key in sortedKey">
                                 <td>{{ key.sequence_number }}</td>
-                                <td>{{ viewSectionCode }}</td>
-                                <td>
+                                <td>{{ key.section_code }}</td>
+                                <td v-if="key.section_code == 'SWP'">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid" disabled>
+                                        <option v-for="key in SWPOptions" :value="key.Pid">{{key.Pname}}</option>
+                                    </select>
+                                </td>   
+                                <td v-else-if="key.section_code == 'CCD'">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid" disabled>
+                                        <option v-for="key in CCDOptions" :value="key.Pid">{{key.Pname}}</option>
+                                    </select>
+                                </td>
+                                <td v-else>
                                     <select class="form-select" v-model="key.Pid" disabled>
                                         <option v-for="tempKey in tempKeyProcess" :value="tempKey.Pid">{{tempKey.Pname}}</option>
                                     </select>
@@ -296,6 +347,8 @@
                                 <th>Sub Process Description</th>
                                 <th>Standard Time</th>
                                 <th>Machine Time</th>
+                                <th class="text-center">Sampling</th>
+                                <th class="text-center">Uncontrolled Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -310,6 +363,26 @@
                                     <input v-if="viewFlowStatus == 'Unposted'" ref="viewSubMachineTime" type="text" class="form-control" v-model="sub.machine_time">
                                     <p v-else>{{sub.machine_time}}</p>
                                 </td>
+                                <td v-if="viewFlowStatus === 'Unposted'">
+                                    <div class="form-check form-switch">
+                                        <input ref="viewSampling" v-model="sub.check_sampling" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                    </div>
+                                </td>
+                                <td v-else>
+                                    <div class="form-check form-switch">
+                                        <input ref="viewSampling" v-model="sub.check_sampling" class="form-check-input mx-auto" type="checkbox" role="switch" disabled>
+                                    </div>
+                                </td>
+                                <td v-if="viewFlowStatus === 'Unposted'">
+                                    <div class="form-check form-switch">
+                                        <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                    </div>
+                                </td>
+                                <td v-else>
+                                    <div class="form-check form-switch">
+                                        <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input mx-auto" type="checkbox" role="switch" disabled>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -319,17 +392,46 @@
           </div>
         </div>
     </div>
+    <div class="modal fade" id="deletePrompt" aria-hidden="true" aria-labelledby="deletePrompt" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="deletePrompt">Delete Process Flow</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you certain you wish to delete this entire record? This action is irreversible and all associated data will be permanently lost. Please click 'Confirm' to proceed with the deletion.
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-outline-primary" @click="deleteFlow" data-bs-dismiss="modal">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header">
+            <strong class="me-auto">Alert</strong>
+            <small>11 mins ago</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            {{alert}}
+          </div>
+        </div>
+      </div>
     </template>
 
-    <script>
+<script>
+    
     import { createApp, h } from 'vue';
     import DataTable from 'datatables.net-vue3';
     import DataTablesCore from 'datatables.net-bs5';
     import 'datatables.net-responsive';
     import 'datatables.net-select';
     import axios from 'axios';
-   
+    import * as bootstrap from 'bootstrap'
     DataTable.use(DataTablesCore);
     export default {
         props: ['keyProcessResponse'],
@@ -347,10 +449,15 @@
                 SubProcessGetURL: 'http://172.16.2.69/tpc/GetSubProcess.php',
                 requestItemMasterURL: 'http://172.16.2.69/tpcrequesthandlers/requestItemMasterMain.php',
                 fetchProcessFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
+                GetKeyProcessURL: 'http://172.16.2.69/tpc/GetKeyProcess.php',
 
                 PostProcessFlowURL: 'http://172.16.2.69/tpc/PostProcessFlow.php',
                 PostKeyProcessFlowURL: 'http://172.16.2.69/tpc/PostKeyProcessFlow.php',
                 PostSubProcessFlowURL: 'http://172.16.2.69/tpc/PostSubProcessFlow.php',
+
+                DeleteProcessFlowURL: 'http://172.16.2.69/tpc/DeleteProcessFlow.php',
+                DeleteProcessFlowKey: 'http://172.16.2.69/tpc/DeleteProcessFlowKey.php',
+                DeleteProcessFlowSub: 'http://172.16.2.69/tpc/DeleteProcessFlowSub.php',
 
                 PutProcessFlowKeyURL: 'http://172.16.2.69/tpc/PutProcessFlowKey.php',
                 PutProcessFlowSubURL: 'http://172.16.2.69/tpc/PutProcessFlowSub.php',
@@ -367,6 +474,9 @@
                 itemList: [],
                 flowKey: [],
                 flowSub: [],
+
+                SWPOptions: [],
+                CCDOptions: [],
 
                 // main data
                 mainSection: '',
@@ -397,6 +507,8 @@
                 viewRemarks: '',
 
                 tempFlowId: null,
+                alert: '',
+
                 // process flow table
                 columns: [
                   { title: 'No', data: 'flow_main_id'},
@@ -422,9 +534,43 @@
        
         methods: {
             submitProcessFlow(){
+                const toastLiveExample = document.getElementById('liveToast');
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+                // toastBootstrap.show()
+                
                 let processFlowResponse = '';
                 let processFlowSubResponse = '';
                 let processFlowKeyResponse = '';
+                let filterNull = false;
+                let isDuplicate = false;
+                console.log(this.keyProcessFlow)
+                // checks for empty or null Pid in the selection
+                for(const key of this.keyProcessFlow){
+                    if(!Object.is(key.Pid, '')){
+                        filterNull = false;
+                    } else {
+                        toastBootstrap.show()
+                        this.alert = 'System Alert: Detection of an Unassigned Key Process. Please conduct a thorough review.';
+                        filterNull = true;
+                        break;
+                    }
+                }
+                //checks for dups in data
+                let valueArr = this.keyProcessFlow.map(function(key){ return key.Pid });
+                isDuplicate = valueArr.some(function(item, idx){ 
+                    return valueArr.indexOf(item) != idx
+                });
+               
+                if(filterNull || isDuplicate){
+                    if(isDuplicate === true){
+                        this.alert = 'System Warning: Duplicate Entry Detected. Please perform a comprehensive verification.';
+                        toastBootstrap.show()
+                        isDuplicate = false;
+                    } else {
+                        isDuplicate = false;
+                    }
+                    isDuplicate = false;
+                } else {
                 axios.post(this.PostProcessFlowURL, {
                     main_flow_id: this.mainFlowId,
                     parts_number: this.mainPartsNumber,
@@ -440,6 +586,8 @@
                 }).then(response => {
                     if(response.data.message == 'Process Flow inserted successfully'){
                         processFlowResponse = 'Data Submitted';
+                        this.alert = 'Your data has been successfully submitted! Thank you for providing the required information.';
+                        toastBootstrap.show()
                         this.$refs.flow_type.disabled = true;
                         this.$refs.parts_number.disabled = true;
                         this.$refs.item_code.disabled = true;
@@ -448,10 +596,29 @@
                         this.$refs.remarks.disabled = true;
                         this.$refs.saveBtn.disabled = true;
                         this.$refs.clearBtn.disabled = false;
+                        this.processFlow.push({
+                            flow_main_id: this.mainFlowId,
+                            item_parts_number: this.mainPartsNumber,
+                            section_code: this.mainSectionCode,
+                            item_code: this.mainItemCode,
+                            item_description: this.mainItemDescription,
+                            section_id: this.mainSection,
+                            revision_number: this.mainRevisionNumber,
+                            flow_status: this.mainFlowStatus,
+                            flow_remarks: this.mainRemarks,
+                            encoded_by: this.mainEncodedBy,
+                            date_encoded: this.mainDateEncoded,
+                            flow_type: this.mainFlowType,
+                        })
                         for(const key of this.keyProcessFlow){
+                            for(const sec of this.section){
+                                if(key.section_code == sec.section_code){
+                                    key.section_id = sec.section_id;
+                                }
+                            }
                             axios.post(this.PostKeyProcessFlowURL, {
                                 main_flow_id: this.mainFlowId,
-                                section_id: this.mainSection,
+                                section_id: key.section_id,
                                 parts_number: this.mainPartsNumber,
                                 revision_number: this.mainRevisionNumber,
                                 Pid: key.Pid,
@@ -480,6 +647,16 @@
                             });
                         }
                         for(const sub of this.subProcessFlow){
+                            if(sub.sampling === true){
+                                sub.sampling = 'True';
+                            } else {
+                                sub.sampling = 'False';
+                            }
+                            if(sub.uncontrolled === true){
+                                sub.uncontrolled = 'True';
+                            } else {
+                                sub.uncontrolled = 'False';
+                            }
                             axios.post(this.PostSubProcessFlowURL, {
                                 main_flow_id: this.mainFlowId,
                                 section_id: this.mainSection,
@@ -490,8 +667,11 @@
                                 sequence_number: sub.sequence_no,
                                 standard_time: sub.standard_time,
                                 machine_time: sub.machine_time,
-                                item_code: this.mainItemCode,                                
+                                item_code: this.mainItemCode,  
+                                check_sampling: sub.sampling,
+                                check_uncontrolled: sub.uncontrolled
                             }).then(response => {
+                                console.log(response.data);
                                 if(response.data.message == 'Process Flow Sub inserted successfully'){
                                     processFlowSubResponse = 'Data Submitted';
                                     for(const subStdTime of this.$refs.subStandardTime){
@@ -499,6 +679,12 @@
                                     }
                                     for(const subMachTime of this.$refs.subMachineTime){
                                         subMachTime.disabled = true;
+                                    }
+                                    for(const sampling of this.$refs.sampling){
+                                        sampling.disabled = true;
+                                    }
+                                    for(const uncontrolled of this.$refs.uncontrolled){
+                                        uncontrolled.disabled = true;
                                     }
                                 }
                             }).catch(error => {
@@ -509,6 +695,9 @@
                 }).catch(error => {
                     console.log(error);
                 });
+                }
+
+                
                 
             },
             getFlowId(event){
@@ -516,19 +705,87 @@
                     const row = event.target.parentNode.parentNode;
                     const cell = row.querySelector('td');
                     this.tempFlowId = parseInt(cell.textContent);
-                    console.log(this.tempFlowId);
                 }
                 if(event.target.tagName == 'SPAN'){
                     const row = event.target.parentNode.parentNode.parentNode;
                     const cell = row.querySelector('td');
                     this.tempFlowId = parseInt(cell.textContent);
-                    console.log(this.tempFlowId);
                 }
                 for(const flow of this.processFlow){
                     if(this.tempFlowId === flow.flow_main_id){
                         this.viewSection = flow.section_id;
                         this.viewSectionCode = flow.section_code; 
                         this.viewFlowId = flow.flow_main_id;
+                        if(this.viewSectionCode === 'SWP'){
+                            this.viewFlowType = flow.flow_type;
+                            this.viewPartsNumber = flow.item_parts_number;
+                            this.viewItemCode = flow.item_code;
+                            this.viewItemDescription = flow.item_description;
+                            this.viewEncodedBy = flow.encoded_by;
+                            this.viewDateEncoded = flow.date_encoded;
+                            this.viewRevisionNumber = flow.revision_number;
+                            this.viewFlowStatus = flow.flow_status;
+                            this.viewRemarks = flow.flow_remarks;
+                            if(this.viewFlowStatus == 'Posted'){
+                                this.$refs.viewDeleteBtn.disabled = true;
+                                this.$refs.viewSaveBtn.disabled = true;
+                                this.$refs.viewFlowStatus.disabled = true;
+
+                            } else {
+                                this.$refs.viewDeleteBtn.disabled = false;
+                                this.$refs.viewFlowStatus.disabled = false;
+                            }
+                            axios.get(this.requestFlowKeyURL, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-type': 'application/x-www-form-urlencoded'
+                                },
+                                params: {
+                                    flow_main_id: this.viewFlowId 
+                                }
+                            }).then(response => {
+                                this.flowKey = response.data;
+                                for(const flowKey of this.flowKey){
+                                    for(const sec of this.section){
+                                        if(parseInt(flowKey.section_id) === parseInt(sec.section_id)){
+                                            Object.assign(flowKey, {section_code: sec.section_code});
+                                        }
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                            axios.get(this.requestFlowSubURL, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-type': 'application/x-www-form-urlencoded'
+                                },
+                                params: {
+                                    flow_main_id: this.viewFlowId 
+                                }
+                            }).then(response => {
+                                this.flowSub = response.data;
+                                for(const sub of this.subProcess){
+                                    for(const flow of this.flowSub){
+                                        if(parseInt(flow.SubPid) === parseInt(sub.SubPid)){ 
+                                            Object.assign(flow, {SubPname: sub.SubPname});
+                                            if(flow.check_sampling === "True"){
+                                                flow.check_sampling = true;
+                                            } else {
+                                                flow.check_sampling = false;
+                                            }
+                                            if(flow.check_uncontrolled === "True"){
+                                                flow.check_uncontrolled = true;
+                                            } else {
+                                                flow.check_uncontrolled = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                        } else {
                         this.viewFlowType = flow.flow_type;
                         this.viewPartsNumber = flow.item_parts_number;
                         this.viewItemCode = flow.item_code;
@@ -538,7 +795,6 @@
                         this.viewRevisionNumber = flow.revision_number;
                         this.viewFlowStatus = flow.flow_status;
                         this.viewRemarks = flow.flow_remarks;
-                        
                         if(this.viewFlowStatus == 'Posted'){
                             this.$refs.viewDeleteBtn.disabled = true;
                             this.$refs.viewSaveBtn.disabled = true;
@@ -548,7 +804,6 @@
                             this.$refs.viewDeleteBtn.disabled = false;
                             this.$refs.viewFlowStatus.disabled = false;
                         }
-
                         axios.get(this.requestFlowKeyURL, {
                             method: 'GET',
                             headers: {
@@ -559,11 +814,16 @@
                             }
                         }).then(response => {
                             this.flowKey = response.data;
-                            
+                            for(const key of this.flowKey){
+                                for(const sec of this.section){
+                                    if(parseInt(key.section_id) === parseInt(sec.section_id)){
+                                        Object.assign(key, {section_code: sec.section_code});
+                                    }
+                                }
+                            }
                         }).catch(error => {
                             console.log(error);
                         });
-
                         axios.get(this.requestFlowSubURL, {
                             method: 'GET',
                             headers: {
@@ -578,14 +838,22 @@
                                 for(const flow of this.flowSub){
                                     if(parseInt(flow.SubPid) === parseInt(sub.SubPid)){ 
                                         Object.assign(flow, {SubPname: sub.SubPname});
+                                        if(flow.check_sampling === "True"){
+                                            flow.check_sampling = true;
+                                        } else {
+                                            flow.check_sampling = false;
+                                        }
+                                        if(flow.check_uncontrolled === "True"){
+                                            flow.check_uncontrolled = true;
+                                        } else {
+                                            flow.check_uncontrolled = false;
+                                        }
                                     }
                                 }
                             }
                         }).catch(error => {
                             console.log(error);
                         });
-
-
                         axios.get(this.requestKeyURL, {
                             method: 'GET',
                             headers: {
@@ -599,15 +867,19 @@
                         }).catch(error => {
                             console.log(error);
                         });
-
-                        
-
+                        }
                     }
                 }
                 
             },
             getItemCode(parts_number){
+                this.mainSection = '';
+                this.mainItemDescription = '';
+                this.mainRevisionNumber = '';
+                this.mainItemCode = '';
                 this.itemList = [];
+                this.$refs.item_code.disabled = false;
+                
                 for(const item of this.itemMaster){
                     if(parts_number === item.item_parts_number){
                         this.itemList.push(item);
@@ -615,6 +887,9 @@
                 }
             },
             getItemDescriptionAndRevNo(parts_number, item_code){
+                this.mainSection = '';
+                this.mainRevisionNumber = '';
+                this.$refs.section.disabled = false;
                 for(const item of this.itemMaster){
                     if(parts_number === item.item_parts_number && item_code === item.item_code){
                         this.mainItemDescription = item.item_description;
@@ -622,7 +897,19 @@
                 }
             },
             addKeyProcessFlow(){
-                this.keyProcessFlow.push({
+                if(this.mainSectionCode === 'SWP'){
+                    this.keyProcessFlow.push({
+                        sequence_no: '',
+                        section_id: '',
+                        section_code: 'SWP',
+                        Pid: '',
+                        standard_time: 0,
+                        machine_time: 0,
+                    })
+                    this.addSequenceNumber();
+                    this.$refs.addKeyBtn.disabled = true;
+                } else {
+                    this.keyProcessFlow.push({
                     sequence_no: '',
                     section_id: this.mainSection,
                     section_code: this.mainSectionCode,
@@ -630,8 +917,10 @@
                     standard_time: 0,
                     machine_time: 0,
                 })
-                this.addSequenceNumber();
-                this.$refs.addKeyBtn.disabled = true;
+                    this.tempKeyProcess.shift();
+                    this.addSequenceNumber();
+                    this.$refs.addKeyBtn.disabled = true;
+                }
             },
             removeKey(index){
                 this.keyProcessFlow.splice(index, 1);
@@ -685,7 +974,6 @@
                     }
                 }
                 this.mainRevisionNumber = latestRevNo + 1;
-                console.log(this.mainRevisionNumber);
                 
             },
             fetchSubProcess(){
@@ -708,6 +996,8 @@
                                 sequence_number: sub.sequence_number,
                                 standard_time: 0,
                                 machine_time: 0,
+                                sampling: false,
+                                uncontrolled: false,
                                 order: order,
                                 sequence_no: '',
                             });
@@ -769,6 +1059,11 @@
                     flow_status: this.viewFlowStatus
                 }).then(response => {
                     if(response.data.message === 'Process Flow Status updated successfully'){
+                        for(const flow of this.processFlow){
+                            if(parseInt(this.viewFlowId) === parseInt(flow.flow_main_id)){
+                                flow.flow_status = this.viewFlowStatus;
+                            }
+                        }
                         this.$refs.viewFlowStatus.disabled = true;
 
                         for(const key of this.flowKey){
@@ -785,13 +1080,32 @@
                         }
                         
                         for(const sub of this.flowSub){
+                            if(sub.check_sampling === true){
+                                sub.sampling = 'True';
+                            } else {
+                                sub.sampling = 'False';
+                            }
+                            if(sub.check_uncontrolled === true){
+                                sub.uncontrolled = 'True';
+                            } else {
+                                sub.uncontrolled = 'False';
+                            }
                             axios.put(this.PutProcessFlowSubURL, {
                                 standard_time: sub.standard_time,
                                 machine_time: sub.machine_time,
                                 flow_sub_id: sub.flow_sub_id,
                                 SubPid: sub.SubPid,
+                                sampling: sub.sampling,
+                                uncontrolled: sub.uncontrolled
                             }).then(response => {
-                                console.log(response.data);
+                                if(response.data.message === 'Process Flow Sub updated successfully'){
+                                    for(const sampling of this.$refs.viewSampling){
+                                        sampling.disabled = true;
+                                    }
+                                    for(const uncontrolled of this.$refs.viewUncontrolled){
+                                        uncontrolled.disabled = true;
+                                    }
+                                }
                             }).catch(error => {
                                 console.log(error);
                             });
@@ -800,8 +1114,53 @@
                 }).catch(error => {
                     console.log(error)
                 });
-                
-            }
+            },
+            deleteFlow(){
+                    if(this.viewFlowStatus === 'Unposted'){
+                        const SubandKeyDeleteMessage = '';
+                        for(const sub of this.flowSub){
+                            axios.post(this.DeleteProcessFlowSub, {
+                                flow_main_id: sub.flow_main_id,
+                                flow_sub_id: sub.flow_sub_id,
+                                SubPid: sub.SubPid
+                            }).then(response => {   
+                                console.log(response.data);
+                                if(response.data.message === 'Process Flow Sub deleted successfully'){
+                                    for(const key of this.flowKey){
+                                        if(parseInt(sub.flow_main_id) === parseInt(key.flow_main_id)){
+                                            axios.post(this.DeleteProcessFlowKey, {
+                                                flow_main_id: key.flow_main_id,
+                                                flow_key_id: key.flow_key_id,
+                                                Pid: key.Pid
+                                            }).then(response => {
+                                                if(response.data.message === 'Process Flow Key deleted successfully'){
+                                                    axios.post(this.DeleteProcessFlowURL, {
+                                                        flow_main_id: key.flow_main_id
+                                                    }).then(response => {
+                                                        if(response.data.message === 'Process Flow deleted successfully'){
+                                                            for (const flow of this.processFlow) {
+                                                              if (this.viewFlowId === flow.flow_main_id) {
+                                                                const index = this.processFlow.indexOf(flow);
+                                                                this.processFlow.splice(index, 1);
+                                                              }
+                                                            }
+                                                        }
+                                                    }).catch(error => {
+                                                        console.log(error)
+                                                    }) 
+                                                }
+                                            }).catch(error => {
+                                                console.log(error);
+                                            }); 
+                                        }
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error)
+                            });
+                        }
+                    }
+            },
         },
         computed:{
             sortedKey(){
@@ -813,11 +1172,40 @@
         },
         async created(){
 
+            if(this.viewFlowStatus === 'Posted'){
+                this.$refs.viewSaveBtn.disabled = true;
+                this.$refs.viewDeleteBtn.disabled = true;
+                for(const sampling of this.$refs.viewSampling){
+                    sampling.disabled = true;
+                    console.log(sampling);
+                }
+                for(const uncontrolled of this.$refs.viewUncontrolled){
+                    uncontrolled.disabled = true;
+                }
+            }
+
             await axios.get(this.SectionGetURL,{
             }).then(response => {
                 this.section = response.data;
             }).catch(error => {
                 console.log(error)
+            });
+            
+            await axios.get(this.GetKeyProcessURL, {
+
+            }).then(response => {
+                for(const key of response.data){
+                    for(const sec of this.section){
+                        if(sec.section_code == 'SWP' && sec.section_id == key.section_id){
+                            this.SWPOptions.push(key);
+                        } else if(sec.section_code == 'CCD' && sec.section_id == key.section_id){
+                            this.CCDOptions.push(key);
+                        }
+                    }
+                }
+                
+            }).catch(error => {
+                console.log(error);
             });
 
             await axios.get(this.requestItemMasterURL, {
