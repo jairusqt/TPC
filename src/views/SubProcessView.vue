@@ -5,7 +5,7 @@
       <h3>TPC - Setup Sub Process</h3>
     </div>
     <div class="col-md-3">
-      <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#update"><span class=" align-bottom material-symbols-outlined">update</span>Update</button>
+      <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#update"><span class=" align-bottom material-symbols-outlined">update</span>Update Sequence</button>
     </div>
     <div class="col-md-3 float-end">
       <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
@@ -16,6 +16,7 @@
       :data="subProcess"
       :columns="columns"
       class="display table"
+      @click="getData"
     />
   </div>
   
@@ -151,7 +152,70 @@
       </div>
     </div>
   </div>
-
+  <div class="modal fade" id="editSubProcess" tabindex="-1" aria-labelledby="editSubProcess" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editSubProcess">Edit Sub Process Details</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="col-md-12 mx-auto row">
+            <div class="col-md-4 p-2">
+              <label for="e_section">Section Code: </label>
+              <select class="form-select" v-model="e_section_id" id="e_section" disabled>
+                <option v-for="sec in section" :key="sec.section_id" :value="sec.section_id">{{sec.section_code}}</option>
+              </select>
+            </div>
+            <div class="col-md-8 p-2">
+              <label for="e_key_process">Key Process Description:</label>
+              <select class="form-select" v-model="e_Pid" id="e_key_process" disabled>
+                <option v-for="key in keyProcess" :key="key.Pid" :value="key.Pid">{{key.Pname}}</option>
+              </select>
+            </div>
+            <div class="col-md-12 p-2">
+              <label for="e_SubPname">Sub Process Description:</label>
+              <input v-model="e_SubPname" class="form-control" type="text">
+            </div>
+            <div class="col-md-6 p-2">
+              <label for="e_process_type">Process Type: </label>
+              <select v-model="e_process_type" class="form-control" id="e_process_type">
+                <option value="Production">Production</option>
+                <option value="Quality Control">Quality Control</option>
+              </select>
+            </div>
+            <div class="col-md-3 p-2">
+              <label for="e_status">Sub Process Status: </label>
+              <select v-model="e_status" class="form-control" id="e_status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="col-md-3 p-2">
+              <label for="e_sequence_number">Sequence No.</label>
+              <input v-model="e_sequence_number" class="form-control" type="text" disabled>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="updateSubProcess">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Alert</strong>
+        <small>a while ago</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        {{alert}}
+      </div>
+    </div>
+  </div>
 </template>
 <script>
 import axios from 'axios';
@@ -161,6 +225,7 @@ import DataTablesCore from 'datatables.net-bs5';
 import 'datatables.net-responsive';
 import 'datatables.net-select';
 DataTable.use(DataTablesCore);
+import * as bootstrap from 'bootstrap'
 export default {
 components: {
   DataTable,
@@ -175,6 +240,7 @@ data() {
     KeyProcessOptionsGetURL: 'http://172.16.2.69/TPC/GetKeyProcessOptions.php',
     SubProcessOptionsGetURL: 'http://172.16.2.69/TPC/GetSubProcessOptions.php',
     SubProcessOrderPutURL: 'http://172.16.2.69/TPC/PutSubProcessOrder.php',
+    SubProcessPutURL: 'http://172.16.2.69/TPC/PutSubProcess.php',
 
     section_id: null,
     Pid: null,
@@ -185,10 +251,21 @@ data() {
     sequence_number: null,
 
     validateSubPname: false,
+    tempSubPid: '',
 
     section: [],
     keyProcess: [],
     subProcess: [],
+
+    alert: '',
+
+    e_SubPid: '',
+    e_section_id: '',
+    e_Pid: '',
+    e_SubPname: '',
+    e_sequence_number: '',
+    e_process_type: '',
+    e_status: '',
 
     keyProcessOptions: [],
     subProcessList:[],
@@ -198,6 +275,7 @@ data() {
     subProcessOrder: [],
 
     columns: [
+      { title: 'No.', data: 'SubPid' },
       { title: 'Section Code', data: 'section_code' },
       { title: 'Process Description', data: 'Pname' },
       { title: 'Sub Process Description', data: 'SubPname' },
@@ -205,6 +283,11 @@ data() {
       { title: 'Sequence Number', data: 'sequence_number' },
       { title: 'Status', data: 'sub_process_status' },
       { title: 'Date Created', data: 'date_created' },
+      { title: 'Open', data: null, orderable: false, 
+        render: function (data) { 
+            return '<button data-bs-toggle="modal" data-bs-target="#editSubProcess" class="btn w-100"><span class="material-symbols-outlined">open_in_new</span></button'
+        } 
+      },
       // Add more columns as needed
     ],
     items: [],
@@ -217,9 +300,80 @@ computed: {
   },
 },
 methods: {
+  getData(){
+    if(event.target.tagName == 'BUTTON'){
+        const row = event.target.parentNode.parentNode;
+        const cell = row.querySelector('td');
+        this.tempSubPid = parseInt(cell.textContent);
+    }
+    if(event.target.tagName == 'SPAN'){
+        const row = event.target.parentNode.parentNode.parentNode;
+        const cell = row.querySelector('td');
+        this.tempSubPid = parseInt(cell.textContent);
+    }
+    for(const sub of this.subProcess){
+      if(this.tempSubPid === parseInt(sub.SubPid)){
+        this.e_section_id = sub.section_id;
+        this.e_Pid = sub.Pid;
+        this.e_SubPid = sub.SubPid;
+        this.e_SubPname = sub.SubPname;
+        this.e_sequence_number = sub.sequence_number;
+        this.e_process_type = sub.process_type;
+        this.e_status = sub.sub_process_status;
+      }
+    }
+  },
+  updateSubProcess(){
+    const toastLiveExample = document.getElementById('liveToast');
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+    let isDuplicate = false;
+    let isNull = false;
+    for(const sub of this.subProcess){
+      const formattedESubPname = this.e_SubPname.replace(/\s+/g, '').toUpperCase();
+      const formattedSubPname = sub.SubPname.replace(/\s+/g, '').toUpperCase();
+      if(formattedESubPname === formattedSubPname){
+        isDuplicate = true;
+        toastBootstrap.show();
+        this.alert = 'System Warning: Duplicate Entry Detected. Please perform a comprehensive verification';
+        break;
+      }
+    }
+    const formattedESubPname = this.e_SubPname.replace(/\s+/g, '').toUpperCase();
+    if(formattedESubPname === ''){
+      isNull = true;
+      toastBootstrap.show();
+      this.alert = 'System Alert: Detection of an Unassigned Sub Process Description. Please conduct a thorough review';
+    } else {
+      isNull = false;
+    }
+
+    if(isDuplicate || isNull){
+      console.log('cancel');
+    } else {
+      axios.put(this.SubProcessPutURL, {
+        SubPname: this.e_SubPname,
+        process_type: this.e_process_type,
+        sub_process_status: this.e_status,
+        SubPid: this.e_SubPid,
+      }).then(response => {
+        if(response.data.message === 'Sub Process updated successfully'){
+          this.alert = 'Your data has been successfully submitted! Thank you for providing the required information.';
+          toastBootstrap.show();
+          for(const sub of this.subProcess){
+            if(this.e_SubPid === sub.SubPid){
+              sub.SubPname = this.e_SubPname;
+              sub.process_type = this.e_process_type;
+              sub.sub_process_status = this.e_status;
+            }
+          }
+        }
+      }).catch(error => {
+        console.log(error);
+      });
+    }
+  },
   onChange(event) {
       this.reorder()
-      console.log(this.subProcessOrder);
   },
   reorder() {
       this.subProcessOrder.forEach((sub, index) => (sub.sequence_number = index + 1))
@@ -270,7 +424,6 @@ methods: {
         SubPname: this.SubPname,
         sub_process_status: this.sub_process_status,
         sub_process_type: this.sub_process_type,
-
       });
       this.SubPname = '';
       this.sequence_number++;
@@ -330,8 +483,6 @@ methods: {
     }).then(response => {
       this.subProcessOrder = response.data;
       this.subProcessOrder.sort((a, b) => a.sequence_number - b.sequence_number); 
-      // this.subProcessOrder = response.data;
-      // console.log(this.subProcessOrder);
     }).catch(error => {
       console.log(error);
     });

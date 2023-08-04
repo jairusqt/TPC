@@ -413,7 +413,7 @@
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
           <div class="toast-header">
             <strong class="me-auto">Alert</strong>
-            <small>11 mins ago</small>
+            <small>a while ago</small>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
           </div>
           <div class="toast-body">
@@ -543,7 +543,6 @@
                 let processFlowKeyResponse = '';
                 let filterNull = false;
                 let isDuplicate = false;
-                console.log(this.keyProcessFlow)
                 // checks for empty or null Pid in the selection
                 for(const key of this.keyProcessFlow){
                     if(!Object.is(key.Pid, '')){
@@ -989,18 +988,20 @@
                         }
                     }).then(response => {
                         for(const sub of response.data){
-                            this.subProcessFlow.push({
-                                Pid: sub.Pid,
-                                SubPid: sub.SubPid,
-                                SubPname: sub.SubPname,
-                                sequence_number: sub.sequence_number,
-                                standard_time: 0,
-                                machine_time: 0,
-                                sampling: false,
-                                uncontrolled: false,
-                                order: order,
-                                sequence_no: '',
-                            });
+                            if(sub.sub_process_status === 'Active'){
+                                    this.subProcessFlow.push({
+                                    Pid: sub.Pid,
+                                    SubPid: sub.SubPid,
+                                    SubPname: sub.SubPname,
+                                    sequence_number: sub.sequence_number,
+                                    standard_time: 0,
+                                    machine_time: 0,
+                                    sampling: false,
+                                    uncontrolled: false,
+                                    order: order,
+                                    sequence_no: '',
+                                });
+                            }
                         }
                         this.subProcessFlow.sort((a, b) => a.order - b.order);
                         this.addSubSequenceNumber();

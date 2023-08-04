@@ -25,16 +25,16 @@
                 <div class="col-md-12 row">
                     <div class="col-md-5 mx-auto row h-100 sticky-top">
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" disabled>New</button>
+                            <button ref="new" class="btn btn-outline-primary w-100" @click="newFormAssignment" disabled>New</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" @click="submitFormAssignment">Save</button>
+                            <button ref="save" class="btn btn-outline-primary w-100" @click="submitFormAssignment">Save</button>
                         </div>
                         <div class="col-md-4 p-2">
                             <button class="btn btn-outline-primary w-100" data-bs-dismiss="modal">Close</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" disabled>Generate QR Code</button>
+                            <button class="btn btn-outline-primary w-100" @click="test">Generate QR Code</button>
                         </div>
                         <div class="col-md-4 p-2">
                             <button class="btn btn-outline-primary w-100" disabled>Special Instructions</button>
@@ -49,7 +49,7 @@
                         <hr>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" @change="instructionSwitch" type="checkbox" role="switch" id="special_instruction">
+                                <input ref="instruction" class="form-check-input" @change="instructionSwitch" type="checkbox" role="switch" id="special_instruction">
                                 <label class="form-check-label" for="special_instruction">Special Instruction</label>
                             </div>
                         </div>
@@ -61,58 +61,58 @@
                         </div>
                         <div class="col-md-4 p-2">
                             <label for="status">Form Status:</label>
-                            <input type="text" class="form-control" v-model="form_status" disabled>
+                            <input type="text" class="form-control" v-model="form_status" id="status" disabled>
                         </div>
                         <div class="col-md-4 p-2">
-                            <label for="status">Assigned By:</label>
-                            <input type="text" class="form-control" v-model="assigned_by" disabled>
+                            <label for="assigned_by">Assigned By:</label>
+                            <input type="text" class="form-control" v-model="assigned_by" id="assigned_by" disabled>
                         </div>
                         <div class="col-md-4 p-2">
-                            <label for="status">Date Created:</label>
-                            <input type="text" class="form-control" v-model="date_created" disabled>
+                            <label for="date_created">Date Created:</label>
+                            <input type="text" class="form-control" v-model="date_created" id="date_created" disabled>
                         </div>
                         <hr>
                         <div class="col-md-2 p-2">
                             <label for="section_code">Section:</label>
-                            <select id="section_code" class="form-select" v-model="section_id" @change="generatePartsNumber(section_id)">
+                            <select ref="section" id="section_code" class="form-select" v-model="section_id" @change="generatePartsNumber(section_id)">
                                 <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
                             </select>
                         </div>
                         <div class="col-md-5 p-2">
-                            <label for="parts_number">Parts Number: </label>
-                            <input list="parts_number_list" type="text" id="parts_number" v-model="parts_number" class="form-select" autocomplete="off" @input="generateSectionRequest(section_id, parts_number)">
+                            <label  for="parts_number">Parts Number: </label>
+                            <input ref="parts_number" list="parts_number_list" type="text" id="parts_number" v-model="parts_number" class="form-select" autocomplete="off" @input="generateSectionRequest(section_id, parts_number)">
                             <datalist id="parts_number_list">
                                 <option v-for="pn in partsNumber" :value="pn.parts_number">{{pn.parts_number}}</option>
                             </datalist>
                         </div>
                         <div class="col-md-5 p-2">
                             <label for="lot_number">Lot Number: </label>
-                            <select id="lot_number" class="form-select" v-model="lot_number">
+                            <select ref="lot_number" id="lot_number" class="form-select" v-model="lot_number">
                                 <option v-for="ln in lotNumber" :value="ln.lot_number">{{ln.lot_number}}</option>
                             </select>
                         </div>
                         <div class="col-md-6 p-2">
-                            <label for="wafer_no_from">Wafer Number From:</label>
-                            <input id="wafer_no_from" type="number" class="form-control" v-model="wafer_number_from">
+                            <label  for="wafer_no_from">Wafer Number From:</label>
+                            <input ref="wafer_no_from" id="wafer_no_from" type="number" class="form-control" v-model="wafer_number_from">
                         </div>
                         <div class="col-md-6 p-2">
-                            <label for="wafer_no_to">Wafer Number To:</label>
-                            <input id="wafer_no_to" type="number" class="form-control" v-model="wafer_number_to">
+                            <label  for="wafer_no_to">Wafer Number To:</label>
+                            <input ref="wafer_no_to" id="wafer_no_to" type="number" class="form-control" v-model="wafer_number_to">
                         </div>
                         <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
                             <label for="po_number">PO Number: </label>
-                            <input list="po_number_list" @input="generateCCICustomerDetails(parts_number, po_number)" type="text" id="po_number" v-model="po_number" class="form-select" autocomplete="off" >
+                            <input ref="po_number" list="po_number_list" @input="generateCCICustomerDetails(parts_number, po_number)" type="text" id="po_number" v-model="po_number" class="form-select" autocomplete="off" >
                             <datalist id="po_number_list">
                                 <option v-for="po in poNumber" :value="po.po_number">{{po.po_number}}</option>
                             </datalist>
                         </div>
                         <div v-if="section_code === 'CCI'" class="col-md-6 p-2">
                             <label for="order_pn">Order PN:</label>
-                            <input type="text" id="order_pn" class="form-control">
+                            <input ref="order_pn" type="text" id="order_pn" class="form-control">
                         </div>
                         <div class="col-md-8 p-2">
                             <label for="item_code">Item Code:</label>
-                            <input @input="generateRevisionNumber(section_id, parts_number, item_code)" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code" autocomplete="off">
+                            <input ref="item_code" @input="generateRevisionNumber(section_id, parts_number, item_code)" list="item_code_list" type="text" id="item_code" class="form-select" v-model="item_code" autocomplete="off">
                             <datalist id="item_code_list">
                                 <option v-for="ic in itemCode" :value="ic.item_code">{{ic.item_code}}</option>
                             </datalist>
@@ -123,7 +123,7 @@
                         </div>
                         <div v-else class="col-md-4 p-2">
                             <label for="material_lot_number">Material Lot Number:</label>
-                            <input type="text" id="material_lot_number" class="form-control">
+                            <input type="text" id="material_lot_number" class="form-control" disabled>
                         </div>
                         <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
                             <label for="customer_pn">Customer PN:</label>
@@ -143,7 +143,7 @@
                         </div>
                         <div class="col-md-8 p-2">
                             <label for="jo_number">JO number: </label>
-                            <input type="text" v-model="jo_number" class="form-control">
+                            <input ref="jo_number" type="text" v-model="jo_number" class="form-control">
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="revision_number">Revision Number: </label>
@@ -151,13 +151,13 @@
                         </div>
                         <div class="col-md-6 p-2">
                             <label for="date_issued">Date Issued: </label>
-                            <input type="date" v-model="date_issued" id="date_issued" class="form-control">
+                            <input ref="date_issued" type="date" v-model="date_issued" id="date_issued" class="form-control">
                         </div>
                     </div>
     
                     <div class="col-md-7 border rounded">
                         <div class="row mx-auto p-2 text-center" v-if="section_code !== ''">
-                            <p class="fs-3"><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
+                            <p class="fs-4"><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
                         </div>
                         <hr>
                         <table class="table table-responsive">
@@ -188,7 +188,7 @@
                                         <td></td>
                                         <td>
                                             <div class="form-check form-switch">
-                                                <input :ref="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSub'+flowSub.flow_sub_id" @change="processFlowSubStatus(flowSub.flow_sub_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                <input ref="item_status" :id="'processFlowSub'+flowSub.flow_sub_id" @change="processFlowSubStatus(flowSub.flow_sub_id)" class="form-check-input" type="checkbox" role="switch" checked>
                                                 <label class="form-check-label" :for="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSubLabel'+flowSub.flow_sub_id">
                                                     <span class="badge rounded-pill text-bg-primary">{{flowSub.status}}</span>
                                                 </label>
@@ -226,7 +226,7 @@
                                                                 <td>{{item.max_value}}</td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
-                                                                        <input :ref="'itemCondition'+item.item_id" :id="'itemCondition'+item.item_id" @change="itemConditionStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                                        <input ref="condition_status" :id="'itemCondition'+item.item_id" @change="itemConditionStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
                                                                         <label class="form-check-label" :for="'itemCondition'+item.item_id" :id="'itemConditionLabel'+item.item_id">
                                                                             <span class="badge rounded-pill text-bg-primary">{{item.status}}</span>
                                                                         </label>
@@ -256,10 +256,10 @@
                 <div class="col-md-12 row">
                     <div class="col-md-5 mx-auto row h-100 sticky-top">
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" disabled>New</button>
+                            <button class="btn btn-outline-primary w-100" disabled>Delete</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" @click="submitFormAssignment">Save</button>
+                            <button class="btn btn-outline-primary w-100" >Save</button>
                         </div>
                         <div class="col-md-4 p-2">
                             <button class="btn btn-outline-primary w-100" data-bs-dismiss="modal">Close</button>
@@ -268,26 +268,26 @@
                             <button class="btn btn-outline-primary w-100" disabled>Generate QR Code</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" disabled>Special Instructions</button>
+                            <button ref="viewInstruction" class="btn btn-outline-primary w-100" disabled>Special Instructions</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button class="btn btn-outline-primary w-100" disabled>Attachments</button>
+                            <button ref="viewAttachment" class="btn btn-outline-primary w-100" disabled>Attachments</button>
                         </div>
                         <hr>
                         <div class="col-md-4">
-                            <p>Form Assignment No. : <strong>{{formAssignmentId}}</strong></p>
+                            <p>Form Assignment No. : <strong>{{viewForm_Id}}</strong></p>
                         </div>
                         <hr>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" @change="instructionSwitch" type="checkbox" role="switch" id="special_instruction">
-                                <label class="form-check-label" for="special_instruction">Special Instruction</label>
+                                <input class="form-check-input" type="checkbox" role="switch" id="viewSpecial_instruction">
+                                <label class="form-check-label" for="viewSpecial_instruction">Special Instruction</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
-                                <input ref="attachment" class="form-check-input" @change="attachmentSwitch" type="checkbox" role="switch" id="attachment">
-                                <label class="form-check-label" for="attachment">Attachment</label>
+                                <input ref="viewAttachment" class="form-check-input" type="checkbox" role="switch" id="viewAttachment" disabled>
+                                <label class="form-check-label" for="viewAttachment">Attachment</label>
                             </div>
                         </div>
                         <div class="col-md-4 p-2">
@@ -354,7 +354,7 @@
                         </div>
                         <div v-else class="col-md-4 p-2">
                             <label for="material_lot_number">Material Lot Number:</label>
-                            <input type="text" id="material_lot_number" class="form-control">
+                            <input type="text" id="material_lot_number" class="form-control" disabled>
                         </div>
                         <div v-if="section_code ==='CCI'" class="col-md-3 p-2">
                             <label for="customer_pn">Customer PN:</label>
@@ -419,7 +419,7 @@
                                         <td></td>
                                         <td>
                                             <div class="form-check form-switch">
-                                                <input :ref="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSub'+flowSub.flow_sub_id" @change="processFlowSubStatus(flowSub.flow_sub_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                <input ref="viewItem_status" :id="'processFlowSub'+flowSub.flow_sub_id" @change="processFlowSubStatus(flowSub.flow_sub_id)" class="form-check-input" type="checkbox" role="switch" checked>
                                                 <label class="form-check-label" :for="'processFlowSub'+flowSub.flow_sub_id" :id="'processFlowSubLabel'+flowSub.flow_sub_id">
                                                     <span class="badge rounded-pill text-bg-primary">{{flowSub.status}}</span>
                                                 </label>
@@ -457,7 +457,7 @@
                                                                 <td>{{item.max_value}}</td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
-                                                                        <input :ref="'itemCondition'+item.item_id" :id="'itemCondition'+item.item_id" @change="itemConditionStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
+                                                                        <input ref="viewCondition_status" :id="'itemCondition'+item.item_id" @change="itemConditionStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" checked>
                                                                         <label class="form-check-label" :for="'itemCondition'+item.item_id" :id="'itemConditionLabel'+item.item_id">
                                                                             <span class="badge rounded-pill text-bg-primary">{{item.status}}</span>
                                                                         </label>
@@ -495,9 +495,9 @@
     data() {
         return {
             formAssignmentURL: 'http://172.16.2.69/tpc/GetFormAssignment.php',
-            formAssignmentPostURL: 'http://172.16.2.69/tpcrequesthandlers/FormAssignmentRequestHandler.php',
-            formAssignmentItemPostURL: 'http://172.16.2.69/tpcrequesthandlers/ProcessFlowSubPostRequestHandler.php',
-            itemConditionPostURL: 'http://172.16.2.69/tpcrequesthandlers/ItemConditionPostRequestHandler.php',
+            formAssignmentPostURL: 'http://172.16.2.69/tpc/PostFormAssignment.php',
+            formAssignmentItemPostURL: 'http://172.16.2.69/tpc/PostFormAssignmentItem.php',
+            itemConditionPostURL: 'http://172.16.2.69/tpc/PostFormAssignmentItemCondition.php',
             sectionURL: 'http://172.16.2.69/tpc/GetSection.php',
             processFlowURL: 'http://172.16.2.69/tpc/GetProcessFlow.php',
             keyProcessURL: 'http://172.16.2.69/tpc/GetKeyProcess.php',
@@ -528,7 +528,7 @@
             itemCode: [],
 
             form_status: 'Unposted',
-            assigned_by: '3141 - Casul',
+            assigned_by: '3141',
             date_created: '',
             parts_number: '',
             section_id: '',
@@ -549,6 +549,9 @@
             hasInstruction: 0,
 
             viewForm_Id: '',
+
+            viewProcessFlowSub: [],
+            viewItemConditon: [],
 
             section_code: '',
             flow_main_id: '',
@@ -592,7 +595,11 @@
             const cell = row.querySelector('td');
             this.viewForm_Id = cell.textContent;
         }
-        console.log(this.viewForm_Id);
+        for(const form of this.formAssignment){
+            if(parseInt(this.viewForm_Id) === parseInt(form.assignment_id)){
+                console.log(form);
+            }
+        }
        },
        generatePartsNumber(section_id){
         this.partsNumber = [];
@@ -876,8 +883,54 @@
                     has_attachment: this.hasAttachment,
                     has_instruction: this.hasInstruction
                 }).then(response => {
-                    if(response.data.message === 'Form Assignment inserted successfully'){
+                    for(const sec of this.section){
+                        if(parseInt(this.section_id) === parseInt(sec.section_id)){
+                            this.formAssignment.push({
+                                assignment_id: this.formAssignmentId,
+                                section_id: this.section_id,
+                                section_code: sec.section_code,
+                                lot_number: this.lot_number,
+                                po_number: this.po_number? this.po_number: '-',
+                                item_parts_number: this.parts_number,
+                                quantity: this.order_quantity,
+                                delivery_date: this.delivery_date? this.delivery_date: null,
+                                jo_number: this.jo_number? this.jo_number: '-',
+                                revision_number: this.revision_number,
+                                date_issued: this.date_issued,
+                                assigned_by: this.assigned_by,
+                                date_created: this.date_created,
+                                wafer_number_from: this.wafer_number_from,
+                                wafer_number_to: this.wafer_number_to,
+                                item_code: this.item_code,
+                                assignment_status: this.form_status,
+                                has_attachment: this.hasAttachment,
+                                has_instruction: this.hasInstruction
+                            });
+                        }
+                    }
+                    if(response.data.message === 'Form Assignment inserted successfully' && this.processFlowSub.length > 0){
+                        this.$refs.section.disabled = true;
+                        this.$refs.parts_number.disabled = true;
+                        this.$refs.lot_number.disabled = true;
+                        this.$refs.wafer_no_from.disabled = true;
+                        this.$refs.wafer_no_to.disabled = true;
+                        this.$refs.instruction.disabled = true;
+                        this.$refs.attachment.disabled = true;
+                        this.$refs.item_code.disabled = true;
+                        this.$refs.jo_number.disabled = true;
+                        this.$refs.date_issued.disabled = true;
+                        for(const sec of this.section){
+                            if(parseInt(this.section_id) === parseInt(sec.section_id)){
+                                if(sec.section_code === 'CCI'){
+                                    this.$refs.po_number.disabled = true;
+                                    this.$refs.order_pn.disabled = true;
+                                }
+                            }
+                        }
                         for(const flowSub of this.processFlowSub){
+                            for(const item of this.$refs.item_status){
+                                item.disabled = true;
+                            }
                             axios.post(this.formAssignmentItemPostURL, {
                                 assignment_id: this.formAssignmentId,
                                 sequence_number: flowSub.sequence_number,
@@ -888,23 +941,34 @@
                                 assignment_status: flowSub.status
                             }).then(response => {
                                 if(response.data.message === 'Process Flow Sub inserted successfully'){
-                                    console.log(response.data);
-                                    for(const item of this.itemCondition){
-                                        if(parseInt(flowSub.SubPid) === parseInt(item.SubPid)){
-                                            axios.post(this.itemConditionPostURL, {
-                                                assignment_id: this.formAssignmentId,
-                                                sequence_number: item.sequence_number,
-                                                SubPid: item.SubPid,
-                                                detail_description: item.detail_description,
-                                                field_type: item.field_type,
-                                                min_value: item.min_value,
-                                                max_value: item.max_value,
-                                                typical_value: item.typical_value,
-                                            }).then(response => {
-                                                console.log(response.data);
-                                            }).catch(error => {
-                                                console.log(error);
-                                            });
+                                    for(const condition of this.$refs.condition_status){
+                                        condition.disabled = true;
+                                    }
+                                    if(this.itemCondition.length > 0){
+                                        this.$refs.save.disabled = false;
+                                        this.$refs.new.disabled = true;
+                                    } else {
+                                        for(const item of this.itemCondition){
+                                            if(parseInt(flowSub.SubPid) === parseInt(item.SubPid)){
+                                                axios.post(this.itemConditionPostURL, {
+                                                    assignment_id: this.formAssignmentId,
+                                                    sequence_number: item.sequence_number,
+                                                    SubPid: item.SubPid,
+                                                    detail_description: item.detail_description,
+                                                    field_type: item.field_type,
+                                                    min_value: item.min_value,
+                                                    max_value: item.max_value,
+                                                    typical_value: item.typical_value,
+                                                    condition_status: item.status
+                                                }).then(response => {
+                                                    if(response.data.message === 'Item Condition inserted successfully'){
+                                                        this.$refs.save.disabled = true;
+                                                        this.$refs.new.disabled = false;
+                                                    }
+                                                }).catch(error => {
+                                                    console.log(error);
+                                                });
+                                            } 
                                         }
                                     }
                                 }
@@ -917,6 +981,47 @@
                     console.log(error);
                 });
        },
+       test(){
+        
+       },
+       newFormAssignment(){
+            this.$refs.section.disabled = false;
+            this.$refs.parts_number.disabled = false;
+            this.$refs.lot_number.disabled = false;
+            this.$refs.wafer_no_from.disabled = false;
+            this.$refs.wafer_no_to.disabled = false;
+            this.$refs.instruction.disabled = false;
+            this.$refs.attachment.disabled = false;
+            this.$refs.item_code.disabled = false;
+            this.$refs.jo_number.disabled = false;
+            this.$refs.date_issued.disabled = false;
+            for(const sec of this.section){
+                if(parseInt(this.section_id) === parseInt(sec.section_id)){
+                    if(sec.section_code === 'CCI'){
+                        this.$refs.po_number.disabled = true;
+                        this.$refs.order_pn.disabled = true;
+                        this.po_number = '';
+                        this.order_pn = '';
+                    }
+                }
+            }
+            this.section_id = '';
+            this.parts_number = '';
+            this.lot_number = '';
+            this.wafer_number_from = 0;
+            this.wafer_number_to = 0;
+            this.item_code = '';
+            this.jo_number = '';
+            this.date_issued = '';
+            this.revision_number = '';
+            this.processFlowSub = [];
+            this.itemCondition = [];
+            this.hasAttachment = false;
+            this.hasInstruction = false;
+            this.formAssignmentId = this.formAssignmentId + 1;
+            this.$refs.save.disabled = false;
+            this.$refs.new.disabled = true;
+       }
     },
     async created() {
         await axios.get(this.sectionURL, {}).
