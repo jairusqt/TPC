@@ -1,55 +1,64 @@
 <template>
-  <div class="p-3">
-    <div class="col-lg-12 col-md-12 row">
-    <div class="col-md-12">
-      <header>
-        <div class="col-md-12">
-          <div class="col-md-1 float-end pb-3">
-            <button class="btn btn-light float-end w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling"><span class="material-symbols-outlined align-bottom">menu</span></button>
-          </div>
-        </div>
-      </header>
-    </div>
-    
-    <div class="col-md-12 mx-auto">
-      <RouterView 
-      />
-    </div>
+  <div class="mx-auto">
+    <nav class="navbar bg-body-tertiary shadow rounded bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" ><img src="./assets/tpc-logo.png" alt="" style="width: 15%"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+    </nav>
   </div>
+
+  <div class="">
+    <RouterView 
+    />
   </div>
-  <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+  <div class="offcanvas shadow offcanvas-start rounded-start rounded-4 text-bg-light bg-gradient border-primary-subtle" ref="offcanvas" data-bs-scroll="true" data-bs-backdrop="true" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
     <div class="offcanvas-header">
-       <img alt="Vue logo" class="logo p-2 rounded" style="background-color: #06b6d4;" src="@/assets/logo-tecdia.png" width="100" height="75" />
-      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+       <RouterLink to="/"><img alt="Vue logo" class="logo p-2 rounded border-secondary-subtle shadow" style="background-color: #06b6d4;" src="@/assets/logo-tecdia.png" width="160" height="75" /></RouterLink>
     </div>
     <div class="offcanvas-body">
-      <div class="p-1">
-        <RouterLink to="/" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">home</span>Home</RouterLink>
+      <div class="pb-1">
+        <RouterLink to="/" tag="button" class="btn border-bottom btn-lg btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">home</span>Home</RouterLink>
       </div>
-      <div class="p-1">
-        <RouterLink to="/section" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">warehouse</span>Setup Section</RouterLink>
+      <div class="pb-1">
+        <RouterLink to="/section" tag="button" class="btn border-bottom btn-lg btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">warehouse</span>Section</RouterLink>
       </div>
-      <div class="p-1">
-        <RouterLink to="/keyProcess" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">key</span>Setup Key Process</RouterLink>
+      <div class="pb-1">
+        <RouterLink to="/keyProcess" tag="button" class="btn btn-lg border-bottom btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">key</span>Key Process</RouterLink>
       </div>
-      <div class="p-1">
-        <RouterLink to="/subProcess" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">account_tree</span>Setup Sub-Process</RouterLink>
+      <div class="pb-1">
+        <RouterLink to="/subProcess" tag="button" class="btn btn-lg border-bottom btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">account_tree</span>Sub Process</RouterLink>
       </div>
-      <div class="p-1">
-        <RouterLink to="/processFlow" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">account_tree</span>Setup Process Flow</RouterLink>
+      <div class="pb-1">
+        <a @click="redirectToYao" class="btn btn-lg border-bottom btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">place_item</span>Item Condition</a>
       </div>
-      <div class="p-1">
-        <RouterLink to="/processFlowv2" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">account_tree</span>Setup Process Flow v2</RouterLink>
+      <div class="pb-1">
+        <RouterLink to="/processFlowv2" tag="button" class="btn btn-lg border-bottom btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">schema</span>Process Flow</RouterLink>
       </div>
-      <div class="p-1">
-        <RouterLink to="/formAssignment" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">assignment</span>Form-Assignment</RouterLink>
+      <div class="pb-1">
+        <RouterLink to="/formAssignmentv2" tag="button" class="btn btn-lg border-bottom btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">assignment</span>Form Assignment</RouterLink>
       </div>
-      <div class="p-1">
-        <RouterLink to="/formAssignmentv2" tag="button" class="btn w-100 text-start btn-light"><span class="align-bottom pe-2 material-symbols-outlined ">assignment</span>Form-Assignment v2</RouterLink>
+      <div class="pb-1">
+        <a @click="redirectToDee" class="btn btn-lg border-bottom btn-light w-100 text-start px-4 shadow"><span class="align-bottom material-symbols-outlined pe-5">grading</span>TPC Main Form</a>
       </div>
     </div>
   </div>
+  <!-- <footer class="fixed-bottom d-print-none">
+    <div class="bg text-center p-2">
+      © Tecdia Software Developer Team - 2023
+    </div>
+  </footer> -->
 </template>
+<style scoped>
+   .bg{
+    background-color: #7dd3fc;
+   }
+   .offcanvas-start {
+    max-width: 400px; /* Set your desired width here */
+  }
+</style>
 <script>
 import { RouterLink, RouterView } from 'vue-router'
 import axios from 'axios'
@@ -58,6 +67,14 @@ export default {
     return {
 
     }
+  },
+  methods: {
+    redirectToYao(){
+        location.replace('http://172.16.2.13/YAO/');
+    },
+    redirectToDee(){
+        location.replace('http://172.16.2.61/tpc_ver2');
+    },
   },
   async created() {
     
@@ -68,6 +85,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-
-</style>

@@ -903,7 +903,7 @@ methods: {
         }).catch(error => {
             console.log(error)
         });
-    },
+    },  
     handleFileUpload(event) {
         for(const attached of this.attachmentDetails){
             if(attached.SubPid === this.attachmentSelectedSubPid){
@@ -932,6 +932,7 @@ methods: {
     },
     saveAttachments(){
        for(const att of this.attachmentDetails){
+        console.log(att);
         for(const sel of this.selectedFiles){
             if(att.SubPid == sel.SubPid){
                 for(const file of att.files){
@@ -943,6 +944,7 @@ methods: {
         }
         for(let i = 0; i < att.files.length; i++){
             const file = att.files[i];
+            console.log(file);
             const formData = new FormData();
             formData.append('file', file);
             formData.append('Data', JSON.stringify({
@@ -955,13 +957,13 @@ methods: {
                 assignment_status: this.viewAssignment_Status,
                 attachment_remarks: att.files[i].remarks
             }))
-            axios.post('http://172.16.2.69/tpcrequesthandlers/handleFileUpload.php', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            }
-            }).then(response => {
-                console.log(response.data);
-            })
+            // axios.post('http://172.16.2.69/tpcrequesthandlers/handleFileUpload.php', formData, {
+            // headers: {
+            //   'Content-Type': 'multipart/form-data',
+            // }
+            // }).then(response => {
+            //     console.log(response.data);
+            // })
         }
        }
         

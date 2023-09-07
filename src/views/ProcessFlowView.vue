@@ -114,12 +114,12 @@
                                         <option v-for="sec in section" :value="sec.section_id" v-show="sec.section_code === 'SWP' || sec.section_code === 'CCD'">{{sec.section_code}}</option>
                                     </select>
                                 </td>
-                                <td v-if="row.section_id === '674'">
+                                <!-- <td v-if="row.section_id === '674'">
                                     <select ref="keys" @change="getSubProcess(row.Pid, index)" v-model="row.Pid" class="form-select">
                                         <option v-for="(ccd, index) in tempCCDOptions" :value="ccd.Pid">{{ccd.Pname}}</option>
                                     </select>
-                                </td>
-                                <td v-else>
+                                </td> -->
+                                <td>
                                     <select ref="keys" @change="getSubProcess(row.Pid, index)" v-model="row.Pid" class="form-select">
                                         <option v-for="(process, index) of keyProcess" :value="process.Pid" :key="index" >{{ process.Pname }}</option>
                                     </select>

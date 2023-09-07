@@ -1,23 +1,24 @@
 
 <template>
 
-    <div class="col-md-12 row mx-auto p-3 container">
+    <div class="col-md-12 row mx-auto py-3 container">
         <div class="col-md-9">
-            <h3>Tablet Process Card - Setup Process Flow</h3>
+            <h3>Tablet Process Card - <em>Setup Process Flow</em></h3>
         </div>
         <div class="col-md-3 float-end">
-            <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#createProcessFlow">
+            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#createProcessFlow">
                 Create Process Flow
             </button>
         </div>
-        <div class="p-3">
-            <DataTable
-            :data="processFlow"
-            :columns="columns"
-            class="display table"
-            @click="getFlowId"
-        />
-        </div>
+    </div>
+    <div class="container table-responsive">
+        <DataTable
+        :data="processFlow"
+        :columns="columns"
+        class="display table"
+        @click="getFlowId"
+        :options="tableOptions"
+    />
     </div>
 
     
@@ -26,92 +27,96 @@
         <div class="modal-dialog modal-fullscreen">
           <div class="modal-content">
             <div class="modal-header">
-              <div class="col-md-12 row">
-                  <div class="col-md-1">
+              <div class="col-xl-12 col-lg-6 row">
+                  <div class="col-xl-1 col-lg-4">
                       <button @click="clearField" ref="clearBtn" class="btn btn-outline-primary w-100 h-100" disabled>Clear</button>
                   </div>
-                  <div class="col-md-1">
+                  <div class="col-xl-1 col-lg-4">
                       <button @click="submitProcessFlow" ref="saveBtn" class="btn btn-outline-primary w-100 h-100">Save</button>
                   </div>
-                  <div class="col-md-1">
+                  <div class="col-xl-1 col-lg-4">
                       <button class="btn btn-outline-primary w-100 h-100" data-bs-dismiss="modal">Close</button>
                   </div>
               </div>
             </div>
             <div class="modal-body">
               <div class="col-md-12 border rounded p-3 mx-auto row">
-                <div class="col-md-1 p-1">
+                <div class="col-xl-1 col-lg-1 p-1">
                     <label for="flow_no">Flow No.</label>
                     <input id="flow_no"  type="text" class="form-control" v-model="mainFlowId" disabled>
                 </div>
-                <div class="col-md-1 p-1">
+                <div class="col-xl-1 col-lg-2 p-1">
                     <label for="flow_type">Flow Type</label>
                     <select id="flow_type" ref="flow_type" class="form-select" v-model="mainFlowType" >
                         <option value="Manual">Manual</option>
                         <option value="Auto">Auto</option>
                     </select>
                 </div>
-                <div class="col-md-2 p-1">
+                <div class="col-xl-2 col-lg-2 p-1">
                     <label for="parts_number">Parts Number</label>
                     <select @change="getItemCode(mainPartsNumber)" id="parts_number" ref="parts_number"  class="form-select" v-model="mainPartsNumber">
                         <option v-for="item in itemMaster" :value="item.item_parts_number">{{ item.item_parts_number }}</option>
                     </select>
                 </div>
-                <div class="col-md-2 p-1">
+                <div class="col-xl-2 col-lg-2 p-1">
                     <label for="item_code">Item Code</label>
                     <select @change="getItemDescriptionAndRevNo(mainPartsNumber, mainItemCode)" id="item_code" ref="item_code"  type="text" class="form-control" v-model="mainItemCode" disabled>
                         <option v-for="itemCode in itemList" :value="itemCode.item_code">{{itemCode.item_code}}</option>
                     </select>
                 </div>
-                <div class="col-md-3 p-1">
+                <div class="col-xl-3 col-lg-3 p-1">
                     <label for="item_description">Item Description</label>
                     <input id="item_description" ref="item_description"  type="text" class="form-control" v-model="mainItemDescription" disabled>
                 </div>
-                <div class="col-md-1 p-1">
+                <div class="col-xl-1 col-lg-2  p-1">
                     <label for="encoded_by">Encoded By</label>
                     <input id="encoded_by" ref="encoded_by" type="text" class="form-control" v-model="mainEncodedBy" disabled>
                 </div>
-                <div class="col-md-2 p-1">
+                <div class="col-xl-2 col-lg-2 p-1">
                     <label for="date_encoded">Date Encoded</label>
                     <input id="date_encoded" ref="date_encoded"  type="text" class="form-control" v-model="mainDateEncoded" disabled>
                 </div>
-                <div class="col-md-2 p-1">
+                <div class="col-xl-2 col-lg-2 p-1">
                     <label for="section">Section</label>
                     <select @change="fetchKeyProcess" ref="section" v-model="mainSection" class="form-select" id="section" disabled>
                         <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
                     </select>
                 </div>
-                <div class="col-md-2 p-1">
+                <div class="col-xl-2 col-lg-2 p-1">
                     <label for="revision_number">Revision Number</label>
                     <input id="revision_number" ref="revision_number" type="text" class="form-control" v-model="mainRevisionNumber" disabled>
                 </div>
-                <div class="col-md-2 p-1">
+                <div class="col-xl-2 col-lg-2 p-1">
                     <label for="flow_status">Flow Status</label>
                     <input id="flow_status" ref="flow_status" type="text" class="form-select" v-model="mainFlowStatus" disabled>
                 </div>
-                <div class="col-md-6 p-1">
+                <div class="col-xl-6 col-lg-4 p-1 ">
                     <label for="remarks">Remarks</label>
                     <input id="remarks" ref="remarks"  type="text" class="form-control" v-model="mainRemarks">
                 </div>
 
               </div>
               <div class="col-md-12 mx-auto row">
-                <div class="col-md-6 border-end">
+                <div class="col-md-5 border-end table-responsive">
                     <h6 class="p-2"><em>Key Process Flow</em></h6>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>No.</th>
-                                <th>Section</th>
-                                <th>Key Process Description</th>
-                                <th>Standard Time</th>
-                                <th>Machine Time</th>
+                                <th style="width: 15%">Opr. No.</th>
+                                <th style="width: 15%">Section</th>
+                                <th>Key Process</th>
+                                <th style="width: 15%">Standard Time</th>
+                                <th style="width: 15%">Machine Time</th>
                                 <th>Remove</th>
                             </tr>
                         </thead>
                         <tbody v-if="mainSectionCode === 'SWP'">
                             <tr v-for="(key, index) in keyProcessFlow">
                                 <td>{{index + 1}}</td>
+                                <td>
+                                    <input ref="keyOperationNumber" type="number" class="form-control" v-model="key.operation_number">
+                                </td>
                                 <td>
                                     <select v-model="key.section_code" class="form-select">
                                         <option value="SWP">SWP</option>
@@ -144,6 +149,9 @@
                         <tbody v-else>
                             <tr v-for="(key, index) in keyProcessFlow">
                                 <td>{{index + 1}}</td>
+                                <td>
+                                    <input ref="keyOperationNumber" type="number" class="form-control" v-model="key.operation_number">
+                                </td>
                                 <td>{{ mainSectionCode }}</td>
                                 <td>
                                     <select ref="keyProcessFlow" @change="fetchSubProcess(key.Pid)" class="form-select" v-model="key.Pid">
@@ -166,44 +174,66 @@
                         
                         <tbody>
                             <tr>
-                                <td colspan="6">
+                                <td colspan="7">
                                     <button ref="addKeyBtn" @click="addKeyProcessFlow" class="btn w-100 btn-outline-primary" disabled>Add Row</button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-7 table-responsive">
                     <h6 class="p-2"><em>Sub Process Flow</em></h6>
-                    <table class="table table-responsive">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>No.</th>
-                                <th>Sub Process Description</th>
-                                <th>Standard Time</th>
-                                <th>Machine Time</th>
-                                <th class="text-center">Sampling</th>
-                                <th class="text-center">Uncontrolled Quantity</th>
+                                <th>Sub Process</th>
+                                <th style="width: 6%">Standard Time</th>
+                                <th style="width: 6%">Machine Time</th>
+                                <th style="width: 5%" class="text-center">Sampling</th>
+                                <th style="width: 8%" class="text-center">Uncontrolled</th>
+                                <th>Batching Type</th>
+                                <th>Result Type</th>
+                                <th class="text-center">Status</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(sub, index) in subProcessFlow">
                                 <td>{{index + 1}}</td>
                                 <td>{{sub.SubPname}}</td>
-                                <td>
+                                <td class="">
                                     <input ref="subStandardTime" type="text" class="form-control" v-model="sub.standard_time">
                                 </td>
-                                <td>
+                                <td class="auto-fit">
                                     <input ref="subMachineTime" type="text" class="form-control" v-model="sub.machine_time">
                                 </td>
                                 <td>
                                     <div class="form-check form-switch">
-                                        <input ref="sampling" v-model="sub.sampling" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                        <input ref="sampling" v-model="sub.sampling" class="form-check-input" type="checkbox" role="switch">
                                     </div>
                                 </td>
                                 <td>
                                     <div class="form-check form-switch">
-                                        <input ref="uncontrolled" v-model="sub.uncontrolled" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                        <input ref="uncontrolled" v-model="sub.uncontrolled" class="form-check-input" type="checkbox" role="switch">
+                                    </div>
+                                </td>
+                                <td>
+                                    <select ref="batching_type" class="form-select" v-model="sub.batching_type">
+                                        <option value="Parallel">Parallel</option>
+                                        <option value="Standard">Standard</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select ref="result_type" class="form-select" v-model="sub.result_type">
+                                        <option value="Chips">Chips</option>
+                                        <option value="Wafer">Wafer</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input ref="sub_status" v-model="sub.sub_status" class="form-check-input" @change="statusChange(sub.SubPid)" :id="'sub_status'+sub.SubPid" type="checkbox" role="switch">
+                                        <label :for="'sub_status'+sub.SubPid" :id="sub_label+sub.SubPid">{{sub.sub_status_label}}</label>
                                     </div>
                                 </td>
                             </tr>
@@ -292,21 +322,23 @@
                 </div>
               </div>
               <div class="col-md-12 mx-auto row">
-                <div class="col-md-6 border-end">
+                <div class="col-md-5 border-end">
                     <h6 class="p-2"><em>Key Process Flow</em></h6>
                     <table class="table">
                         <thead>
                             <tr>
                                 <th>No.</th>
+                                <th style="width: 10%">Opr. No.</th>
                                 <th>Section</th>
                                 <th>Key Process Description</th>
-                                <th>Standard Time</th>
-                                <th>Machine Time</th>
+                                <th style="width: 15%">Standard Time</th>
+                                <th style="width: 15%">Machine Time</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="key in sortedKey">
                                 <td>{{ key.sequence_number }}</td>
+                                <td>{{ key.operation_number }}</td>
                                 <td>{{ key.section_code }}</td>
                                 <td v-if="key.section_code == 'SWP'">
                                     <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid" disabled>
@@ -338,17 +370,20 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-7">
                     <h6 class="p-2"><em>Sub Process Flow</em></h6>
                     <table class="table table-responsive">
                         <thead>
                             <tr>
                                 <th>No.</th>
                                 <th>Sub Process Description</th>
-                                <th>Standard Time</th>
-                                <th>Machine Time</th>
-                                <th class="text-center">Sampling</th>
-                                <th class="text-center">Uncontrolled Quantity</th>
+                                <th style="width: 6%">Standard Time</th>
+                                <th style="width: 6%">Machine Time</th>
+                                <th>Sampling</th>
+                                <th>Uncontrolled</th>
+                                <th>Batching Type</th>
+                                <th>Result Type</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -365,22 +400,46 @@
                                 </td>
                                 <td v-if="viewFlowStatus === 'Unposted'">
                                     <div class="form-check form-switch">
-                                        <input ref="viewSampling" v-model="sub.check_sampling" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                        <input ref="viewSampling" v-model="sub.check_sampling" class="form-check-input" type="checkbox" role="switch">
                                     </div>
                                 </td>
                                 <td v-else>
                                     <div class="form-check form-switch">
-                                        <input ref="viewSampling" v-model="sub.check_sampling" class="form-check-input mx-auto" type="checkbox" role="switch" disabled>
+                                        <input ref="viewSampling" v-model="sub.check_sampling" class="form-check-input" type="checkbox" role="switch" disabled>
                                     </div>
                                 </td>
                                 <td v-if="viewFlowStatus === 'Unposted'">
                                     <div class="form-check form-switch">
-                                        <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input mx-auto" type="checkbox" role="switch">
+                                        <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input" type="checkbox" role="switch">
                                     </div>
                                 </td>
                                 <td v-else>
                                     <div class="form-check form-switch">
-                                        <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input mx-auto" type="checkbox" role="switch" disabled>
+                                        <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input" type="checkbox" role="switch" disabled>
+                                    </div>
+                                </td>
+                                <td>
+                                    <select class="form-select" v-model="sub.batching_type" disabled>
+                                        <option value="Standard">Standard</option>
+                                        <option value="Parallel">Parallel</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-select" v-model="sub.result_type" disabled>
+                                        <option value="Chips">Chips</option>
+                                        <option value="Wafer">Wafer</option>
+                                    </select>
+                                </td>
+                                <td v-if="viewFlowStatus === 'Unposted'">
+                                    <div class="form-check form-switch">
+                                        <input ref="viewSub_Status" :id="'viewSub_Status'+sub.SubPid" @change="viewStatusChange(sub.SubPid)" v-model="sub.sub_bool" class="form-check-input" type="checkbox" role="switch">
+                                        <label :for="'viewSub_Status'+sub.SubPid">{{sub.sub_status}}</label>
+                                    </div>
+                                </td>
+                                <td v-else>
+                                    <div class="form-check form-switch">
+                                        <input ref="viewSub_Status" :id="'viewSub_Status'+sub.SubPid" @change="viewStatusChange(sub.SubPid)" v-model="sub.sub_bool" class="form-check-input" type="checkbox" role="switch" disabled>
+                                        <label :for="'viewSub_Status'+sub.SubPid">{{sub.sub_status}}</label>
                                     </div>
                                 </td>
                             </tr>
@@ -441,27 +500,27 @@
         data() {
             return {
 
-                requestFlowKeyURL: 'http://172.16.2.69/tpc/requestKeyProcessFlow.php',
-                requestFlowSubURL: 'http://172.16.2.69/tpc/requestSubProcessFlow.php',
-                requestKeyURL: 'http://172.16.2.69/tpc/requestKeyProcess.php',
-                requestSubURL: 'http://172.16.2.69/tpc/requestSubProcess.php',
-                SectionGetURL: 'http://172.16.2.69/TPC/GetSection.php',
-                SubProcessGetURL: 'http://172.16.2.69/tpc/GetSubProcess.php',
-                requestItemMasterURL: 'http://172.16.2.69/tpcrequesthandlers/requestItemMasterMain.php',
-                fetchProcessFlowURL: 'http://172.16.2.69/tpcrequesthandlers/fetchProcessFlowMain.php',
-                GetKeyProcessURL: 'http://172.16.2.69/tpc/GetKeyProcess.php',
+                requestFlowKeyURL: 'http://172.16.2.60/tpc/requestKeyProcessFlow.php',
+                requestFlowSubURL: 'http://172.16.2.60/tpc/requestSubProcessFlow.php',
+                requestKeyURL: 'http://172.16.2.60/tpc/requestKeyProcess.php',
+                requestSubURL: 'http://172.16.2.60/tpc/requestSubProcess.php',
+                SectionGetURL: 'http://172.16.2.60/TPC/GetSection.php',
+                SubProcessGetURL: 'http://172.16.2.60/tpc/GetSubProcess.php',
+                requestItemMasterURL: 'http://172.16.2.60/tpcrequesthandlers/requestItemMasterMain.php',
+                fetchProcessFlowURL: 'http://172.16.2.60/tpcrequesthandlers/fetchProcessFlowMain.php',
+                GetKeyProcessURL: 'http://172.16.2.60/tpc/GetKeyProcess.php',
 
-                PostProcessFlowURL: 'http://172.16.2.69/tpc/PostProcessFlow.php',
-                PostKeyProcessFlowURL: 'http://172.16.2.69/tpc/PostKeyProcessFlow.php',
-                PostSubProcessFlowURL: 'http://172.16.2.69/tpc/PostSubProcessFlow.php',
+                PostProcessFlowURL: 'http://172.16.2.60/tpc/PostProcessFlow.php',
+                PostKeyProcessFlowURL: 'http://172.16.2.60/tpc/PostKeyProcessFlow.php',
+                PostSubProcessFlowURL: 'http://172.16.2.60/tpc/PostSubProcessFlow.php',
 
-                DeleteProcessFlowURL: 'http://172.16.2.69/tpc/DeleteProcessFlow.php',
-                DeleteProcessFlowKey: 'http://172.16.2.69/tpc/DeleteProcessFlowKey.php',
-                DeleteProcessFlowSub: 'http://172.16.2.69/tpc/DeleteProcessFlowSub.php',
+                DeleteProcessFlowURL: 'http://172.16.2.60/tpc/DeleteProcessFlow.php',
+                DeleteProcessFlowKey: 'http://172.16.2.60/tpc/DeleteProcessFlowKey.php',
+                DeleteProcessFlowSub: 'http://172.16.2.60/tpc/DeleteProcessFlowSub.php',
 
-                PutProcessFlowKeyURL: 'http://172.16.2.69/tpc/PutProcessFlowKey.php',
-                PutProcessFlowSubURL: 'http://172.16.2.69/tpc/PutProcessFlowSub.php',
-                PutProcessFlowStatusURL: 'http://172.16.2.69/tpc/PutProcessFlowMainStatus.php',
+                PutProcessFlowKeyURL: 'http://172.16.2.60/tpc/PutProcessFlowKey.php',
+                PutProcessFlowSubURL: 'http://172.16.2.60/tpc/PutProcessFlowSub.php',
+                PutProcessFlowStatusURL: 'http://172.16.2.60/tpc/PutProcessFlowMainStatus.php',
                 //objects
                 section: [],
                 processFlow: [],
@@ -482,7 +541,7 @@
                 mainSection: '',
                 mainSectionCode: '',
                 mainFlowId: '',
-                mainFlowType: '',
+                mainFlowType: 'Manual',
                 mainPartsNumber: '',
                 mainItemCode: '',
                 mainItemDescription: '',
@@ -508,7 +567,7 @@
 
                 tempFlowId: null,
                 alert: '',
-
+                tableOptions: { order: [[0, 'desc']]},
                 // process flow table
                 columns: [
                   { title: 'No', data: 'flow_main_id'},
@@ -533,17 +592,71 @@
         },
        
         methods: {
+            statusChange(id){
+                for(const sub of this.subProcessFlow){
+                    if(id === sub.SubPid){
+                        if(sub.sub_status === false){
+                            sub.sub_status_label = 'Inactive';
+                        } else {
+                            sub.sub_status_label = 'Active';
+                        }
+                    }
+                }
+            },
+            viewStatusChange(id){
+                for(const sub of this.sortedSub){
+                    if(id === sub.SubPid){
+                        if(sub.sub_bool === false){
+                            sub.sub_status = 'Inactive';
+                        } else {
+                            sub.sub_status = 'Active';
+                        }
+                    }
+                }
+            },
             submitProcessFlow(){
                 const toastLiveExample = document.getElementById('liveToast');
                 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
                 // toastBootstrap.show()
-                
+
                 let processFlowResponse = '';
                 let processFlowSubResponse = '';
                 let processFlowKeyResponse = '';
                 let filterNull = false;
                 let isDuplicate = false;
+                let validatePartsNumber = false;
+                let validateItemCode = false;
+                let validateSection = false;
+                let validateKeyProcessFlow = false;
+                let validateSubProcessFlow = false;
+                
+                
                 // checks for empty or null Pid in the selection
+                if(this.mainPartsNumber == ""){
+                    validatePartsNumber = true;
+                    toastBootstrap.show()
+                    this.alert = 'System Alert: Detection of an Unassigned Parts Number. Please conduct a thorough review.';
+                }
+                else if(this.mainItemCode == ""){
+                    validateItemCode = true;
+                    toastBootstrap.show()
+                    this.alert = 'System Alert: Detection of an Unassigned Item Code. Please conduct a thorough review.';
+                }
+                else if(this.mainSection == ""){
+                    validateSection = true;
+                    toastBootstrap.show()
+                    this.alert = 'System Alert: Detection of an Unassigned Section. Please conduct a thorough review.';
+                }
+                else if(this.keyProcessFlow.length == 0){
+                    validateKeyProcessFlow = true;
+                    toastBootstrap.show()
+                    this.alert = 'System Alert: Detection of an Empty Key Process Flow. Please conduct a thorough review.';
+                }
+                else if(this.subProcessFlow.length == 0){
+                    validateSubProcessFlow = true;
+                    toastBootstrap.show()
+                    this.alert = 'System Alert: Detection of an Empty Sub Process Flow. Please conduct a thorough review.';
+                }
                 for(const key of this.keyProcessFlow){
                     if(!Object.is(key.Pid, '')){
                         filterNull = false;
@@ -560,7 +673,7 @@
                     return valueArr.indexOf(item) != idx
                 });
                
-                if(filterNull || isDuplicate){
+                if(filterNull || isDuplicate || validatePartsNumber || validateItemCode || validateSection || validateKeyProcessFlow || validateSubProcessFlow){
                     if(isDuplicate === true){
                         this.alert = 'System Warning: Duplicate Entry Detected. Please perform a comprehensive verification.';
                         toastBootstrap.show()
@@ -617,6 +730,7 @@
                             }
                             axios.post(this.PostKeyProcessFlowURL, {
                                 main_flow_id: this.mainFlowId,
+                                operation_number: key.operation_number,
                                 section_id: key.section_id,
                                 parts_number: this.mainPartsNumber,
                                 revision_number: this.mainRevisionNumber,
@@ -639,6 +753,9 @@
                                     }
                                     for(const removeBtn of this.$refs.removeBtn){
                                         removeBtn.disabled = true;
+                                    }
+                                    for(const operation_number of this.$refs.keyOperationNumber){
+                                        operation_number.disabled = true;
                                     }
                                 }
                             }).catch(error => {
@@ -668,9 +785,11 @@
                                 machine_time: sub.machine_time,
                                 item_code: this.mainItemCode,  
                                 check_sampling: sub.sampling,
-                                check_uncontrolled: sub.uncontrolled
+                                check_uncontrolled: sub.uncontrolled,
+                                batching_type: sub.batching_type,
+                                result_type: sub.result_type,
+                                check_sub_status: sub.sub_status_label
                             }).then(response => {
-                                console.log(response.data);
                                 if(response.data.message == 'Process Flow Sub inserted successfully'){
                                     processFlowSubResponse = 'Data Submitted';
                                     for(const subStdTime of this.$refs.subStandardTime){
@@ -685,6 +804,12 @@
                                     for(const uncontrolled of this.$refs.uncontrolled){
                                         uncontrolled.disabled = true;
                                     }
+                                    for(const status of this.$refs.sub_status){
+                                        status.disabled = true;
+                                    }
+                                    for(const batching of this.$refs.batching_type){
+                                        batching.disabled = true;
+                                    }
                                 }
                             }).catch(error => {
                                 console.log(error)
@@ -695,9 +820,6 @@
                     console.log(error);
                 });
                 }
-
-                
-                
             },
             getFlowId(event){
                 if(event.target.tagName == 'BUTTON'){
@@ -847,9 +969,15 @@
                                         } else {
                                             flow.check_uncontrolled = false;
                                         }
+                                        if(flow.sub_status === 'Active'){
+                                            Object.assign(flow, {sub_bool: true});
+                                        } else {
+                                            Object.assign(flow, {sub_bool: false})
+                                        }
                                     }
                                 }
                             }
+                            console.log(this.flowSub);
                         }).catch(error => {
                             console.log(error);
                         });
@@ -899,6 +1027,7 @@
                 if(this.mainSectionCode === 'SWP'){
                     this.keyProcessFlow.push({
                         sequence_no: '',
+                        operation_number: '',
                         section_id: '',
                         section_code: 'SWP',
                         Pid: '',
@@ -910,6 +1039,7 @@
                 } else {
                     this.keyProcessFlow.push({
                     sequence_no: '',
+                    operation_number: '',
                     section_id: this.mainSection,
                     section_code: this.mainSectionCode,
                     Pid: '',
@@ -961,7 +1091,6 @@
                         }).catch(error => {
                             console.log(error);
                         });
-
                     }
                 }
                 let latestRevNo = -1;
@@ -976,7 +1105,10 @@
                 
             },
             fetchSubProcess(){
+                const toastLiveExample = document.getElementById('liveToast');
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
                 this.subProcessFlow = [];
+                let Pname = '';
                 for(const [order, key] of Object.entries(this.keyProcessFlow)){
                     axios.get(this.requestSubURL,{
                         method: 'GET',
@@ -987,21 +1119,35 @@
                             Pid: key.Pid
                         }
                     }).then(response => {
-                        for(const sub of response.data){
-                            if(sub.sub_process_status === 'Active'){
-                                    this.subProcessFlow.push({
-                                    Pid: sub.Pid,
-                                    SubPid: sub.SubPid,
-                                    SubPname: sub.SubPname,
-                                    sequence_number: sub.sequence_number,
-                                    standard_time: 0,
-                                    machine_time: 0,
-                                    sampling: false,
-                                    uncontrolled: false,
-                                    order: order,
-                                    sequence_no: '',
-                                });
+                        if(response.data.length > 0){
+                            for(const sub of response.data){
+                                if(sub.sub_process_status === 'Active'){
+                                        this.subProcessFlow.push({
+                                        Pid: sub.Pid,
+                                        SubPid: sub.SubPid,
+                                        SubPname: sub.SubPname,
+                                        sequence_number: sub.sequence_number,
+                                        standard_time: 0,
+                                        machine_time: 0,
+                                        sampling: false,
+                                        uncontrolled: false,
+                                        order: order,
+                                        sequence_no: '',
+                                        sub_status: true,
+                                        batching_type: 'Standard',
+                                        result_type: 'Wafer',
+                                        sub_status_label: 'Active',
+                                    });
+                                } 
                             }
+                        } else {
+                            for(const keyP of this.keyProcess){
+                                if(parseInt(key.Pid) === parseInt(keyP.Pid)){
+                                    Pname = keyP.Pname;
+                                }
+                            }
+                            toastBootstrap.show()
+                            this.alert = 'System Alert: Detection of an Unassigned Sub Process Flow in Key Process Flow Sequence No - ' + Pname + '. Please conduct a thorough review.';
                         }
                         this.subProcessFlow.sort((a, b) => a.order - b.order);
                         this.addSubSequenceNumber();
@@ -1081,6 +1227,7 @@
                         }
                         
                         for(const sub of this.flowSub){
+                            console.log(sub);
                             if(sub.check_sampling === true){
                                 sub.sampling = 'True';
                             } else {
@@ -1091,13 +1238,15 @@
                             } else {
                                 sub.uncontrolled = 'False';
                             }
+
                             axios.put(this.PutProcessFlowSubURL, {
                                 standard_time: sub.standard_time,
                                 machine_time: sub.machine_time,
                                 flow_sub_id: sub.flow_sub_id,
                                 SubPid: sub.SubPid,
                                 sampling: sub.sampling,
-                                uncontrolled: sub.uncontrolled
+                                uncontrolled: sub.uncontrolled,
+                                sub_status: sub.sub_status
                             }).then(response => {
                                 if(response.data.message === 'Process Flow Sub updated successfully'){
                                     for(const sampling of this.$refs.viewSampling){
@@ -1105,6 +1254,9 @@
                                     }
                                     for(const uncontrolled of this.$refs.viewUncontrolled){
                                         uncontrolled.disabled = true;
+                                    }
+                                    for(const sub_status of this.$refs.viewSub_Status){
+                                        sub_status.disabled = true;
                                     }
                                 }
                             }).catch(error => {

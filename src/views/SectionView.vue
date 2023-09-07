@@ -1,19 +1,20 @@
 <template>
     <div class="col-md-12 row mx-auto py-3 container">
         <div class="col-md-9">
-          <h3>TPC - Setup Section</h3>
+          <h3>Tablet Process Card - <em>Setup Section</em></h3>
         </div>
         <div class="col-md-3 float-end">
-          <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+          <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
         </div>
     </div>
     <!--Datatable-->
-    <div class="border rounded p-3 container">
+    <div class="container table-responsive">
         <DataTable
         :data="section"
         :columns="columns"
         class=" display table table-hover rounded"
         @click="getSection_id"
+        :options="tableOptions"
     />
     </div>
 
@@ -56,17 +57,10 @@
                 <label for="group">Group No.</label>
                 <input type="text" class="form-control" id="group" v-model="group" ref="group">
               </div>
-              
-              <div class="pt-3">
-                <div ref="alert" class="col-md-12 pt-3">
-                  <p class="text-center">{{submissionAlert}}</p>
-                </div>
-              </div>
 
             </div>
           </div>
           <div class="modal-footer">
-            <button ref="newBtn" type="button" @click="newSection" class="btn btn-primary" disabled>New</button>
             <button ref="saveBtn" type="submit" @click="submitSection" class="btn btn-primary">Save changes</button>
           </div>
         </div>
@@ -112,12 +106,6 @@
                 <label for="edit_group">Group No.</label>
                 <input type="text" class="form-control" id="edit_group" v-model="e_section_group_no" ref="group">
               </div>
-              
-              <div class="p-3">
-                <div ref="alert" class="col-md-12">
-                  <p class="text-center">{{submissionAlert}}</p>
-                </div>
-              </div>
 
             </div>
           </div>
@@ -142,23 +130,36 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" @click="deleteSection" class="btn btn-outline-primary">Delete</button>
+            <button type="submit" @click="deleteSection" data-bs-dismiss="modal" class="btn btn-outline-primary">Delete</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Modal -->
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <strong class="me-auto">Alert</strong>
+          <small>a while ago</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          {{submissionAlert}}
+        </div>
+      </div>
+    </div>
 </template>
 <script>
     
-    import bootstrap from 'bootstrap/dist/js/bootstrap';
+    import * as bootstrap from 'bootstrap';
     import axios from 'axios';
     import DataTable from 'datatables.net-vue3';
     import DataTablesCore from 'datatables.net-bs5';
     import 'datatables.net-responsive';
     import 'datatables.net-select';
-
+    
     DataTable.use(DataTablesCore);
     export default {
     components: {
@@ -166,16 +167,19 @@
     },
     data() {
       return {
-        sectionURL: 'http://172.16.2.69/TPC/GetSection.php',
-        sectionPostURL: 'http://172.16.2.69/TPC/PostSection.php',
-        sectionPutURL: 'http://172.16.2.69/TPC/PutSection.php',
-        sectionDeleteURL: 'http://172.16.2.69/TPC/DeleteSection.php',
+        sectionURL: 'http://172.16.2.60/TPC/GetSection.php',
+        sectionPostURL: 'http://172.16.2.60/TPC/PostSection.php',
+        sectionPutURL: 'http://172.16.2.60/TPC/PutSection.php',
+        sectionDeleteURL: 'http://172.16.2.60/TPC/DeleteSection.php',
+        keyProcessURL: 'http://172.16.2.60/TPC/GetKeyProcess.php',
         section: [],
+        keyProcess: [],
+        notifications: [],
 
         submissionAlert: '',
 
         //Entry 
-    
+        
         description: '',
         code: '',
         status: 'Active',
@@ -191,6 +195,7 @@
         e_section_group_no: 0,
         e_section_shared: 0,
         e_section_status: '',
+        tableOptions: { order: [[0, 'desc']]},
 
         columns: [
           { title: 'Section Description', data: 'section_description' },
@@ -219,17 +224,7 @@
       
     },
     methods: {
-      newSection(){
-        this.description = '';
-        this.code = '';
-        this.status = 'Active';
-        this.shared = 0;
-        this.class = 'Parent';
-        this.group = 0;
-        this.$refs.newBtn.disabled = true;
-        this.$refs.saveBtn.disabled = false;
-        this.submissionAlert = '';
-      },
+
       getSection_id(event){
         let row = null;
         let cell = null;
@@ -258,9 +253,12 @@
 
       },
       submitSection() {
+        const toastLiveExample = document.getElementById('liveToast');
+        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+        
         if (!this.description || !this.code) {
           this.submissionAlert = 'Both Description and Code must be filled';
-          this.$refs.alert.className = 'alert alert-warning mx-auto';
+          toastBootstrap.show();
         } else {
           axios.post(this.sectionPostURL, {
             section_description: this.description,
@@ -271,22 +269,28 @@
             section_status: this.status
           }).then(response => {
             console.log(response.data);
+            if(response.data.message == 'Duplicate entry'){
+              this.submissionAlert = 'Submission Failed Successfully, Duplicate entry detected';
+              toastBootstrap.show();
+            }
             if(response.data.message == 'Section inserted successfully') {
-              this.$refs.saveBtn.disabled = true;
-              this.$refs.newBtn.disabled = false;
-              this.submissionAlert = 'Submission Success';
+              this.submissionAlert = 'Submission Success for ' + this.description;
+              toastBootstrap.show();
               this.section.push({
                 section_description: this.description,
                 section_code: this.code,
-                shared_section: this.shared,
+                shared_section_boolString: this.shared == 1? 'true': 'false',
                 section_class: this.class,
                 shared_group_no: this.group,
-                section_status: this.status
+                section_status: this.status,
+                date_created: new Date().toJSON().slice(0,10),
               });
+              this.description = '';
+              this.code = '';
+              this.shared = 0;
+              this.group = 0;
+              this.class = 'Parent';
             } 
-            if(response.data.message == 'Duplicate entry'){
-              this.submissionAlert = 'Duplicate entry';
-            }
           }).catch(error => {
             console.error(error);
           });
@@ -296,6 +300,7 @@
         console.log('data submitted');
       },
       updateSection(){
+        
         axios.put(this.sectionPutURL,{
           section_description: this.e_section_description,
           section_code: this.e_section_code,
@@ -311,15 +316,50 @@
         });
       },
       deleteSection(){
-        console.log(this.e_section_id);
+        const toastLiveExample = document.getElementById('liveToast');
+        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+
+        let exists = false;
+
+        for(const key of this.keyProcess){
+          if(parseInt(this.e_section_id) === parseInt(key.section_id)){
+            exists = true;
+            break;
+          }
+        }
+
+      if(exists){
+        this.submissionAlert = 'Please exercise caution when considering any modifications to this section, as it plays a critical role in other masterfile rows and altering it could potentially disrupt system operations.'
+        toastBootstrap.show();
+      } else {
+        if(this.e_section_id){
         axios.post(this.sectionDeleteURL,{
           section_id: this.e_section_id
         }).then(response => {
-          console.log(response.data)
+          if(response.data.message === 'Section deleted successfully'){
+            let idToRemove = this.section.findIndex(sec => sec.section_id === this.e_section_id);
+            this.section.splice(idToRemove, 1);
+            this.submissionAlert = 'Removal of ' + this.e_section_description + ' on our end is successful';
+            toastBootstrap.show();
+          }
         }).catch(error => {
           console.log(error)
         });
+       } else {
+        this.submissionAlert = 'We did not find a specific identifier on our end. To continue with the deletion of the data, please refresh the page.'
+        toastBootstrap.show();
+       }
       }
+          
+      },
+      fetchData(){
+        axios.get(this.sectionURL, {
+        }).then(response => {
+          console.log(response.data);
+        }).catch(error => {
+          console.log(Error)
+        });
+      },
     },
     
     created() {
@@ -336,6 +376,14 @@
           }
         }).catch(error => {
           console.error(error);
+        })
+
+        axios.get(this.keyProcessURL, {
+          
+        }).then(response => {
+          this.keyProcess = response.data;
+        }).catch(error => {
+          console.log(error);
         })
     },
   }

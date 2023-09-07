@@ -6,11 +6,12 @@ import DataTablesCore from 'datatables.net';
 import 'datatables.net-select';
 import 'datatables.net-responsive';
 import 'bootstrap/dist/css/bootstrap.css';
-
+import VueQrcode from '@chenfengyuan/vue-qrcode';
 const app = createApp(App)
 
 import * as bootstrap from 'bootstrap';
 app.use(router)
 app.use(DataTable)
+app.component(VueQrcode.name, VueQrcode)
 DataTable.use(DataTablesCore)
 app.mount('#app')

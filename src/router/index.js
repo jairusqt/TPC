@@ -51,6 +51,16 @@ const router = createRouter({
       path: '/formAssignmentv2',
       name: 'formAssignmentv2',
       component: () => import('../views/formAssignmentViewv2.vue')
+    },
+    {
+      path: '/formAttachments',
+      name: 'formAttachments',
+      component: () => import('../views/formAttachmentsView.vue')
+    },
+    {
+      path: '/GenerateQrCode',
+      name: 'GenerateQrCode',
+      component: () => import('../views/GenerateQrCodeView.vue')
     }
 
   ]

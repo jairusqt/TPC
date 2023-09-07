@@ -2,20 +2,21 @@
 <template>
     <div class="col-md-12 row mx-auto py-3 container">
         <div class="col-md-9">
-          <h3>TPC - Setup Key Process</h3>
+          <h3>Tablet Process Card - <em>Setup Key Process</em></h3>
         </div>
         <div class="col-md-3 float-end">
-          <button class="btn btn-outline-primary w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+          <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
         </div>
     </div>
-<div class="border rounded p-3 container">
-    <DataTable
-        :data="keyProcess"
-        :columns="columns"
-        class="display table table-hover"
-        @click="getProcess_id"
-    />
-</div>
+    <div class="container table-responsive">
+        <DataTable
+            :data="keyProcess"
+            :columns="columns"
+            class="display table table-hover"
+            @click="getProcess_id"
+            :options="tableOptions"
+        />
+    </div>
 
 
 <div class="modal fade" id="create" tabindex="-1" aria-labelledby="createModal" aria-hidden="true">
@@ -34,6 +35,10 @@
                     </select>
                 </div>
                 <div class="col-md-8">
+                    <label for="keyProcessCode">Key Process Code:</label>
+                    <input type="text" class="form-control" @input="toUpper()" v-model="Pcode">
+                </div>
+                <div class="col-md-12">
                     <label for="keyProcessDescription">Key Process Description:</label>
                     <input type="text" class="form-control" v-model="Pname">
                 </div>
@@ -51,7 +56,6 @@
             </div>
         </div>
         <div class="modal-footer">
-          <button type="button" @click="newSection" class="btn btn-primary" disabled>New</button>
           <button ref="submit" type="submit" @click="submitKeyProcess" class="btn btn-primary">Save changes</button>
         </div>
       </div>
@@ -74,8 +78,12 @@
                   </select>
               </div>
               <div class="col-md-8">
+                <label for="edit_Pcode">Key Process Code:</label>
+                <input id="edit_Pcode" type="text" class="form-control" @input="toUpperE" v-model="e_Pcode">
+              </div>
+              <div class="col-md-12">
                   <label for="edit_keyProcessDescription">Key Process Description:</label>
-                  <input type="text" class="form-control" v-model="e_Pname">
+                  <input id="edit_keyProcessDescription" type="text" class="form-control" v-model="e_Pname">
               </div>
               <div class="col-md-7">
                   <label for="edit_keyProcessStatus">Key Process Status:</label>
@@ -94,7 +102,7 @@
           </div>
       </div>
       <div class="modal-footer">
-        <button ref="submit" type="submit" @click="editKeyProcess" class="btn btn-primary">Save changes</button>
+        <button ref="edit" type="submit" @click="editKeyProcess" class="btn btn-primary">Save changes</button>
       </div>
     </div>
   </div>
@@ -114,12 +122,24 @@
               </div>
         </div>
         <div class="modal-footer">
-          <button ref="submit" type="submit" @click="deleteKeyProcess" class="btn btn-primary">Save changes</button>
+          <button ref="delete" type="submit" @click="deleteKeyProcess" data-bs-dismiss="modal" class="btn btn-primary">Save changes</button>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">Alert</strong>
+        <small>a while ago</small>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        {{alert}}
+      </div>
+    </div>
+  </div>
 </template>
 <script>
 import axios from 'axios';
@@ -127,6 +147,7 @@ import DataTable from 'datatables.net-vue3';
 import DataTablesCore from 'datatables.net-bs5';
 import 'datatables.net-responsive';
 import 'datatables.net-select';
+import * as bootstrap from 'bootstrap';
 DataTable.use(DataTablesCore);
 export default {
     components: {
@@ -134,30 +155,35 @@ export default {
     },
     data() {
         return {
-            sectionURL: 'http://172.16.2.69/TPC/GetSection.php',
-            keyProcessURL: 'http://172.16.2.69/TPC/GetKeyProcess.php',
-            KeyProcessPostURL: 'http://172.16.2.69/TPC/PostKeyProcess.php',
-            KeyProcessPutURL: 'http://172.16.2.69/TPC/PutKeyProcess.php',
-            KeyProcessDeleteURL: 'http://172.16.2.69/TPC/DeleteKeyProcess.php',
+            sectionURL: 'http://172.16.2.60/TPC/GetSection.php',
+            keyProcessURL: 'http://172.16.2.60/TPC/GetKeyProcess.php',
+            KeyProcessPostURL: 'http://172.16.2.60/TPC/PostKeyProcess.php',
+            KeyProcessPutURL: 'http://172.16.2.60/TPC/PutKeyProcess.php',
+            KeyProcessDeleteURL: 'http://172.16.2.60/TPC/DeleteKeyProcess.php',
+            
 
             section: [],
             keyProcess: [],
-
+            alert: '',
             //data processing
             section_id: '',
+            section_code: '',
             Pname: '',
+            Pcode: '',
             key_status: 'Active',
             stock_point: 0,
 
             e_Pid: '',
             e_Pname: '',
+            e_Pcode: '',
             e_section_id: '',
             e_key_status: '',
             e_stock_point: null,
-
+            tableOptions: { order: [[0, 'desc']]},
             columns: [
               { title: 'Section Code', data: 'section_code' },
               { title: 'Process Name', data: 'Pname' },
+              { title: 'Process Code', data: 'key_code'},
               { title: 'Status', data: 'key_process_status' },
               { title: 'Stock Point', data: 'stock_point_bool' },
               { title: 'Date Created', data: 'date_created' },
@@ -177,6 +203,12 @@ export default {
         }
     },
     methods: {
+        toUpperE(){
+            this. e_Pcode = this.e_Pcode.toUpperCase();
+        },
+        toUpper(){
+            this.Pcode = this.Pcode.toUpperCase();
+        },
         getProcess_id(event){
             let row;
             let cells;
@@ -195,6 +227,7 @@ export default {
                     this.e_Pid = key.Pid;
                     this.e_section_id = key.section_id;
                     this.e_Pname = key.Pname;
+                    this.e_Pcode = key.key_code;
                     this.e_key_status = key.key_process_status;
                     this.e_stock_point = key.stock_point;
                 }
@@ -202,35 +235,114 @@ export default {
             
         },
         submitKeyProcess(){
-            axios.post(this.KeyProcessPostURL, {
-                section_id: this.section_id,
-                Pname: this.Pname,
-                key_process_status: this.key_status,
-                stock_point: this.stock_point
-            }).then(response => {
-                console.log(response.data)
-            }).catch(error => {
-                console.log(error)
-            });
+            const toastLiveExample = document.getElementById('liveToast');
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+            let dupPname = false;
+            let dupKey_Code = false; 
+            console.log(this.section_id)
+            for(const key of this.keyProcess){
+                if(parseInt(key.section_id) === parseInt(this.section_id)){
+                    if(this.Pname.toUpperCase() === key.Pname.toUpperCase()){
+                        dupPname = true;
+                        this.alert = 'A duplicate Key Process Description is detected';
+                        toastBootstrap.show();
+                        break;
+                    } else {
+                        dupPname = false;
+                    }
+                }
+                if(this.Pcode === key.key_code){
+                        dupKey_Code = true;
+                        this.alert = 'A duplicate code is detected';
+                        toastBootstrap.show()
+                        break;
+                    } else {
+                        dupKey_Code = false;
+                }
+                
+            }
+            if(dupPname || dupKey_Code){
+
+            } else {
+                axios.post(this.KeyProcessPostURL, {
+                    section_id: this.section_id,
+                    key_code: this.Pcode,
+                    Pname: this.Pname,
+                    key_process_status: this.key_status,
+                    stock_point: this.stock_point
+                }).then(response => {
+                    if(response.data.message === 'Key Process inserted successfully'){
+                        for(const section of this.section){
+                            if(this.section_id === section.section_id){
+                                this.section_code = section.section_code;
+                            }
+                        }
+                        this.keyProcess.push({
+                            section_id: this.section_id,
+                            section_code: this.section_code,
+                            key_code: this.Pcode,
+                            Pname: this.Pname,
+                            key_process_status: this.key_status,
+                            stock_point: this.stock_point,
+                            stock_point_bool: this.stock_point == 1 ? 'True' : 'False',
+                            date_created: new Date().toJSON().slice(0,10),
+                        })
+                        this.alert = 'The Key Process ' + this.Pname + ' is Submitted Successfully';
+                        toastBootstrap.show(); 
+                        this.section_id = '';
+                        this.section_code = '';
+                        this.Pname = '';
+                        this.Pcode = '';
+                        this.key_status = 'Active';
+                        this.stock_point = 0;
+                    }
+                }).catch(error => {
+                    console.log(error)
+                });
+            }
+            
         },
         editKeyProcess(){
+            const toastLiveExample = document.getElementById('liveToast');
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
             axios.put(this.KeyProcessPutURL, {
                 section_id: this.e_section_id,
                 Pid: this.e_Pid,
                 Pname: this.e_Pname,
+                key_code: this.e_Pcode,
                 key_process_status: this.e_key_status,
                 stock_point: this.e_stock_point
             }).then(response => {
                 console.log(response.data);
+                if(response.data.message === 'Key Process updated successfully'){
+                    for(const key of this.keyProcess){
+                        if(parseInt(this.e_Pid) === parseInt(key.Pid)){
+                            key.key_code = this.e_Pcode;
+                            key.Pname = this.e_Pname;
+                            key.key_process_status = this.e_key_status;
+                            key.stock_point_bool = this.e_stock_point === '0' ? 'False' : 'True';
+                        }
+                    }
+                } else {
+                    this.alert = response.data;
+                    toastBootstrap.show();
+                }
             }).catch(error => {
                 console.log(error);
             });
         },
         deleteKeyProcess(){
+            const toastLiveExample = document.getElementById('liveToast');
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
             axios.post(this.KeyProcessDeleteURL, {
                 Pid: this.e_Pid
             }).then(response => {
-                console.log(response.data);
+                if(response.data.message === 'Key Process deleted successfully'){
+                    let idToRemove = this.keyProcess.findIndex(key => key.Pid === this.e_Pid);
+                    this.keyProcess.splice(idToRemove, 1);
+                    this.alert = 'This Key Process ' + this.e_Pname + ' has been removed successfully';
+                    toastBootstrap.show();
+                }
             }).catch(error => {
                 console.log(error);
             });
