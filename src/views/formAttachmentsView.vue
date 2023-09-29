@@ -135,14 +135,14 @@
     export default {
             data() {
             return {
-                formAssignmentURL: 'http://172.16.2.60/tpc/GetFormAssignment.php',
-                sectionURL: 'http://172.16.2.60/tpc/GetSection.php',
-                subProcessURL: 'http://172.16.2.60/tpc/GetSubProcess.php',
-                keyProcessURL: 'http://172.16.2.60/tpc/GetKeyProcess.php',
-                itemURL: 'http://172.16.2.60/tpc/GetItem.php',
-                itemConditionURL: 'http://172.16.2.60/tpc/GetItemCondition.php',
-                postFormAttachments: 'http://172.16.2.60/tpc/PostFormAttachments.php',
-                requestFormAttachment: 'http://172.16.2.60/tpc/requestFormAttachment.php',
+                formAssignmentURL: 'http://172.16.2.13/tpc-endpoint/GetFormAssignment.php',
+                sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
+                subProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
+                keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
+                itemURL: 'http://172.16.2.13/tpc-endpoint/GetItem.php',
+                itemConditionURL: 'http://172.16.2.13/tpc-endpoint/GetItemCondition.php',
+                postFormAttachments: 'http://172.16.2.13/tpc-endpoint/PostFormAttachments.php',
+                requestFormAttachment: 'http://172.16.2.13/tpc-endpoint/requestFormAttachment.php',
                 formAssignment: [],
                 section: [],
                 keyProcess: [],
@@ -338,7 +338,6 @@
                             }
                             Object.assign(flowSub, {files: []});
                         }
-                        console.log(this.item);
                     }).catch(error => {
                         console.log(error);
                     });

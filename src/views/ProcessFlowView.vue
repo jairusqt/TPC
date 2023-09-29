@@ -21,7 +21,9 @@
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
           <div class="modal-header">
+            <p>PROCESS FLOW ASSIGNMENT</p>
             <div class="col-md-12 row">
+                
                 <div class="col-md-1">
                     <button @click="testApp" class="btn btn-primary w-100 h-100">Clear</button>
                 </div>
@@ -618,6 +620,7 @@
                     for(const key of response.data){
                         this.keyProcess = response.data;                   
                     }
+                    this.keyProcess.sort((a,b) => a.sequence_number - b.sequence_number);
                 }).catch(error => {
                     console.log(error)
                 });

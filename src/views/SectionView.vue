@@ -86,7 +86,11 @@
               </div>
               <div class="col-md-3">
                 <label for="edit_status">Status:</label>
-                <input type="text" class="form-select" id="edit_status" disabled v-model="e_section_status">
+                <!-- <input type="text" class="form-select" id="edit_status" disabled v-model="e_section_status"> -->
+                <select id="edit_status" class="form-select" v-model="e_section_status">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
               </div>
               <div class="col-md-3">
                 <label for="edit_shared">Shared:</label>
@@ -124,9 +128,10 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="alert alert-warning text-center">
+            <div class="text-center">
               <p >YOU ARE GOING TO DELETE THIS SECTION: "{{e_section_description}}"</p>
-              <h5 class="text-danger">Do you wish to proceed?</h5>
+              <h5 class="text-danger pb-3">Do you wish to proceed?</h5>
+              <p class="border rounded text-start p-3"><small>This is a system warning indicating that the data you're attempting to delete might be in use by another table. Deleting it may potentially disrupt the entire process. Please proceed with caution and ensure the implications are understood before confirming the deletion.</small></p>
             </div>
           </div>
           <div class="modal-footer">
@@ -167,11 +172,11 @@
     },
     data() {
       return {
-        sectionURL: 'http://172.16.2.60/TPC/GetSection.php',
-        sectionPostURL: 'http://172.16.2.60/TPC/PostSection.php',
-        sectionPutURL: 'http://172.16.2.60/TPC/PutSection.php',
-        sectionDeleteURL: 'http://172.16.2.60/TPC/DeleteSection.php',
-        keyProcessURL: 'http://172.16.2.60/TPC/GetKeyProcess.php',
+        sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
+        sectionPostURL: 'http://172.16.2.13/tpc-endpoint/PostSection.php',
+        sectionPutURL: 'http://172.16.2.13/tpc-endpoint/PutSection.php',
+        sectionDeleteURL: 'http://172.16.2.13/tpc-endpoint/DeleteSection.php',
+        keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
         section: [],
         keyProcess: [],
         notifications: [],
@@ -208,13 +213,13 @@
           { title: 'Edit Section', data: null, 
                   orderable: false, 
                   render: function (data) { 
-                                  return '<button data-bs-toggle="modal" data-bs-target="#edit" class="btn w-100 text-start"><span class="material-symbols-outlined">edit</span></button'
+                                  return '<button data-bs-toggle="modal" data-bs-target="#edit" class="btn w-100 text-center"><span class="material-symbols-outlined">edit</span></button'
                               } 
                           },
           { title: 'Delete Section',data: null, 
                   orderable: false, 
                   render: function (data) { 
-                                  return '<button data-bs-toggle="modal" data-bs-target="#delete" class="btn w-100 text-start"><span class="material-symbols-outlined">delete</span></button'
+                                  return '<button data-bs-toggle="modal" data-bs-target="#delete" class="btn w-100 text-center"><span class="material-symbols-outlined">delete</span></button'
                               } 
                           },
         ]
@@ -232,13 +237,11 @@
           row = event.target.parentNode.parentNode;
           cell = row.querySelector('td');
           this.e_section_description = cell.textContent;
-          //console.log(this.e_section_description);
         }
         if(event.target.tagName === 'SPAN'){
           const row = event.target.parentNode.parentNode.parentNode;
           const cell = row.querySelector('td');
           this.e_section_description = cell.textContent;
-          //console.log(this.e_section_description);
         }
         for(const section of this.section){
           if(section.section_description === this.e_section_description){
@@ -270,7 +273,7 @@
           }).then(response => {
             console.log(response.data);
             if(response.data.message == 'Duplicate entry'){
-              this.submissionAlert = 'Submission Failed Successfully, Duplicate entry detected';
+              this.submissionAlert = 'Submission Failed, Duplicate entry detected';
               toastBootstrap.show();
             }
             if(response.data.message == 'Section inserted successfully') {
@@ -279,7 +282,7 @@
               this.section.push({
                 section_description: this.description,
                 section_code: this.code,
-                shared_section_boolString: this.shared == 1? 'true': 'false',
+                shared_section_boolString: this.shared == 1 ? 'True': 'false',
                 section_class: this.class,
                 shared_group_no: this.group,
                 section_status: this.status,
@@ -290,6 +293,7 @@
               this.shared = 0;
               this.group = 0;
               this.class = 'Parent';
+              this.$refs.description.focus();
             } 
           }).catch(error => {
             console.error(error);
@@ -300,20 +304,41 @@
         console.log('data submitted');
       },
       updateSection(){
+        const toastLiveExample = document.getElementById('liveToast');
+        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+        let exists = this.keyProcess.some(key => this.e_section_id === key.section_id);
+        console.log(exists);
+        if(exists){
+          this.submissionAlert = 'This section is currently in use within other masterfiles, and editing is prohibited';
+          toastBootstrap.show()
+        } else {
+          axios.put(this.sectionPutURL,{
+            section_description: this.e_section_description,
+            section_code: this.e_section_code,
+            shared_section: this.e_section_shared,
+            section_class: this.e_section_class,
+            shared_group_no: this.e_section_group_no,
+            section_status: this.e_section_status,
+            section_id: this.e_section_id
+          }).then(response => {
+            if(response.data.message === 'Section updated successfully'){
+              for(const sec of this.section){
+                if(this.e_section_id === sec.section_id){
+                  sec.section_description = this.e_section_description;
+                  sec.section_code = this.e_section_code;
+                  sec.shared_section = this.e_section_shared;
+                  sec.shared_section_boolString = this.e_section_shared === 1 ? 'True' : 'False';
+                  sec.section_class = this.e_section_class;
+                  sec.shared_group_no = this.e_section_group_no;
+                  sec.section_status = this.e_section_status;
+                }
+              }
+            }
+          }).catch(error => {
+            console.log(error)
+          });
+        }
         
-        axios.put(this.sectionPutURL,{
-          section_description: this.e_section_description,
-          section_code: this.e_section_code,
-          shared_section: this.e_section_shared,
-          section_class: this.e_section_class,
-          shared_group_no: this.e_section_group_no,
-          section_status: this.e_section_status,
-          section_id: this.e_section_id
-        }).then(response => {
-          console.log(response.data)
-        }).catch(error => {
-          console.log(error)
-        });
       },
       deleteSection(){
         const toastLiveExample = document.getElementById('liveToast');
@@ -329,7 +354,7 @@
         }
 
       if(exists){
-        this.submissionAlert = 'Please exercise caution when considering any modifications to this section, as it plays a critical role in other masterfile rows and altering it could potentially disrupt system operations.'
+        this.submissionAlert = 'Please exercise caution when considering any modifications to this section, as it plays a critical role in other masterfile rows and altering it could potentially disrupt system operations. If you wish to proceed with the deletion, please reach out to the software development team for further guidance and assistance.'
         toastBootstrap.show();
       } else {
         if(this.e_section_id){
@@ -357,7 +382,7 @@
         }).then(response => {
           console.log(response.data);
         }).catch(error => {
-          console.log(Error)
+          console.log(error)
         });
       },
     },
@@ -367,12 +392,9 @@
         }).then(response => {
           this.section = response.data;
           for(const sec of this.section){
-            if(sec.shared_section == 1){
-              Object.assign(sec, {shared_section_boolString: 'True'});
-            }
-            else{
-              Object.assign(sec, {shared_section_boolString: 'False'});
-            }
+            Object.assign(sec, {
+              shared_section_boolString: sec.shared_section == 1 ? 'True':'False',
+            })
           }
         }).catch(error => {
           console.error(error);

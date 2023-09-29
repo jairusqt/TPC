@@ -23,10 +23,10 @@
   
   
   <div class="modal fade" id="create" tabindex="-1" aria-labelledby="createModal" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="createModal">Create New Key Process!</h1>
+          <h1 class="modal-title fs-5" id="createModal">Create New Sub Process!</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -46,19 +46,26 @@
                   </div>
                 </div>
                 <div class="col-md-12 row align-items-end mx-auto">
-                    <div class="col-md-12">
+                    <div class="col-md-4 p-2">
+                      <label for="key_code"></label>
+                      <input id="key_code" ref="sub_code" type="text" class="form-control" @input="toUpper" v-model="key_code" required disabled>
+                    </div>
+                    <div class="col-md-1 p-2">
+                      <span class="material-symbols-outlined text-center">remove</span>
+                    </div>
+                    <div class="col-md-7 p-2">
                       <label for="sub_code">Sub Process Code:</label>
                       <input id="sub_code" ref="sub_code" type="text" class="form-control" @input="toUpper" v-model="sub_code" required>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-9 p-2">
                       <label for="sub">Sub Process Description:</label>
                       <input id="sub" ref="SubPname" type="text" class="form-control" v-on:keyup.enter="addSubProcess" v-model="SubPname" required>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 p-2">
                       <button ref="addSub" type="submit" @click="addSubProcess"  class="btn btn-outline-success w-100" >Add Sub Process</button>
                     </div>
                 </div>
-                <div class="col-md-12 row mx-auto">
+                <div class="col-md-12 p-2 row mx-auto">
                   <div class="col-md-4">
                     <label for="process_type">Process Type:</label>
                     <select ref="process_type" id="process_type" class="form-select" v-model="sub_process_type">
@@ -89,6 +96,7 @@
                     <th>Code</th>
                     <th>Description</th>
                     <th>Status</th>
+                    <th>Type</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -98,6 +106,7 @@
                       <td>{{sub.sub_code}}</td>
                       <td>{{sub.SubPname}}</td>
                       <td>{{sub.sub_process_status}}</td>
+                      <td>{{sub.process_type}}</td>
                       <td></td>
                   </tr>
                   <tr v-for="(newSub, index) in SortNewSubProcessList">
@@ -105,6 +114,7 @@
                       <td>{{newSub.sub_code}}</td>
                       <td>{{newSub.SubPname}}</td>
                       <td>{{newSub.sub_process_status}}</td>
+                      <td>{{newSub.sub_process_type}}</td>
                       <td>
                         <button type="button" @click="removeSub(index)" class="btn btn-sm btn-outline-secondary w-100">Remove</button>
                       </td>
@@ -121,10 +131,10 @@
   </div>
 
   <div class="modal fade" id="update" tabindex="-1" aria-labelledby="updateModal" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="updateModal">Create New Key Process!</h1>
+          <h1 class="modal-title fs-5" id="updateModal">Update Sub Process Sequence!</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -148,36 +158,40 @@
             </div>
             <hr>
               <div class="col-md-12 row">
-                <div class="col-md-6">
-                  <h6 class="text-center">Sub-Process Name</h6>
+                <div class="col-md-9">
+                  <h6 class="p-3">Sub-Process Name</h6>
                 </div>
-                <div class="col-md-6">
-                  <h6 class="text-center">Sequence Number</h6>
+                <div class="col-md-3 text-center">
+                  <h6 class="p-3">Sequence Number</h6>
                 </div>
               </div>
-              <div class="col-md-12 border-rounded px-3">
+              <div class="col-md-12 border-rounded">
                 <draggable :list="subProcessOrder" 
                          item-key="name"
-                         @change="onChange">
-                  <template #item="{ element }">
-                      <div class="col-md-12 row p-1 border-top rounded">
-                          <div class="col-md-6">
-                            {{ element.SubPname }}
-                          </div>
-                          <div class="col-md-6 text-center">
-                            {{ element.sequence_number }}
+                         @change="onChange"
+                         >
+                  <template #item="{ element }" :class="">
+                      <div class="col-md-12 row p-3 mx-auto border-bottom rounded">
+                          <div class="col-md-12 row">
+                            <div class="col-md-9">
+                              {{ element.SubPname }}
+                            </div>
+                            <div class="col-md-3 text-center">
+                              {{ element.sequence_number }}
+                            </div>
                           </div>
                       </div>
                   </template>
-              </draggable>
+                </draggable>
               </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" @click="updateSubOrder" class="btn btn-primary">Save changes</button>
+          <button type="submit" @click="updateSubOrder" class="btn btn-outline-primary">Save changes</button>
         </div>
       </div>
     </div>
   </div>
+
   <div class="modal fade" id="editSubProcess" tabindex="-1" aria-labelledby="editSubProcess" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -198,6 +212,10 @@
               <select class="form-select" v-model="e_Pid" id="e_key_process" disabled>
                 <option v-for="key in keyProcess" :key="key.Pid" :value="key.Pid">{{key.Pname}}</option>
               </select>
+            </div>
+            <div class="col-md-12 p-2">
+              <label for="e_sub_code">Sub Process Code:</label>
+              <input id="e_sub_code" v-model="e_sub_code" class="form-control" type="text" disabled>
             </div>
             <div class="col-md-12 p-2">
               <label for="e_SubPname">Sub Process Description:</label>
@@ -238,7 +256,11 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to proceed with deleting this Sub Process - {{e_SubPname}}?</p>
+          <div class="text-center">
+            <p >YOU ARE GOING TO DELETE THIS SECTION: "{{e_SubPname}}"</p>
+            <h5 class="text-danger pb-3">Do you wish to proceed?</h5>
+            <p class="border rounded text-start p-3"><small>This is a system warning indicating that the data you're attempting to delete might be in use by another table. Deleting it may potentially disrupt the entire process. Please proceed with caution and ensure the implications are understood before confirming the deletion.</small></p>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -276,19 +298,24 @@ components: {
 },
 data() {
   return {
-    SubProcessGetURL: 'http://172.16.2.60/TPC/GetSubProcess.php',
-    SubProcessPostURL: 'http://172.16.2.60/TPC/PostSubProcess.php',
-    KeyProcessGetURL: 'http://172.16.2.60/TPC/GetKeyProcess.php',
-    SectionGetURL: 'http://172.16.2.60/TPC/GetSection.php',
-    KeyProcessOptionsGetURL: 'http://172.16.2.60/TPC/GetKeyProcessOptions.php',
-    SubProcessOptionsGetURL: 'http://172.16.2.60/TPC/GetSubProcessOptions.php',
-    SubProcessOrderPutURL: 'http://172.16.2.60/TPC/PutSubProcessOrder.php',
-    SubProcessPutURL: 'http://172.16.2.60/TPC/PutSubProcess.php',
-    DeleteSubURL: 'http://172.16.2.60/TPC/DeleteSubProcess.php',
+    SubProcessGetURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
+    SubProcessPostURL: 'http://172.16.2.13/tpc-endpoint/PostSubProcess.php',
+    KeyProcessGetURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
+    SectionGetURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
+    KeyProcessOptionsGetURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcessOptions.php',
+    SubProcessOptionsGetURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcessOptions.php',
+    SubProcessOrderPutURL: 'http://172.16.2.13/tpc-endpoint/PutSubProcessOrder.php',
+    SubProcessPutURL: 'http://172.16.2.13/tpc-endpoint/PutSubProcess.php',
+    DeleteSubURL: 'http://172.16.2.13/tpc-endpoint/DeleteSubProcess.php',
+
+    fetchSubProcessFlowURL: 'http://172.16.2.13/tpc-endpoint/fetchSubProcessFlow.php',
+    // itemConditionDetailsURL: 'http://172.16.2.13/tpcrequesthandlers/ItemConditionRequestHandler.php',
+    requestConditionURL: 'http://172.16.2.13/tpc-endpoint/requestItemCondition.php',
 
     section_id: null,
     Pid: null,
     OrderPid: null,
+    key_code: '',
     sub_code: '',
     SubPname: '',
     sub_process_type: 'Production',
@@ -307,6 +334,7 @@ data() {
     e_SubPid: '',
     e_section_id: '',
     e_Pid: '',
+    e_sub_code: '',
     e_SubPname: '',
     e_sequence_number: '',
     e_process_type: '',
@@ -363,19 +391,18 @@ methods: {
         const row = event.target.parentNode.parentNode;
         const cell = row.querySelectorAll('td');
         this.tempSub = cell[2].textContent;
-        console.log(this.tempSub);
     }
     if(event.target.tagName == 'SPAN'){
         const row = event.target.parentNode.parentNode.parentNode;
         const cell = row.querySelectorAll('td');
         this.tempSub = cell[2].textContent;
-        console.log(this.tempSub);
     }
     for(const sub of this.subProcess){
       if(this.tempSub == sub.SubPname){
         this.e_section_id = sub.section_id;
         this.e_Pid = sub.Pid;
         this.e_SubPid = sub.SubPid;
+        this.e_sub_code = sub.sub_code;
         this.e_SubPname = sub.SubPname;
         this.e_sequence_number = sub.sequence_number;
         this.e_process_type = sub.process_type;
@@ -388,49 +415,60 @@ methods: {
     const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
     let isDuplicate = false;
     let isNull = false;
-    for(const sub of this.subProcess){
-      const formattedESubPname = this.e_SubPname.replace(/\s+/g, '').toUpperCase();
-      const formattedSubPname = sub.SubPname.replace(/\s+/g, '').toUpperCase();
-      if(formattedESubPname === formattedSubPname){
-        isDuplicate = true;
-        toastBootstrap.show();
-        this.alert = 'System Warning: Duplicate Entry Detected. Please perform a comprehensive verification';
-        break;
-      }
-    }
-    const formattedESubPname = this.e_SubPname.replace(/\s+/g, '').toUpperCase();
-    if(formattedESubPname === ''){
-      isNull = true;
-      toastBootstrap.show();
-      this.alert = 'System Alert: Detection of an Unassigned Sub Process Description. Please conduct a thorough review';
-    } else {
-      isNull = false;
-    }
-
-    if(isDuplicate || isNull){
-      console.log('cancel');
-    } else {
-      axios.put(this.SubProcessPutURL, {
-        SubPname: this.e_SubPname,
-        process_type: this.e_process_type,
-        sub_process_status: this.e_status,
-        SubPid: this.e_SubPid,
-      }).then(response => {
-        if(response.data.message === 'Sub Process updated successfully'){
-          this.alert = 'Your data has been successfully submitted! Thank you for providing the required information.';
+    axios.get(this.fetchSubProcessFlowURL, {
+        method: 'GET',
+        headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+        },
+        params: {
+            SubPid: this.e_SubPid
+        }
+    }).then(response => {
+        let exists = response.data.length > 0 ? true : false;
+        if(exists){
           toastBootstrap.show();
-          for(const sub of this.subProcess){
-            if(this.e_SubPid === sub.SubPid){
-              sub.SubPname = this.e_SubPname;
-              sub.process_type = this.e_process_type;
-              sub.sub_process_status = this.e_status;
-            }
+          this.alert = 'This sub process is currently in use within Process Flow, and editing is prohibited';
+        } else {
+          const formattedESubPname = this.e_SubPname.replace(/\s+/g, '').toUpperCase();
+          if(formattedESubPname === ''){
+            isNull = true;
+            toastBootstrap.show();
+            this.alert = 'System Alert: Detection of an Unassigned Sub Process Description. Please conduct a thorough review';
+          } else {
+            isNull = false;
+          }
+        
+          if(isNull){
+          
+          } else {
+            axios.put(this.SubProcessPutURL, {
+              SubPname: this.e_SubPname,
+              process_type: this.e_process_type,
+              sub_process_status: this.e_status,
+              SubPid: this.e_SubPid,
+            }).then(response => {
+              if(response.data.message === 'Sub Process updated successfully'){
+                this.alert = 'Your data has been successfully submitted! Thank you for providing the required information.';
+                toastBootstrap.show();
+                for(const sub of this.subProcess){
+                  if(this.e_SubPid === sub.SubPid){
+                    sub.SubPname = this.e_SubPname;
+                    sub.process_type = this.e_process_type;
+                    sub.sub_process_status = this.e_status;
+                  }
+                }
+              }
+            }).catch(error => {
+              console.log(error);
+            });
           }
         }
-      }).catch(error => {
+
+    }).catch(error => {
         console.log(error);
-      });
-    }
+    });
+  
+    
   },
   onChange(event) {
       this.reorder()
@@ -472,7 +510,6 @@ methods: {
       
     } else {
       for(const sub of this.subProcessNewList){
-        console.log(sub)
         axios.post(this.SubProcessPostURL, {
           section_id: sub.section_id,
           Pid: sub.Pid,
@@ -521,7 +558,7 @@ methods: {
             toastBootstrap.show()
             this.subProcessList = [];
             this.subProcessNewList = [];
-            this.section_id = null;
+            // this.section_id = null;
             this.Pid = null;
             this.SubPname = null;
             this.sub_code = null;
@@ -540,13 +577,22 @@ methods: {
     this.sequence_number = maxSequenceNo + 1;
   },
   updateSubOrder(){
-    console.log(this.subProcessOrder);
+    const toastLiveExample = document.getElementById('liveToast');
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
     for(const sub of this.subProcessOrder){
         axios.put(this.SubProcessOrderPutURL, {
           SubPid: sub.SubPid,
           sequence_number: sub.sequence_number,
         }).then(response => {
-          console.log(response.data);
+          if(response.data.message === 'Sub Process Order updated successfully'){
+            for(const s of this.subProcess){
+              if(parseInt(s.SubPid) === parseInt(sub.SubPid)){
+                s.sequence_number = sub.sequence_number;
+                this.alert = 'The Sub Process Order has been update successfully';
+                toastBootstrap.show();
+              }
+            }
+          }
         }).catch(error => {
           console.log(error);
         });
@@ -561,6 +607,7 @@ methods: {
     let dupOutDesc = false;
     let nullCode = false;
     let nullDesc = false;
+    this.sub_code = this.key_code+'-'+this.sub_code;
     for(const sub of this.subProcessList){
       if(this.SubPname.toUpperCase() === sub.SubPname.toUpperCase()){
         dupDesc = true;
@@ -584,6 +631,7 @@ methods: {
     for(const sub of this.subProcess){
       if(this.sub_code === sub.sub_code){
         dupCode = true;
+        this.sub_code = '';
         this.alert = 'Warning: The sub-process code you are attempting to add already existed. Please provide a unique code.';
         toastBootstrap.show();
         break;
@@ -630,7 +678,7 @@ methods: {
       this.sub_code = '';
       this.$refs.sub_code.focus();
       this.sequence_number++;
-    }
+    } 
       
   },
   FetchKeyOptions(section_id){
@@ -647,12 +695,17 @@ methods: {
             section_id: section_id
         }
     }).then(response => {
-      this.keyProcessOptions = response.data;
+      this.keyProcessOptions = response.data.filter((key) => key.key_process_status === 'Active');
     }).catch(error => {
       console.log(error);
     });
   },
   FetchSubOptions(Pid){
+    for(const key of this.keyProcess){
+      if(parseInt(Pid) === parseInt(key.Pid)){
+        this.key_code = key.key_code;
+      }
+    }
     this.subProcessList = [];
     this.subProcessNewList = [];
     axios.get(this.SubProcessOptionsGetURL, {
@@ -694,18 +747,40 @@ methods: {
   deleteSubProcess(){
     const toastLiveExample = document.getElementById('liveToast');
     const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-    axios.post(this.DeleteSubURL, {
-        SubPid: this.e_SubPid
+
+    axios.get(this.requestConditionURL, {
+        method: 'GET',
+        headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+        },
+        params: {
+            SubPid: this.e_SubPid
+        }
     }).then(response => {
-      if(response.data.message === 'Sub Process deleted successfully'){
-        let idToRemove = this.subProcess.findIndex(sub => sub.SubPid === this.e_SubPid);
-        this.subProcess.splice(idToRemove, 1);
-        this.alert = 'This Sub Process ' + this.e_SubPname + ' has been removed successfully';
+      let exists = response.data.length > 0 ? true : false;
+      console.log(exists)
+      if(exists){
         toastBootstrap.show();
+        this.alert = 'This sub process is currently in use within other masterfiles, and editing is prohibited';
+      } else {
+          axios.post(this.DeleteSubURL, {
+              SubPid: this.e_SubPid
+          }).then(response => {
+            if(response.data.message === 'Sub Process deleted successfully'){
+              let idToRemove = this.subProcess.findIndex(sub => sub.SubPid === this.e_SubPid);
+              this.subProcess.splice(idToRemove, 1);
+              this.alert = 'This Sub Process ' + this.e_SubPname + ' has been removed successfully';
+              toastBootstrap.show();
+            }
+          }).catch(error => {
+            console.log(error);
+          });
       }
     }).catch(error => {
       console.log(error);
-    });
+    })
+
+    
   },
 
 },
@@ -713,14 +788,14 @@ methods: {
 async created() {
   await axios.get(this.SectionGetURL, {
     }).then(response => {
-      this.section = response.data;
+      this.section = response.data.filter((sec)=> sec.section_status === 'Active');
     }).catch(error => {
       console.log(error)
     });
     
     await axios.get(this.KeyProcessGetURL, {
     }).then(response => {
-      this.keyProcess = response.data;
+      this.keyProcess = response.data.filter((key)=> key.key_process_status === 'Active');
     }).catch(error => {
       console.log(error)
     });

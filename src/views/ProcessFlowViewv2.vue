@@ -6,7 +6,7 @@
             <h3>Tablet Process Card - <em>Setup Process Flow</em></h3>
         </div>
         <div class="col-md-3 float-end">
-            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#createProcessFlow">
+            <button type="button" class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#createProcessFlow" @click="clear">
                 Create Process Flow
             </button>
         </div>
@@ -28,6 +28,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <div class="col-xl-12 col-lg-6 row">
+                <p>PROCESS FLOW ASSIGNMENT</p>
                   <div class="col-xl-1 col-lg-4">
                       <button @click="clearField" ref="clearBtn" class="btn btn-outline-primary w-100 h-100" disabled>Clear</button>
                   </div>
@@ -154,7 +155,7 @@
                                 </td>
                                 <td>{{ mainSectionCode }}</td>
                                 <td>
-                                    <select ref="keyProcessFlow" @change="fetchSubProcess(key.Pid)" class="form-select" v-model="key.Pid">
+                                    <select ref="keyProcessFlow" @change="fetchSubProcess(key.Pid)" class="form-select" v-model="key.Pid" :disabled="key.Pid != ''">
                                         <option v-for="key in keyProcess" :value="key.Pid">{{key.Pname}}</option>
                                     </select>
                                 </td>
@@ -165,7 +166,7 @@
                                     <input ref="keyMachineTime" type="text" class="form-control" v-model="key.machine_time">
                                 </td>
                                 <td>
-                                    <button ref="removeBtn" @click="removeKey(index)" class="btn btn-sm btn-outline-danger w-100">
+                                    <button ref="removeBtn" @click="removeKey(index, key.Pid)" class="btn btn-sm btn-outline-danger w-100">
                                         <span class="material-symbols-outlined">remove</span>
                                     </button>
                                 </td>
@@ -210,12 +211,12 @@
                                 </td>
                                 <td>
                                     <div class="form-check form-switch">
-                                        <input ref="sampling" v-model="sub.sampling" class="form-check-input" type="checkbox" role="switch">
+                                        <input ref="sampling" v-model="sub.sampling" class="form-check-input" type="checkbox" role="switch" :checked="sub.sampling">
                                     </div>
                                 </td>
                                 <td>
                                     <div class="form-check form-switch">
-                                        <input ref="uncontrolled" v-model="sub.uncontrolled" class="form-check-input" type="checkbox" role="switch">
+                                        <input ref="uncontrolled" v-model="sub.uncontrolled" class="form-check-input" type="checkbox" role="switch" :checked="sub.uncontrolled">
                                     </div>
                                 </td>
                                 <td>
@@ -333,12 +334,16 @@
                                 <th>Key Process Description</th>
                                 <th style="width: 15%">Standard Time</th>
                                 <th style="width: 15%">Machine Time</th>
+                                <th>Remove</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="key in sortedKey">
+                            <tr v-for="(key, index) in sortedKey">
                                 <td>{{ key.sequence_number }}</td>
-                                <td>{{ key.operation_number }}</td>
+                                <td>
+                                    <input v-if="viewFlowStatus == 'Unposted'" ref="viewOperationNo" type="text" class="form-control" v-model="key.operation_number">
+                                    <p v-else>{{key.operation_number}}</p>
+                                </td>
                                 <td>{{ key.section_code }}</td>
                                 <td v-if="key.section_code == 'SWP'">
                                     <select ref="keyProcessFlow" @change="fetchSubProcess" class="form-select" v-model="key.Pid" disabled>
@@ -351,7 +356,7 @@
                                     </select>
                                 </td>
                                 <td v-else>
-                                    <select class="form-select" v-model="key.Pid" disabled>
+                                    <select class="form-select" v-model="key.Pid" :disabled="key.Pid !== ''" @change="fetchViewSubProcess(key.Pid)">
                                         <option v-for="tempKey in tempKeyProcess" :value="tempKey.Pid">{{tempKey.Pname}}</option>
                                     </select>
                                 </td>
@@ -363,10 +368,19 @@
                                     <input v-if="viewFlowStatus == 'Unposted'" ref="viewKeyMachineTime" type="text" class="form-control" v-model="key.machine_time">
                                     <p v-else>{{key.machine_time}}</p>
                                 </td>
+                                <td>
+                                    <button ref="viewRemoveBtn" class="btn btn-outline-danger w-100" @click="removeFlowKey(index, key.Pid)" :disabled="this.viewFlowStatus === 'Posted'">
+                                        -
+                                    </button>
+                                </td>
                             </tr>
                         </tbody>
                         <tbody>
-
+                            <tr>
+                                <td colspan="7">
+                                    <button ref="addViewKeyBtn" @click="addKeyFlow" class="btn w-100 btn-outline-primary" :disabled="this.viewFlowStatus === 'Posted'">Add Row</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -418,13 +432,25 @@
                                         <input ref="viewUncontrolled" v-model="sub.check_uncontrolled" class="form-check-input" type="checkbox" role="switch" disabled>
                                     </div>
                                 </td>
-                                <td>
+                                <td v-if="viewFlowStatus === 'Unposted'">
+                                    <select class="form-select" v-model="sub.batching_type">
+                                        <option value="Standard">Standard</option>
+                                        <option value="Parallel">Parallel</option>
+                                    </select>
+                                </td>
+                                <td v-else>
                                     <select class="form-select" v-model="sub.batching_type" disabled>
                                         <option value="Standard">Standard</option>
                                         <option value="Parallel">Parallel</option>
                                     </select>
                                 </td>
-                                <td>
+                                <td v-if="viewFlowStatus === 'Unposted'">
+                                    <select class="form-select" v-model="sub.result_type">
+                                        <option value="Chips">Chips</option>
+                                        <option value="Wafer">Wafer</option>
+                                    </select>
+                                </td>
+                                <td v-else>
                                     <select class="form-select" v-model="sub.result_type" disabled>
                                         <option value="Chips">Chips</option>
                                         <option value="Wafer">Wafer</option>
@@ -500,27 +526,30 @@
         data() {
             return {
 
-                requestFlowKeyURL: 'http://172.16.2.60/tpc/requestKeyProcessFlow.php',
-                requestFlowSubURL: 'http://172.16.2.60/tpc/requestSubProcessFlow.php',
-                requestKeyURL: 'http://172.16.2.60/tpc/requestKeyProcess.php',
-                requestSubURL: 'http://172.16.2.60/tpc/requestSubProcess.php',
-                SectionGetURL: 'http://172.16.2.60/TPC/GetSection.php',
-                SubProcessGetURL: 'http://172.16.2.60/tpc/GetSubProcess.php',
-                requestItemMasterURL: 'http://172.16.2.60/tpcrequesthandlers/requestItemMasterMain.php',
-                fetchProcessFlowURL: 'http://172.16.2.60/tpcrequesthandlers/fetchProcessFlowMain.php',
-                GetKeyProcessURL: 'http://172.16.2.60/tpc/GetKeyProcess.php',
+                requestFlowKeyURL: 'http://172.16.2.13/requestKeyProcessFlow.php',
+                requestFlowSubURL: 'http://172.16.2.13/requestSubProcessFlow.php',
+                requestKeyURL: 'http://172.16.2.13/requestKeyProcess.php',
+                requestSubURL: 'http://172.16.2.13/requestSubProcess.php',
+                SectionGetURL: 'http://172.16.2.13/GetSection.php',
+                SubProcessGetURL: 'http://172.16.2.13/GetSubProcess.php',
+                requestItemMasterURL: 'http://172.16.2.13/requestItemMasterMain.php',
+                fetchProcessFlowURL: 'http://172.16.2.13/getProcessFlowMain.php',
+                GetKeyProcessURL: 'http://172.16.2.13/GetKeyProcess.php',
 
-                PostProcessFlowURL: 'http://172.16.2.60/tpc/PostProcessFlow.php',
-                PostKeyProcessFlowURL: 'http://172.16.2.60/tpc/PostKeyProcessFlow.php',
-                PostSubProcessFlowURL: 'http://172.16.2.60/tpc/PostSubProcessFlow.php',
+                PostProcessFlowURL: 'http://172.16.2.13/PostProcessFlow.php',
+                PostKeyProcessFlowURL: 'http://172.16.2.13/PostKeyProcessFlow.php',
+                PostSubProcessFlowURL: 'http://172.16.2.13/PostSubProcessFlow.php',
 
-                DeleteProcessFlowURL: 'http://172.16.2.60/tpc/DeleteProcessFlow.php',
-                DeleteProcessFlowKey: 'http://172.16.2.60/tpc/DeleteProcessFlowKey.php',
-                DeleteProcessFlowSub: 'http://172.16.2.60/tpc/DeleteProcessFlowSub.php',
+                DeleteProcessFlowURL: 'http://172.16.2.13/DeleteProcessFlow.php',
+                DeleteProcessFlowKey: 'http://172.16.2.13/DeleteProcessFlowKey.php',
+                DeleteProcessFlowSub: 'http://172.16.2.13/DeleteProcessFlowSub.php',
+                    
+                DeleteFlowKey: 'http://172.16.2.13/DeleteFlowKey.php',
+                DeleteFlowSub: 'http://172.16.2.13/DeleteFlowSub.php',
 
-                PutProcessFlowKeyURL: 'http://172.16.2.60/tpc/PutProcessFlowKey.php',
-                PutProcessFlowSubURL: 'http://172.16.2.60/tpc/PutProcessFlowSub.php',
-                PutProcessFlowStatusURL: 'http://172.16.2.60/tpc/PutProcessFlowMainStatus.php',
+                PutProcessFlowKeyURL: 'http://172.16.2.13/PutProcessFlowKey.php',
+                PutProcessFlowSubURL: 'http://172.16.2.13/PutProcessFlowSub.php',
+                PutProcessFlowStatusURL: 'http://172.16.2.13/PutProcessFlowMainStatus.php',
                 //objects
                 section: [],
                 processFlow: [],
@@ -629,7 +658,7 @@
                 let validateSection = false;
                 let validateKeyProcessFlow = false;
                 let validateSubProcessFlow = false;
-                
+                let validateOperationNo = false;
                 
                 // checks for empty or null Pid in the selection
                 if(this.mainPartsNumber == ""){
@@ -663,6 +692,14 @@
                     } else {
                         toastBootstrap.show()
                         this.alert = 'System Alert: Detection of an Unassigned Key Process. Please conduct a thorough review.';
+                        filterNull = true;
+                        break;
+                    }
+                    if(!Object.is(key.operation_number, '')){
+                        filterNull = false;
+                    } else {
+                        toastBootstrap.show()
+                        this.alert = 'System Alert: Detection of an Unassigned Operation Number. Please conduct a thorough review.';
                         filterNull = true;
                         break;
                     }
@@ -763,16 +800,8 @@
                             });
                         }
                         for(const sub of this.subProcessFlow){
-                            if(sub.sampling === true){
-                                sub.sampling = 'True';
-                            } else {
-                                sub.sampling = 'False';
-                            }
-                            if(sub.uncontrolled === true){
-                                sub.uncontrolled = 'True';
-                            } else {
-                                sub.uncontrolled = 'False';
-                            }
+                            Object.assign(sub, {check_sampling: sub.sampling === true ? 'True': 'False'});
+                            Object.assign(sub, {check_uncontrolled: sub.uncontrolled === true ? 'True' : 'False'});
                             axios.post(this.PostSubProcessFlowURL, {
                                 main_flow_id: this.mainFlowId,
                                 section_id: this.mainSection,
@@ -784,8 +813,8 @@
                                 standard_time: sub.standard_time,
                                 machine_time: sub.machine_time,
                                 item_code: this.mainItemCode,  
-                                check_sampling: sub.sampling,
-                                check_uncontrolled: sub.uncontrolled,
+                                check_sampling: sub.check_sampling,
+                                check_uncontrolled: sub.check_uncontrolled,
                                 batching_type: sub.batching_type,
                                 result_type: sub.result_type,
                                 check_sub_status: sub.sub_status_label
@@ -809,6 +838,9 @@
                                     }
                                     for(const batching of this.$refs.batching_type){
                                         batching.disabled = true;
+                                    }
+                                    for(const result of this.$refs.result_type){
+                                        result.disabled = true;
                                     }
                                 }
                             }).catch(error => {
@@ -977,7 +1009,6 @@
                                     }
                                 }
                             }
-                            console.log(this.flowSub);
                         }).catch(error => {
                             console.log(error);
                         });
@@ -1051,10 +1082,62 @@
                     this.$refs.addKeyBtn.disabled = true;
                 }
             },
-            removeKey(index){
+            addKeyFlow(){
+                if(this.viewSectionCode === 'SWP'){
+                    this.flowKey.push({
+                        sequence_number: '',
+                        operation_number: '',
+                        section_id: '',
+                        section_code: '',
+                        Pid: '',
+                        standard_time: 0,
+                        machine_time: 0,    
+                    })
+                    this.addFlowSequence();
+                    this.$refs.addViewKeyBtn.disabled = true;
+                } else {
+                    this.flowKey.push({
+                        sequence_number: '',
+                        operation_number: '',
+                        section_id: this.viewSection,
+                        section_code: this.viewSectionCode,
+                        Pid: '',
+                        standard_time: 0,
+                        machine_time: 0,    
+                    })
+                    this.addFlowSequence();
+                    this.$refs.addViewKeyBtn.disabled = true;
+                }
+            },
+            removeKey(index, Pid){
                 this.keyProcessFlow.splice(index, 1);
                 this.addSequenceNumber();
-                this.fetchSubProcess();
+                let Pos = this.subProcessFlow.findIndex(sub => sub.Pid === Pid);
+                let Span = this.subProcessFlow.filter(sub => sub.Pid === Pid).length;
+                this.subProcessFlow.splice(Pos, Span);
+                this.addSubSequenceNumber();
+            },
+            removeFlowKey(index, Pid){
+                this.flowKey.splice(index, 1);
+                this.addFlowSequence();
+                let Pos = this.flowSub.findIndex(sub => sub.Pid === Pid);
+                let Span = this.flowSub.filter(sub => sub.Pid === Pid).length;
+                this.flowSub.splice(Pos, Span);
+                this.addFlowSubSequence();
+            },
+            addFlowSequence(){
+                let sequence_no = 1;
+                for(const key of this.flowKey){
+                    key.sequence_number = sequence_no;
+                    sequence_no++;
+                }
+            },
+            addFlowSubSequence(){
+                let sequence_no = 1;
+                for(const sub of this.flowSub){
+                    sub.sequence_number = sequence_no;
+                    sequence_no++;
+                }
             },
             addSequenceNumber(){
                 let sequence_number = 1;
@@ -1101,28 +1184,80 @@
                         }
                     }
                 }
+                for(const flow of this.processFlow){
+                    if(this.mainPartsNumber === flow.item_parts_number && this.mainItemCode === flow.item_code && parseInt(this.mainSection) === parseInt(flow.section_id) && flow.flow_status === 'Posted' && flow.revision_number === latestRevNo){
+                            axios.get(this.requestFlowKeyURL, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-type': 'application/x-www-form-urlencoded'
+                                },
+                                params: {
+                                    flow_main_id: flow.flow_main_id
+                                }
+                            }).then(response => {
+                                for(const key of response.data){
+                                    Object.assign(key, {sequence_no: key.sequence_number});
+                                    this.keyProcessFlow.push(key)
+                                }
+                                this.keyProcessFlow.sort((a,b) => a.sequence_number - b.sequence_number);
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                            axios.get(this.requestFlowSubURL, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-type': 'application/x-www-form-urlencoded'
+                                },
+                                params: {
+                                    
+                                    flow_main_id: flow.flow_main_id
+                                }
+                            }).then(response => {
+                                for(const flowSub of response.data){
+                                    for(const sub of this.subProcess){
+                                        if(parseInt(flowSub.SubPid) === parseInt(sub.SubPid)){
+                                            Object.assign(flowSub, {
+                                                SubPname: sub.SubPname,
+                                                sampling: flowSub.check_sampling === "True" ? true : false,
+                                                uncontrolled: flowSub.check_uncontrolled === "True" ? true : false,
+                                                sub_status: flowSub.sub_status === "Active" ? true : false,
+                                                sub_status_label: flowSub.sub_status === "Active" ? "Active" : "Inactive",
+                                                sequence_no: flowSub.sequence_number,
+                                            });
+                                            this.subProcessFlow.sort((a,b) => a.sequence_no - b.sequence_no).push(flowSub);
+                                        }
+                                    }
+                                    for(const key of this.keyProcessFlow){
+                                        console.log(key)
+                                    }
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                            });
+                            
+                    }
+                }
                 this.mainRevisionNumber = latestRevNo + 1;
                 
+                
             },
-            fetchSubProcess(){
+            fetchSubProcess(Pid){
                 const toastLiveExample = document.getElementById('liveToast');
                 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-                this.subProcessFlow = [];
                 let Pname = '';
-                for(const [order, key] of Object.entries(this.keyProcessFlow)){
-                    axios.get(this.requestSubURL,{
+                axios.get(this.requestSubURL,{
                         method: 'GET',
                         headers: {
                             'Content-type': 'application/x-www-form-urlencoded'
                         },
                         params: {
-                            Pid: key.Pid
+                            Pid: Pid
                         }
                     }).then(response => {
                         if(response.data.length > 0){
                             for(const sub of response.data){
                                 if(sub.sub_process_status === 'Active'){
-                                        this.subProcessFlow.push({
+                                    this.subProcessFlow.push({
                                         Pid: sub.Pid,
                                         SubPid: sub.SubPid,
                                         SubPname: sub.SubPname,
@@ -1131,37 +1266,102 @@
                                         machine_time: 0,
                                         sampling: false,
                                         uncontrolled: false,
-                                        order: order,
                                         sequence_no: '',
                                         sub_status: true,
                                         batching_type: 'Standard',
                                         result_type: 'Wafer',
                                         sub_status_label: 'Active',
                                     });
-                                } 
-                            }
-                        } else {
-                            for(const keyP of this.keyProcess){
-                                if(parseInt(key.Pid) === parseInt(keyP.Pid)){
-                                    Pname = keyP.Pname;
+                                } else {
+                                    for(const keyP of this.keyProcess){
+                                            if(parseInt(key.Pid) === parseInt(keyP.Pid)){
+                                                Pname = keyP.Pname;
+                                            }
+                                        }
+                                        toastBootstrap.show()
+                                        this.alert = 'System Alert: Detection of an Unassigned Sub Process Flow in Key Process Flow Sequence No - ' + Pname + '. Please conduct a thorough review.';
                                 }
+                                this.subProcessFlow.sort((a, b) => a.order - b.order);
+                                this.addSubSequenceNumber();
                             }
-                            toastBootstrap.show()
-                            this.alert = 'System Alert: Detection of an Unassigned Sub Process Flow in Key Process Flow Sequence No - ' + Pname + '. Please conduct a thorough review.';
                         }
-                        this.subProcessFlow.sort((a, b) => a.order - b.order);
-                        this.addSubSequenceNumber();
                     }).catch(error => {
-                        console.log(error)
+                        console.log(error);
                     });
-                }
                 this.$refs.addKeyBtn.disabled = false;
+            },
+            fetchViewSubProcess(Pid){
+                const toastLiveExample = document.getElementById('liveToast');
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+                let Pname = '';
+                axios.get(this.requestSubURL,{
+                        method: 'GET',
+                        headers: {
+                            'Content-type': 'application/x-www-form-urlencoded'
+                        },
+                        params: {
+                            Pid: Pid
+                        }
+                    }).then(response => {
+                        if(response.data.length > 0){
+                            for(const sub of response.data){
+                                if(sub.sub_process_status === 'Active'){
+                                    this.flowSub.push({
+                                        Pid: sub.Pid,
+                                        SubPid: sub.SubPid,
+                                        SubPname: sub.SubPname,
+                                        sequence_number: sub.sequence_number,
+                                        standard_time: 0,
+                                        machine_time: 0,
+                                        sampling: false,
+                                        uncontrolled: false,
+                                        sequence_no: '',
+                                        sub_status: 'Active',
+                                        batching_type: 'Standard',
+                                        result_type: 'Wafer',
+                                        sub_bool: true,
+                                    });
+                                } else {
+                                    for(const keyP of this.keyProcess){
+                                            if(parseInt(key.Pid) === parseInt(keyP.Pid)){
+                                                Pname = keyP.Pname;
+                                            }
+                                        }
+                                        toastBootstrap.show()
+                                        this.alert = 'System Alert: Detection of an Unassigned Sub Process Flow in Key Process Flow Sequence No - ' + Pname + '. Please conduct a thorough review.';
+                                }
+                                this.flowSub.sort((a, b) => a.order - b.order);
+                                this.addFlowSubSequence();
+                            }
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                    });
+                this.$refs.addViewKeyBtn.disabled = false;
             },
             clearField(){
                 this.mainFlowId = this.mainFlowId + 1;
                 this.keyProcessFlow = [];
                 this.subProcessFlow = [];
                 this.$refs.flow_type.disabled = false;
+                this.$refs.parts_number.disabled = false;
+                this.$refs.item_code.disabled = false;
+                this.$refs.section.disabled = false;
+                this.$refs.addKeyBtn.disabled = false;
+                this.$refs.remarks.disabled = false;
+                this.$refs.saveBtn.disabled = false;
+                this.$refs.clearBtn.disabled = true;
+                this.mainFlowType = '';
+                this.mainPartsNumber = '';
+                this.mainItemCode = '';
+                this.mainItemDescription = '';
+                this.mainSection = '';
+                this.mainRevisionNumber = '';
+                this.mainRemarks = '';
+            },
+            clear(){
+                this.keyProcessFlow = [];
+                this.subProcessFlow = [];
                 this.$refs.parts_number.disabled = false;
                 this.$refs.item_code.disabled = false;
                 this.$refs.section.disabled = false;
@@ -1212,61 +1412,175 @@
                             }
                         }
                         this.$refs.viewFlowStatus.disabled = true;
-
-                        for(const key of this.flowKey){
-                            axios.put(this.PutProcessFlowKeyURL, {
-                                standard_time: key.standard_time,
-                                machine_time: key.machine_time,
-                                flow_key_id: key.flow_key_id,
-                                Pid: key.Pid,
-                            }).then(response => {
-                                console.log(response.data);
-                            }).catch(error => {
-                                console.log(error);
-                            });
-                        }
-                        
-                        for(const sub of this.flowSub){
-                            console.log(sub);
-                            if(sub.check_sampling === true){
-                                sub.sampling = 'True';
-                            } else {
-                                sub.sampling = 'False';
-                            }
-                            if(sub.check_uncontrolled === true){
-                                sub.uncontrolled = 'True';
-                            } else {
-                                sub.uncontrolled = 'False';
-                            }
-
-                            axios.put(this.PutProcessFlowSubURL, {
-                                standard_time: sub.standard_time,
-                                machine_time: sub.machine_time,
-                                flow_sub_id: sub.flow_sub_id,
-                                SubPid: sub.SubPid,
-                                sampling: sub.sampling,
-                                uncontrolled: sub.uncontrolled,
-                                sub_status: sub.sub_status
-                            }).then(response => {
-                                if(response.data.message === 'Process Flow Sub updated successfully'){
-                                    for(const sampling of this.$refs.viewSampling){
-                                        sampling.disabled = true;
-                                    }
-                                    for(const uncontrolled of this.$refs.viewUncontrolled){
-                                        uncontrolled.disabled = true;
-                                    }
-                                    for(const sub_status of this.$refs.viewSub_Status){
-                                        sub_status.disabled = true;
-                                    }
+                        console.log(response.data)
+                        axios.post(this.DeleteFlowKey, {
+                            flow_main_id: this.viewFlowId
+                        }).then(response => {
+                            console.log(response.data)
+                            if(response.data.message === 'Process Flow Key deleted successfully'){
+                                for(const key of this.flowKey){
+                                    axios.post(this.PostKeyProcessFlowURL, {
+                                        main_flow_id: this.mainFlowId,
+                                        operation_number: key.operation_number,
+                                        section_id: key.section_id,
+                                        parts_number: this.mainPartsNumber,
+                                        revision_number: this.mainRevisionNumber,
+                                        Pid: key.Pid,
+                                        sequence_number: key.sequence_number,
+                                        standard_time: key.standard_time,
+                                        machine_time: key.machine_time,
+                                        item_code: this.mainItemCode,   
+                                    }).then(response => {
+                                        if(response.data.message === 'Process Flow Key inserted successfully'){
+                                            for(const processNo of this.$refs.viewOperationNo){
+                                                processNo.disabled = true;
+                                            }
+                                        }
+                                    }).catch(error => {
+                                        console.log(error)
+                                    })
                                 }
-                            }).catch(error => {
-                                console.log(error);
-                            });
-                        }
+                            }
+                        }).catch(error => {
+                            console.log(error);
+                        })
+                        axios.post(this.DeleteFlowSub, {
+                            flow_main_id: this.viewFlowId
+                        }).then(response => {
+                            console.log(response.data)
+                            if(response.data.message === 'Process Flow Sub deleted successfully'){
+                                console.log(response.data);
+                                for(const sub of this.flowSub){
+                                    Object.assign(sub, { 
+                                        sampling: sub.check_sampling === true ? 'True':'False',
+                                        uncontrolled: sub.check_uncontrolled === true ? 'True' : 'False',
+                                    });
+                                    axios.post(this.PostSubProcessFlowURL, {
+                                        main_flow_id: this.viewFlowId,
+                                        section_id: this.viewSection,
+                                        parts_number: this.viewPartsNumber,
+                                        revision_number: this.mainRevisionNumber,
+                                        Pid: sub.Pid,
+                                        SubPid: sub.SubPid,
+                                        sequence_number: sub.sequence_number,
+                                        standard_time: sub.standard_time,
+                                        machine_time: sub.machine_time,
+                                        item_code: this.viewItemCode,  
+                                        check_sampling: sub.sampling,
+                                        check_uncontrolled: sub.uncontrolled,          
+                                        batching_type: sub.batching_type,
+                                        result_type: sub.result_type,
+                                        check_sub_status: sub.sub_status
+                                    }).then(response => {
+                                        console.log(response.data);
+                                    }).catch(error => {
+                                        console.log(error)
+                                    })
+                                }
+                            }
+                        }).catch(error => {
+                            console.log(error);
+                        })
                     }
                 }).catch(error => {
                     console.log(error)
                 });
+
+
+                // axios.put(this.PutProcessFlowStatusURL, {
+                //     flow_main_id: this.viewFlowId,
+                //     flow_status: this.viewFlowStatus
+                // }).then(response => {
+                //     if(response.data.message === 'Process Flow Status updated successfully'){
+                //         axios.post(this.DeleteFlowKey, {
+                //             flow_main_id: this.viewFlowId
+                //         }).then(response => {
+                //             if(response.data === 'Process Flow Key deleted successfully'){
+                                // insert flowKey in the db
+                //             }
+                //         }).catch(error => {
+                //             console.log(error);
+                //         })
+                //         axios.post(this.DeleteFlowSub, {
+                //             flow_main_id: this.viewFlowId
+                //         }).then(response => {
+                //             if(response.data === 'Process Flow Sub deleted successfully'){
+                                // insert sub in the db
+                //             }
+                //         }).catch(error => {
+                //             console.log(error);
+                //         })
+                //     }
+                // }).catch(error => {
+                //     console.log(error)
+                // });
+
+                // axios.put(this.PutProcessFlowStatusURL, {
+                //     flow_main_id: this.viewFlowId,
+                //     flow_status: this.viewFlowStatus
+                // }).then(response => {
+                //     if(response.data.message === 'Process Flow Status updated successfully'){
+                //         for(const flow of this.processFlow){
+                //             if(parseInt(this.viewFlowId) === parseInt(flow.flow_main_id)){
+                //                 flow.flow_status = this.viewFlowStatus;
+                //             }
+                //         }
+                //         this.$refs.viewFlowStatus.disabled = true;
+
+                //         for(const key of this.flowKey){
+                //             axios.put(this.PutProcessFlowKeyURL, {
+                //                 standard_time: key.standard_time,
+                //                 machine_time: key.machine_time,
+                //                 flow_key_id: key.flow_key_id,
+                //                 Pid: key.Pid,
+                //             }).then(response => {
+                //             }).catch(error => {
+                //                 console.log(error);
+                //             });
+                //         }
+                        
+                //         for(const sub of this.flowSub){
+                //             if(sub.check_sampling === true){
+                //                 sub.sampling = 'True';
+                //             } else {
+                //                 sub.sampling = 'False';
+                //             }
+                //             if(sub.check_uncontrolled === true){
+                //                 sub.uncontrolled = 'True';
+                //             } else {
+                //                 sub.uncontrolled = 'False';
+                //             }
+
+                //             axios.put(this.PutProcessFlowSubURL, {
+                //                 standard_time: sub.standard_time,
+                //                 machine_time: sub.machine_time,
+                //                 flow_sub_id: sub.flow_sub_id,
+                //                 SubPid: sub.SubPid,
+                //                 sampling: sub.sampling,
+                //                 uncontrolled: sub.uncontrolled,
+                //                 batching_type: sub.batching_type,
+                //                 result_type: sub.result_type,
+                //                 sub_status: sub.sub_status,
+                //             }).then(response => {
+                //                 if(response.data.message === 'Process Flow Sub updated successfully'){
+                //                     for(const sampling of this.$refs.viewSampling){
+                //                         sampling.disabled = true;
+                //                     }
+                //                     for(const uncontrolled of this.$refs.viewUncontrolled){
+                //                         uncontrolled.disabled = true;
+                //                     }
+                //                     for(const sub_status of this.$refs.viewSub_Status){
+                //                         sub_status.disabled = true;
+                //                     }
+                //                 }
+                //             }).catch(error => {
+                //                 console.log(error);
+                //             });
+                //         }
+                //     }
+                // }).catch(error => {
+                //     console.log(error)
+                // });
             },
             deleteFlow(){
                     if(this.viewFlowStatus === 'Unposted'){
@@ -1277,7 +1591,6 @@
                                 flow_sub_id: sub.flow_sub_id,
                                 SubPid: sub.SubPid
                             }).then(response => {   
-                                console.log(response.data);
                                 if(response.data.message === 'Process Flow Sub deleted successfully'){
                                     for(const key of this.flowKey){
                                         if(parseInt(sub.flow_main_id) === parseInt(key.flow_main_id)){
@@ -1291,6 +1604,7 @@
                                                         flow_main_id: key.flow_main_id
                                                     }).then(response => {
                                                         if(response.data.message === 'Process Flow deleted successfully'){
+                                                            console.log(response.data)
                                                             for (const flow of this.processFlow) {
                                                               if (this.viewFlowId === flow.flow_main_id) {
                                                                 const index = this.processFlow.indexOf(flow);
@@ -1330,7 +1644,6 @@
                 this.$refs.viewDeleteBtn.disabled = true;
                 for(const sampling of this.$refs.viewSampling){
                     sampling.disabled = true;
-                    console.log(sampling);
                 }
                 for(const uncontrolled of this.$refs.viewUncontrolled){
                     uncontrolled.disabled = true;

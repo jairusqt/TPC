@@ -2,10 +2,9 @@
 </script>
 
 <template>
-  <div class="container mx-auto">
-    <p class="fs-3 p-3 text-center">TPC Reports</p>
-
-    <div class="col-md-12 row mx-auto">
+  <div class="container mx-auto bg-light">
+    <p class="fs-3 p-3 text-center"><em>Tablet Process Card - Reports</em></p>
+    <!-- <div class="col-md-12 row mx-auto">
 
       <div class="col-md-4">
         <div class="card text-bg-light mb-3 shadow" style="height: 400px;">
@@ -160,14 +159,17 @@
             </tr>
           </tbody>
         </table>
-      </div>
-    </div>
+      </div> -->
+    <!-- </div> -->
   </div>
   
 </template>
+<script>
+</script>
 <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0');
   @import 'animate.css';
+  
   .consolas {
     font-family: 'Inconsolata', monospace;
   }

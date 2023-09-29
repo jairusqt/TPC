@@ -1,7 +1,7 @@
 <template>
     <div class="container row mx-auto">
-        <table class="table table-bordered d-none d-print-table">
-            <tbody v-for="test in 3">
+        <table class="table table-bordered d-print-table d-none">
+            <tbody v-for="test in 6">
                 <tr>
                     <template v-for="item in 2">
                         <td>Item Code :</td>
@@ -47,6 +47,9 @@
                 <div class="col-md-12 row">
                     <div class="col-md-3 p-3 mx-auto">
                         <vue-qrcode :value="qr_code" :options="{ width: 290 }" class="p-3 border rounded"></vue-qrcode>
+                        <qrcode-stream></qrcode-stream>
+                        <qrcode-drop-zone></qrcode-drop-zone>
+                        <qrcode-capture></qrcode-capture>
                         <p class="fs-2 text-center px-1"><strong>Scan Me</strong></p>
                     </div>
                 </div>

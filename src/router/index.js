@@ -43,6 +43,11 @@ const router = createRouter({
       component: () => import('../views/ProcessFlowViewv2.vue')
     },
     {
+      path: '/processFlowv3',
+      name: 'processFlowv3',
+      component: () => import('../views/ProcessFlowViewv3.vue')
+    },
+    {
       path: '/formAssignment',
       name: 'formAssignment',
       component: () => import('../views/formAssignmentView.vue')
@@ -61,8 +66,12 @@ const router = createRouter({
       path: '/GenerateQrCode',
       name: 'GenerateQrCode',
       component: () => import('../views/GenerateQrCodeView.vue')
+    },
+    {
+      path: '/ReasonNG',
+      name: 'ReasonNG',
+      component: () => import('../views/ReasonNGView.vue')
     }
-
   ]
 })
 

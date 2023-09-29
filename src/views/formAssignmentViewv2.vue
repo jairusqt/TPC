@@ -1,22 +1,86 @@
 
 <template>
     <div class="row col-md-12 col-sm-12 mx-auto p-3 px-5">
-        <div class="col-md-9">
+        <div class="col-md-6">
             <h3>Tablet Process Card - <em>Form Assignment</em></h3>
           </div>
           <div class="col-md-3 float-end">
-            <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#createForm"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+            <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#createForm" @click="newFormAssignment"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+          </div>
+          <div class="col-md-3">
+            <button class="btn btn-outline-info w-100 float-end" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+                View Form Assignments Archive
+              </button>
           </div>
     </div>
-    <div class="table-responsive px-5">
-        <DataTable
-            :data="formAssignment"
-            :columns="columns"
-            class="display table"
-            @click="getData"
-            :options="tableOptions"
-        />
+
+    <div class="col-md-6 mx-auto ">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="floatingInput" v-model="search" @input="querySearch(search)">
+            <label for="floatingInput">Form Assignment Search</label>
+        </div>
     </div>
+    <div class="table-responsive border rounded p-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Status</th>
+                    <th>Section</th>
+                    <th>Lot No.</th>
+                    <th>Parts No.</th>
+                    <th>Item Code</th>
+                    <th>Quantity Ordered</th>
+                    <th>Delivery Date</th>
+                    <th>JO No.</th>
+                    <th>Revision No.</th>
+                    <th>Wafer No. From</th>
+                    <th>Wafer No. To</th>
+                    <th>Assigned By</th>
+                    <th>Date Created</th>
+                    <th>Date Issued</th>
+                    <th>View</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="form in fetchForm">
+                    <tr>
+                        <td>{{form.assignment_id}}</td>
+                        <td>{{form.assignment_status}}</td>
+                        <td>{{form.section_code}}</td>
+                        <td>{{form.lot_number}}</td>
+                        <td>{{form.item_parts_number}}</td>
+                        <td>{{form.item_code}}</td>
+                        <td>{{form.quantity}}</td>
+                        <td>{{form.delivery_date ? form.delivery_date : '-'}}</td>
+                        <td>{{form.jo_number ? form.jo_number : '-'}}</td>
+                        <td>{{form.revision_number}}</td>
+                        <td>{{form.wafer_number_from}}</td>
+                        <td>{{form.wafer_number_to}}</td>
+                        <td>{{form.assigned_by}}</td>
+                        <td>{{form.date_created}}</td>
+                        <td>{{form.date_issued}}</td>
+                        <td>
+                            <button data-bs-toggle="modal" data-bs-target="#viewForm" class="btn w-100"><span class="material-symbols-outlined">visibility</span></button>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="collapse collapse-horizontal show" id="collapseWidthExample">
+        <div class="table-responsive px-5 pt-5">
+            <DataTable
+                :data="formAssignment"
+                :columns="columns"
+                class="display table"
+                @click="getData"
+                :options="tableOptions"
+            />
+        </div>
+    </div>
+    
     
 
     <div class="modal fade" id="createForm" tabindex="-1" aria-labelledby="createFormAssignment" aria-hidden="true">
@@ -24,7 +88,7 @@
           <div class="modal-content">
             <div class="modal-body">
                 <div class="col-md-12 row">
-                    <div class="col-xl-5 col-lg-6 mx-auto row h-100 sticky-top">
+                    <div class="col-xl-4 col-lg-6 mx-auto row h-100 sticky-top">
                         <div class="col-lg-6 col-xl-4 p-2">
                             <button ref="new" class="btn btn-outline-primary w-100" @click="newFormAssignment" disabled>New</button>
                         </div>
@@ -152,9 +216,12 @@
                         </div>
                     </div>
     
-                    <div class="col-xl-7 col-lg-6 border rounded table-responsive">
+                    <div class="col-xl-8 col-lg-6 border rounded table-responsive">
                         <div class="row mx-auto p-2 text-center" v-if="section_code !== ''">
                             <p class="fs-4"><em><strong>{{section_description}}</strong></em> - <strong>PROCESS FLOW ASSIGNMENT</strong></p>
+                        </div>
+                        <div class="progress" role="progressbar" aria-label="Default striped example" aria-valuenow="{{conditionLoader}}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped" :style="'width: '+conditionLoader+'%'"></div>
                         </div>
                         <hr>
                         <table class="table ">
@@ -186,6 +253,7 @@
                                         <td>
                                             <div class="form-check form-switch">
                                                 <input 
+                                                ref="sampling"
                                                 class="form-check-input" 
                                                 @change="samplingStatus(flowSub.flow_sub_id)" 
                                                 :id="'sampling'+flowSub.flow_sub_id" 
@@ -198,6 +266,7 @@
                                         <td>
                                             <div class="form-check form-switch">
                                                 <input 
+                                                ref="uncontrolled"
                                                 class="form-check-input" 
                                                 @change="uncontrolledStatus(flowSub.flow_sub_id)" 
                                                 :id="'uncontrolled'+flowSub.flow_sub_id" 
@@ -208,13 +277,13 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <select class="form-select" :id="'batching'+flowSub.flow_sub_id" v-model="flowSub.batching_type">
+                                            <select ref="batching" class="form-select" :id="'batching'+flowSub.flow_sub_id" v-model="flowSub.batching_type">
                                                 <option value="Standard">Standard</option>
                                                 <option value="Parallel">Parallel</option>
                                             </select>
                                         </td>
                                         <td>
-                                            <select class="form-select" :id="'result'+flowSub.flow_sub_id" v-model="flowSub.result_type">
+                                            <select ref="result" class="form-select" :id="'result'+flowSub.flow_sub_id" v-model="flowSub.result_type">
                                                 <option value="Chips">Chips</option>
                                                 <option value="Wafer">Wafer</option>
                                             </select>
@@ -246,6 +315,7 @@
                                                             <th><small>Typical Value</small></th>
                                                             <th><small>Minimum Value</small></th>
                                                             <th><small>Maximum Value</small></th>
+                                                            <th><small>Target Value Visibility </small></th>
                                                             <th><small>Condition Status</small></th>
                                                         </tr>
                                                     </thead>
@@ -257,6 +327,11 @@
                                                                 <td><small>{{item.typical_value}}</small></td>
                                                                 <td>{{item.min_value}}</td>
                                                                 <td>{{item.max_value}}</td>
+                                                                <td>
+                                                                    <div class="form-check form-switch">
+                                                                        <input ref="visibility_status" :id="'visibility'+item.item_id" @change="visibilityStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" :checked="item.visibility_checked">
+                                                                    </div>
+                                                                </td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
                                                                         <input ref="condition_status" :id="'itemCondition'+item.item_id" @change="itemConditionStatus(item.item_id)" class="form-check-input" type="checkbox" role="switch" :checked="item.status_checked">
@@ -301,7 +376,7 @@
                             <button ref="viewQRCode" class="btn btn-outline-primary w-100" @click="generateQrCode" data-bs-dismiss="modal">View QR Code</button>
                         </div>
                         <div class="col-md-4 p-2">
-                            <button ref="viewInstructionBtn" class="btn btn-outline-primary w-100" disabled>Special Instructions</button>
+                            <button ref="viewInstructionBtn" @click="routeViewInstruction" class="btn btn-outline-primary w-100" disabled>Special Instructions</button>
                         </div>
                         <div class="col-md-4 p-2">
                             <button ref="viewAttachmentBtn" @click="routeViewAttachment" data-bs-dismiss="modal" class="btn btn-outline-primary w-100" disabled>Attachments</button>
@@ -442,41 +517,43 @@
                                             <div class="form-check form-switch">
                                                 <input 
                                                 class="form-check-input"  
+                                                @change="viewSamplingSwitch(item.assignment_item_id)" 
                                                 :id="'viewSampling'+item.assignment_item_id" 
                                                 type="checkbox" 
                                                 role="switch" 
                                                 :checked="item.sampling_status"
-                                                disabled
+                                                :disabled="viewStatus === 'Posted'"
                                                 >
                                             </div>
                                         </td>
                                         <td>
                                             <div class="form-check form-switch">
                                                 <input 
-                                                class="form-check-input"  
-                                                :id="'viewUcontrolled'+item.assignment_item_id" 
+                                                class="form-check-input"
+                                                @change="viewUncontrolledSwitch(item.assignment_item_id)"
+                                                :id="'viewUncontrolled'+item.assignment_item_id" 
                                                 type="checkbox" 
                                                 role="switch" 
-                                                :checked="item.uncontolled_status"
-                                                disabled
+                                                :checked="item.uncontrolled_status"
+                                                :disabled="viewStatus === 'Posted'"
                                                 >
                                             </div>
                                         </td>
                                         <td>    
-                                            <select class="form-select" :id="'batching'+item.SubPid" v-model="item.batching_type" disabled>
+                                            <select class="form-select" :id="'batching'+item.SubPid" v-model="item.batching_type" :disabled="viewStatus === 'Posted'">
                                                 <option value="Standard">Standard</option>
                                                 <option value="Parallel">Parallel</option>
                                             </select>
                                         </td>
                                         <td>    
-                                            <select class="form-select" :id="'batching'+item.SubPid" v-model="item.result_type" disabled>
+                                            <select class="form-select" :id="'batching'+item.SubPid" v-model="item.result_type" :disabled="viewStatus === 'Posted'">
                                                 <option value="Chips">Chips</option>
                                                 <option value="Wafer">Wafer</option>
                                             </select>
                                         </td>
                                         <td>
                                             <div class="form-check form-switch">
-                                                <input :id="'item'+item.assignment_item_id" class="form-check-input" type="checkbox" role="switch" :checked="item.assignment_status" disabled>
+                                                <input :id="'item'+item.assignment_item_id" class="form-check-input" @change="viewStatusSwitch(item.assignment_item_id)" type="checkbox" role="switch" :checked="item.assignment_status" :disabled="viewStatus === 'Posted'">
                                                 <label :for="'item'+item.assignment_item_id">{{ item.assignment_status === true ? 'Active' : 'Inactive'}}</label>
                                             </div>
                                         </td>
@@ -499,6 +576,7 @@
                                                             <th><small>Typical Value</small></th>
                                                             <th><small>Minimum Value</small></th>
                                                             <th><small>Maximum Value</small></th>
+                                                            <th><small>Target Value Visibility</small></th>
                                                             <th><small>Condition Status</small></th>
                                                         </tr>
                                                     </thead>
@@ -510,6 +588,11 @@
                                                                 <td><small>{{itemCondition.typical_value}}</small></td>
                                                                 <td>{{itemCondition.min_value}}</td>
                                                                 <td>{{itemCondition.max_value}}</td>
+                                                                <td>
+                                                                    <div class="form-check form-switch">
+                                                                        <input :id="'visibility'+itemCondition.condition_item_id" class="form-check-input" type="checkbox" role="switch" :checked="itemCondition.visibility_status" disabled>
+                                                                    </div>
+                                                                </td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
                                                                         <input :id="'itemCondition'+itemCondition.condition_item_id" class="form-check-input" type="checkbox" role="switch" :checked="itemCondition.condition_status" disabled>
@@ -561,37 +644,42 @@
     },
     data() {
         return {
-            formAssignmentURL: 'http://172.16.2.60/tpc/GetFormAssignment.php',
-            formAssignmentPostURL: 'http://172.16.2.60/tpc/PostFormAssignment.php',
-            formAssignmentItemPostURL: 'http://172.16.2.60/tpc/PostFormAssignmentItem.php',
-            itemConditionPostURL: 'http://172.16.2.60/tpc/PostFormAssignmentItemCondition.php',
-            sectionURL: 'http://172.16.2.60/tpc/GetSection.php',
-            processFlowURL: 'http://172.16.2.60/tpc/GetProcessFlow.php',
-            keyProcessURL: 'http://172.16.2.60/tpc/GetKeyProcess.php',
-            subProcessURL: 'http://172.16.2.60/tpc/GetSubProcess.php',
-            processFlowSubURL: 'http://172.16.2.60/tpc/requestProcessFlowSub.php',
-            itemConditionDetailsURL: 'http://172.16.2.60/tpcrequesthandlers/ItemConditionRequestHandler.php',
-            StatusPostingURL: 'http://172.16.2.60/tpc/PutFormAssignmentStatus.php',
-            insertTPCMainURL: 'http://172.16.2.60/tpc/PostTPCMain.php',
+            formAssignmentURL: 'http://172.16.2.13/tpc-endpoint/GetFormAssignment.php',
+            formAssignmentPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignment.php',
+            formAssignmentItemPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignmentItem.php',
+            itemConditionPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignmentItemCondition.php',
+            sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
+            processFlowURL: 'http://172.16.2.13/tpc-endpoint/GetProcessFlow.php',
+            keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
+            subProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
+            processFlowSubURL: 'http://172.16.2.13/tpc-endpoint/requestProcessFlowSub.php',
+            // itemConditionDetailsURL: 'http://172.16.2.60/tpcrequesthandlers/ItemConditionRequestHandler.php',
+            itemConditionDetailsURL: 'http://172.16.2.13/tpc-endpoint/requestItemConditionFlow.php',
+            StatusPostingURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentStatus.php',
+            insertTPCMainURL: 'http://172.16.2.13/tpc-endpoint/PostTPCMain.php',
 
-            DeleteFormURL: 'http://172.16.2.60/tpc/DeleteForm.php',
-            DeleteItemURL: 'http://172.16.2.60/tpc/DeleteItem.php',
-            DeleteItemConditionURL: 'http://172.16.2.60/tpc/DeleteItemCondition.php',
+            DeleteFormURL: 'http://172.16.2.13/tpc-endpoint/DeleteForm.php',
+            DeleteItemURL: 'http://172.16.2.13/tpc-endpoint/DeleteItem.php',
+            DeleteItemConditionURL: 'http://172.16.2.13/tpc-endpoint/DeleteItemCondition.php',
 
-            CCILotRequestURL: 'http://172.16.2.60/tpc/HandleCCILotRequest.php',
-            CCIPoRequestURL: 'http://172.16.2.60/tpc/HandleCCIPoRequest.php',
-            CCICustomerDetailsURL: 'http://172.16.2.60/tpc/HandleCCICustomerDetails.php',
-            POLRequestURL: 'http://172.16.2.60/tpc/HandlePOLRequest.php',
-            CWPRequestURL: 'http://172.16.2.60/tpc/HandleCWPRequest.php',
-            SWPRequestURL: 'http://172.16.2.60/tpc/HandleSWPRequest.php',
-            FormRequestURL: 'http://172.16.2.60/tpc/requestFormAssignment.php',
+            CCILotRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCILotRequest.php',
+            CCIPoRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCIPoRequest.php',
+            CCICustomerDetailsURL: 'http://172.16.2.13/tpc-endpoint/HandleCCICustomerDetails.php',
+            POLRequestURL: 'http://172.16.2.13/tpc-endpoint/HandlePOLRequest.php',
+            CWPRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCWPRequest.php',
+            SWPRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleSWPRequest.php',
+            FormRequestURL: 'http://172.16.2.13/tpc-endpoint/requestFormAssignment.php',
 
-            CWPQuantityURL: 'http://172.16.2.60/tpc/GenerateCWPQuantity.php',
-            POLQuantityURL: 'http://172.16.2.60/tpc/GeneratePOLQuantity.php',
-            SWPQuantityURL: 'http://172.16.2.60/tpc/GenerateSWPQuantity.php',
+            CWPQuantityURL: 'http://172.16.2.13/tpc-endpoint/GenerateCWPQuantity.php',
+            POLQuantityURL: 'http://172.16.2.13/tpc-endpoint/GeneratePOLQuantity.php',
+            SWPQuantityURL: 'http://172.16.2.13/tpc-endpoint/GenerateSWPQuantity.php',
 
-            itemURL: 'http://172.16.2.60/tpc/GetItem.php',
-            itemConditionURL: 'http://172.16.2.60/tpc/GetItemCondition.php',
+            updateItemStatusURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentItemStatus.php',
+
+            searchRequestURL: 'http://172.16.2.13/tpc-endpoint/requestSearchFormAssignment.php',
+
+            itemURL: 'http://172.16.2.13/tpc-endpoint/GetItem.php',
+            itemConditionURL: 'http://172.16.2.13/tpc-endpoint/GetItemCondition.php',
             
             alert: '',
 
@@ -610,7 +698,9 @@
             poNumber: [],
             itemCode: [],
 
-            message: '90',
+            fetchForm: [],
+
+            message: '',
 
             last_assignment_id: 0,
             form_status: 'Unposted',
@@ -658,11 +748,14 @@
             viewItem: [],
             viewItemConditon: [],
 
+            conditionLoader: 0,
+
             section_code: '',
             flow_main_id: '',
             tableOptions: {
                 order: [[0, 'desc']]
             },
+            search: '',
             columns: [
               { title: 'Assign No.', data: 'assignment_id'},
               { title: 'Status', data: 'assignment_status' },
@@ -690,11 +783,64 @@
         }
     },
     methods: {
+        querySearch(key){
+            this.fetchForm = [];
+            axios.get(this.searchRequestURL, {
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/x-www-form-urlencoded'
+                },
+                params: {
+                    key_word: key
+                }  
+            }).then(response => {
+                for(const form of response.data){
+                    for(const sec of this.section){
+                        if(parseInt(form.section_id) === parseInt(sec.section_id)){
+                            Object.assign(form, {section_code: sec.section_code});
+                            this.fetchForm.push(form);
+                        }
+                    }
+                }                
+            }).catch(error => {
+                console.log(error);
+            })
+        },
+        viewSamplingSwitch(id){
+            let status = document.getElementById(`viewSampling${id}`).checked;
+            for(const item of this.viewItem){
+                if(parseInt(id) === parseInt(item.assignment_item_id)){
+                    item.sampling_status = status;
+                    item.check_sampling = status ? "True" : "False";
+                }
+            }
+        },
+        viewUncontrolledSwitch(id){
+            let status = document.getElementById(`viewUncontrolled${id}`).checked;
+            for(const item of this.viewItem){
+                if(parseInt(id) === parseInt(item.assignment_item_id)){
+                    item.uncontrolled_status = status;
+                    item.check_uncontrolled = status ? "True" : "False";
+                }
+            }
+        },
+        viewStatusSwitch(id){
+            let status = document.getElementById(`item${id}`).checked;
+            for(const item of this.viewItem){
+                if(parseInt(id) === parseInt(item.assignment_item_id)){
+                    item.assignment_status = status;
+                    item.assignment_status_str = status ? "Active" : "Inactive";
+                }
+            }
+        },
         generateQrCode(){
             this.$router.push({ name: 'GenerateQrCode', query: { assignment_id: this.viewForm_Id, item_code: this.viewItem_Code, parts_number: this.viewParts_Number, lot_number: this.viewLot_Number, date_issued: this.viewDate_Issued, revision_number: this.viewRevision_Number} });
         },
         routeViewAttachment(){
             this.$router.push({ name: 'formAttachments', query: { assignment_id: this.viewForm_Id} });
+        },
+        routeViewInstruction(){
+           location.replace('http://172.16.2.13/SI-TPC/');
         },
         posting(){
             if(this.viewStatus === 'Posted'){
@@ -705,52 +851,71 @@
                 this.$refs.viewSaveBtn.disabled = true;
             }
         },
-        updatePosting(){
+        async updatePosting(){
             const toastLiveExample = document.getElementById('liveToast');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
             const itemSub = this.viewItem.filter((item) => item.assignment_status == true).sort((a, b) => a.sequence_number - b.sequence_number).
             map((item, index) => {
               return Object.assign({}, item, { status: index === 0 ? 'Open' : 'Close' });
             });
-            axios.put(this.StatusPostingURL, {
-                assignment_status: this.viewStatus,
-                assignment_id: this.viewForm_Id,
-            }).then(response => {
-                if(response.data.message === 'Form Assignment Status updated successfully'){
-                    this.alert = `Form Assignment: ${this.viewForm_Id} has been posted to our system and is now available for processing in TPC Main`;
-                    toastBootstrap.show();
-                    for(const form of this.formAssignment){
-                        if(parseInt(form.assignment_id) === parseInt(this.viewForm_Id)){
-                            form.assignment_status = 'Posted';
-                            for(const item of itemSub){
-                                axios.post(this.insertTPCMainURL, {
-                                    assignment_id: this.viewForm_Id,
-                                    section_id: this.viewSection_Id,
-                                    sequence_number: item.sequence_number,
-                                    SubPid: item.SubPid,
-                                    parts_number: this.viewParts_Number,
-                                    item_code: this.viewItem_Code,
-                                    revision_number: this.viewRevision_Number,
-                                    lot_number: this.viewLot_Number,
-                                    item_status: item.status,
-                                    sampling: item.check_sampling,
-                                    uncontrolled: item.check_uncontrolled,
-                                    date_issued: this.viewDate_Issued,
-                                    quantity: this.viewQuantity,
-                                    batching_type: item.batching_type
-                                }).then(response => {
-                                }).catch(error => {
-                                    console.log(error);
-                                });
+            if(this.viewStatus === 'Posted'){
+                await axios.put(this.StatusPostingURL, {
+                    assignment_status: this.viewStatus,
+                    assignment_id: this.viewForm_Id,
+                }).then(response => {
+                    if(response.data.message === 'Form Assignment Status updated successfully'){
+                        this.alert = `Form Assignment: ${this.viewForm_Id} has been posted to our system and is now available for processing in TPC Main`;
+                        toastBootstrap.show();
+                        for(const form of this.formAssignment){
+                            if(parseInt(form.assignment_id) === parseInt(this.viewForm_Id)){
+                                form.assignment_status = 'Posted';
+                                for(const item of itemSub){
+                                    axios.post(this.insertTPCMainURL, {
+                                        assignment_id: this.viewForm_Id,
+                                        section_id: this.viewSection_Id,
+                                        sequence_number: item.sequence_number,
+                                        SubPid: item.SubPid,
+                                        parts_number: this.viewParts_Number,
+                                        item_code: this.viewItem_Code,
+                                        revision_number: this.viewRevision_Number,
+                                        lot_number: this.viewLot_Number,
+                                        item_status: item.status,
+                                        sampling: item.check_sampling,
+                                        uncontrolled: item.check_uncontrolled,
+                                        date_issued: this.viewDate_Issued,
+                                        quantity: this.viewQuantity,
+                                        batching_type: item.batching_type,
+                                        result_type: item.result_type
+                                    }).then(response => {
+                                    }).catch(error => {
+                                        console.log(error);
+                                    });
+                                }
+                                for(const item of this.viewItem){
+                                    axios.put(this.updateItemStatusURL, {
+                                        item_status: item.assignment_status_str,
+                                        check_sampling: item.check_sampling,
+                                        check_uncontrolled: item.check_uncontrolled,
+                                        batching_type: item.batching_type,
+                                        result_type: item.result_type,
+                                        assignment_item_id: item.assignment_item_id,
+                                    }).then(response => {
+                                    }).catch(error => {
+                                        console.log(error);
+                                    });
+                                }
                             }
                         }
+                        this.$refs.viewSaveBtn.disabled = true;
+                        this.$refs.viewStatus.disabled = true;
                     }
-                    this.$refs.viewSaveBtn.disabled = true;
-                    this.$refs.viewStatus.disabled = true;
-                }
-            }).catch(error => {
-                console.log(error)
-            });
+                }).catch(error => {
+                    console.log(error)
+                });
+            } else {
+                this.alert = `Please check the status it must be posted`;
+                toastBootstrap.show();
+            }
             
         },
         generateQuantity(){
@@ -926,14 +1091,16 @@
                     }
                     Object.assign(item, {
                         sampling_status: item.check_sampling === 'True' ? true : false,
-                        uncontolled_status: item.check_uncontrolled === 'True' ? true : false 
+                        uncontrolled_status: item.check_uncontrolled === 'True' ? true : false 
                     });
                 }
                 this.viewItem.sort((a,b) => a.sequence_number - b.sequence_number).map((item) => {
                     if(item.assignment_status === 'Active'){
                         item.assignment_status = true;
+                        item.assignment_status_str = 'Active';
                     } else {
                         item.assignment_status = false;
+                        item.assignment_status_str = 'Inactive';
                     }
                 });
             }).catch(error => {
@@ -950,11 +1117,13 @@
             }).then(response => {
                 this.viewItemCondition = response.data;
                 this.viewItemCondition.sort((a,b) => a.sequence_number - b.sequence_number).map((item) => { 
-                    if(item.condition_status === 'Active'){
-                        item.condition_status = true;
-                    } else {
-                        item.condition_status = false;
-                    }
+                    item.condition_status = item.condition_status === 'Active' ? true : false;
+                    item.visibility_status = item.visibility_status === 1 ? true : false;
+                    // if(item.condition_status === 'Active'){
+                    //     item.condition_status = true;
+                    // } else {
+                    //     item.condition_status = false;
+                    // }
                 });
             }).catch(error => {
                 console.log(error);
@@ -1026,7 +1195,6 @@
             } else {
                 this.hasAttachment = 1;
             }
-        console.log(this.hasAttachment);
        },
        instructionSwitch(){
             const switchValue = this.$refs.instruction.checked;
@@ -1146,6 +1314,9 @@
             }
         }).then(response => {
             for(const flowSub of response.data){
+                console.log(flowSub);
+                // console.log(this.revision_number);
+                // console.log(this.flow_main_id);
                 for(const key of this.keyProcess){
                     if(flowSub.Pid === parseInt(key.Pid)){
                         Object.assign(flowSub, {Pname: key.Pname});
@@ -1158,31 +1329,34 @@
                                     check_sampling_status: flowSub.check_sampling === "True" ? true: false,
                                     check_uncontrolled_status: flowSub.check_uncontrolled === "True" ? true: false,
                                 });
-                                console.log(flowSub);
-                                axios.get(this.itemConditionDetailsURL, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-type': 'application/x-www-form-urlencoded'
-                                    },
-                                    params: {
-                                        SubPid: sub.SubPid
-                                    }
-                                }).then(response => {
-                                    for(const item of response.data){
-                                        Object.assign(item, {
-                                            status: flowSub.sub_status_checked === true ? 'Active' : 'Inactive',
-                                            status_checked: flowSub.sub_status_checked === true ? true : false
-                                    });
-                                        this.itemCondition.push(item);
-                                        this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
-                                    }
-                                }).catch(error => {
-                                    console.log(error);
-                                });
+                                
                             }
                         }
                     }
                 }
+                axios.get(this.itemConditionDetailsURL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-type': 'application/x-www-form-urlencoded'
+                    },
+                    params: {
+                        SubPid: flowSub.SubPid,
+                        flow_main_id: this.flow_main_id
+                    }
+                }).then(response => {
+                    for(const item of response.data){
+                        Object.assign(item, {
+                            visibility_checked: item.visibility_status === 1 ? true : false,
+                            status: item.condition_status,
+                            status_checked: item.condition_status === 'Active' ? true : false
+                        });
+                        this.itemCondition.push(item);
+                        this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
+                    }
+                    console.log(this.itemCondition);
+                }).catch(error => {
+                    console.log(error);
+                });
                 this.processFlowSub.push(flowSub);
                 this.processFlowSub.sort((a, b) => a.sequence_number - b.sequence_number);
             }
@@ -1284,7 +1458,20 @@
             }
         }
        },
+       visibilityStatus(item_id){
+        const status = document.getElementById(`visibility${item_id}`).checked;
+        console.log(status)
+        for(const item of this.itemCondition){
+            if(item_id === item.item_id){
+                item.visibility_checked = status;
+                item.visibility_status = status === true ? 1:0
+                console.log(item);
+            }
+        }
+       },
        async submitFormAssignment(){
+        const toastLiveExample = document.getElementById('liveToast');
+        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
         let assignment_id = '';
         await axios.post(this.formAssignmentPostURL, {
             section_id: this.section_id,
@@ -1314,6 +1501,7 @@
                 this.$refs.wafer_no_from.disabled = true;
                 this.$refs.wafer_no_to.disabled = true;
                 this.$refs.instruction.disabled = true;
+                this.$refs.material_lot_number.disabled = true;
                 this.$refs.attachment.disabled = true;
                 this.$refs.item_code.disabled = true;
                 this.$refs.jo_number.disabled = true;
@@ -1333,6 +1521,18 @@
         for(const flowSub of this.processFlowSub){
             for(const item of this.$refs.item_status){
                 item.disabled = true;
+            }
+            for(const sampling of this.$refs.sampling){
+                sampling.disabled = true;
+            }
+            for(const uncontrolled of this.$refs.uncontrolled){
+                uncontrolled.disabled = true;
+            }
+            for(const batching of this.$refs.batching){
+                batching.disabled = true;
+            }
+            for(const result of this.$refs.result){
+                result.disabled = true;
             }
             if(assignment_id){
                 await axios.post(this.formAssignmentItemPostURL, {
@@ -1358,6 +1558,9 @@
                 });
             }
         }
+        let limit = this.itemCondition.length;
+        let loader = 0;
+        console.log(limit);
         for(const item of this.itemCondition){
             await axios.post(this.itemConditionPostURL, {
                 assignment_id: assignment_id,
@@ -1368,9 +1571,16 @@
                 min_value: item.min_value,
                 max_value: item.max_value,
                 typical_value: item.typical_value,
+                visibility_status: item.visibility_status,
                 condition_status: item.status
             }).then(response => {
                 if(response.data.message === 'Item Condition inserted successfully'){
+                    loader++;
+                    this.conditionLoader = (loader / limit) * 100;
+                    if(loader === limit){
+                        this.alert = 'Form Assignment Submission: Complete'
+                        toastBootstrap.show();
+                    }
                     this.$refs.save.disabled = true;
                     this.$refs.new.disabled = false;
                 } else {
@@ -1390,12 +1600,10 @@
             this.$refs.lot_number.disabled = false;
             this.$refs.wafer_no_from.disabled = false;
             this.$refs.wafer_no_to.disabled = false;
-            this.$refs.instruction.disabled = false;
-            this.$refs.attachment.disabled = false;
             this.$refs.item_code.disabled = false;
             this.$refs.jo_number.disabled = false;
             this.$refs.date_issued.disabled = false;
-            this.$refs.order_pn.disabled = false;
+            this.$refs.material_lot_number.disabled = false;
             for(const sec of this.section){
                 if(parseInt(this.section_id) === parseInt(sec.section_id)){
                     if(sec.section_code === 'CCI'){
@@ -1413,11 +1621,11 @@
             this.wafer_number_to = 0;
             this.item_code = '';
             this.jo_number = '';
-            this.date_issued = '';
             this.revision_number = '';
             this.order_pn = '';
             this.processFlowSub = [];
             this.itemCondition = [];
+            this.conditionLoader = 0;
             this.hasAttachment = false;
             this.hasInstruction = false;
             this.$refs.save.disabled = false;
@@ -1476,12 +1684,11 @@
         this.socket = new WebSocket('ws://172.16.2.60:8080');
         
         this.socket.addEventListener('open', async(event) => {
-            console.log('connected to server');
+            console.log('Socket Server Up');
         });
         this.socket.addEventListener('message', (event) => {
             const toastLiveExample = document.getElementById('liveToast');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-            console.log(event.data);
             if(event.data.split(',').includes('insert')){
                 let data = event.data.split(',');
                 let id = data[1].trim();

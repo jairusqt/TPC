@@ -36,7 +36,7 @@
                 </div>
                 <div class="col-md-8">
                     <label for="keyProcessCode">Key Process Code:</label>
-                    <input type="text" class="form-control" @input="toUpper()" v-model="Pcode">
+                    <input ref="keyCode" type="text" class="form-control" @input="toUpper()" v-model="Pcode">
                 </div>
                 <div class="col-md-12">
                     <label for="keyProcessDescription">Key Process Description:</label>
@@ -66,20 +66,20 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="editModal">Create New Key Process!</h1>
+        <h1 class="modal-title fs-5" id="editModal">Edit Key Process!</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
           <div class="col-md-12 row">
               <div class="col-md-4">
                   <label for="edit_section">Section:</label>
-                  <select id="edit_section" class="form-select" v-model="e_section_id">
+                  <select id="edit_section" class="form-select" v-model="e_section_id" disabled>
                       <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
                   </select>
               </div>
               <div class="col-md-8">
                 <label for="edit_Pcode">Key Process Code:</label>
-                <input id="edit_Pcode" type="text" class="form-control" @input="toUpperE" v-model="e_Pcode">
+                <input id="edit_Pcode" type="text" class="form-control" @input="toUpperE" v-model="e_Pcode" disabled>
               </div>
               <div class="col-md-12">
                   <label for="edit_keyProcessDescription">Key Process Description:</label>
@@ -112,13 +112,14 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="deleteModal">Create New Key Process!</h1>
+          <h1 class="modal-title fs-5" id="deleteModal">Delete Key Process!</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <div class="alert alert-warning text-center">
+            <div class="text-center">
                 <p >YOU ARE GOING TO DELETE THIS PROCESS: "{{e_Pname}}"</p>
-                <h5 class="text-danger">Do you wish to proceed?</h5>
+                <h5 class="text-danger pb-3">Do you wish to proceed?</h5>
+                <p class="border rounded text-start p-3"><small>This is a system warning indicating that the data you're attempting to delete might be in use by another table. Deleting it may potentially disrupt the entire process. Please proceed with caution and ensure the implications are understood before confirming the deletion.</small></p>
               </div>
         </div>
         <div class="modal-footer">
@@ -155,15 +156,17 @@ export default {
     },
     data() {
         return {
-            sectionURL: 'http://172.16.2.60/TPC/GetSection.php',
-            keyProcessURL: 'http://172.16.2.60/TPC/GetKeyProcess.php',
-            KeyProcessPostURL: 'http://172.16.2.60/TPC/PostKeyProcess.php',
-            KeyProcessPutURL: 'http://172.16.2.60/TPC/PutKeyProcess.php',
-            KeyProcessDeleteURL: 'http://172.16.2.60/TPC/DeleteKeyProcess.php',
+            sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
+            keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
+            KeyProcessPostURL: 'http://172.16.2.13/tpc-endpoint/PostKeyProcess.php',
+            KeyProcessPutURL: 'http://172.16.2.13/tpc-endpoint/PutKeyProcess.php',
+            KeyProcessDeleteURL: 'http://172.16.2.13/tpc-endpoint/DeleteKeyProcess.php',
             
+            SubProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
 
             section: [],
             keyProcess: [],
+            subProcess: [],
             alert: '',
             //data processing
             section_id: '',
@@ -288,9 +291,8 @@ export default {
                             date_created: new Date().toJSON().slice(0,10),
                         })
                         this.alert = 'The Key Process ' + this.Pname + ' is Submitted Successfully';
-                        toastBootstrap.show(); 
-                        this.section_id = '';
-                        this.section_code = '';
+                        toastBootstrap.show();
+                        this.$refs.keyCode.focus(); 
                         this.Pname = '';
                         this.Pcode = '';
                         this.key_status = 'Active';
@@ -305,47 +307,61 @@ export default {
         editKeyProcess(){
             const toastLiveExample = document.getElementById('liveToast');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-            axios.put(this.KeyProcessPutURL, {
-                section_id: this.e_section_id,
-                Pid: this.e_Pid,
-                Pname: this.e_Pname,
-                key_code: this.e_Pcode,
-                key_process_status: this.e_key_status,
-                stock_point: this.e_stock_point
-            }).then(response => {
-                console.log(response.data);
-                if(response.data.message === 'Key Process updated successfully'){
-                    for(const key of this.keyProcess){
-                        if(parseInt(this.e_Pid) === parseInt(key.Pid)){
-                            key.key_code = this.e_Pcode;
-                            key.Pname = this.e_Pname;
-                            key.key_process_status = this.e_key_status;
-                            key.stock_point_bool = this.e_stock_point === '0' ? 'False' : 'True';
+            let exists = this.subProcess.some(sub => this.e_Pid === sub.Pid);
+            
+            if(exists){
+                this.alert = 'This key process is currently in use within other masterfiles, and editing is prohibited';
+                toastBootstrap.show();
+            } else {
+                axios.put(this.KeyProcessPutURL, {
+                    section_id: this.e_section_id,
+                    Pid: this.e_Pid,
+                    Pname: this.e_Pname,
+                    key_code: this.e_Pcode,
+                    key_process_status: this.e_key_status,
+                    stock_point: this.e_stock_point
+                }).then(response => {
+                    if(response.data.message === 'Key Process updated successfully'){
+                        for(const key of this.keyProcess){
+                            if(parseInt(this.e_Pid) === parseInt(key.Pid)){
+                                key.key_code = this.e_Pcode;
+                                key.Pname = this.e_Pname;
+                                key.key_process_status = this.e_key_status;
+                                key.stock_point_bool = this.e_stock_point === '0' ? 'False' : 'True';
+                            }
                         }
+                    } else {
+                        this.alert = response.data;
+                        toastBootstrap.show();
                     }
-                } else {
-                    this.alert = response.data;
-                    toastBootstrap.show();
-                }
-            }).catch(error => {
-                console.log(error);
-            });
+                }).catch(error => {
+                    console.log(error);
+                });
+            }
+            
         },
         deleteKeyProcess(){
             const toastLiveExample = document.getElementById('liveToast');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-            axios.post(this.KeyProcessDeleteURL, {
-                Pid: this.e_Pid
-            }).then(response => {
-                if(response.data.message === 'Key Process deleted successfully'){
-                    let idToRemove = this.keyProcess.findIndex(key => key.Pid === this.e_Pid);
-                    this.keyProcess.splice(idToRemove, 1);
-                    this.alert = 'This Key Process ' + this.e_Pname + ' has been removed successfully';
-                    toastBootstrap.show();
-                }
-            }).catch(error => {
-                console.log(error);
-            });
+            let exists = this.subProcess.some(sub => this.e_Pid === sub.Pid);
+            if(exists){
+                this.alert = 'Please exercise caution when considering any modifications to this section, as it plays a critical role in other masterfile rows and altering it could potentially disrupt system operations. If you wish to proceed with the deletion, please reach out to the software development team for further guidance and assistance.';
+                toastBootstrap.show();
+            } else {
+                axios.post(this.KeyProcessDeleteURL, {
+                    Pid: this.e_Pid
+                }).then(response => {
+                    if(response.data.message === 'Key Process deleted successfully'){
+                        let idToRemove = this.keyProcess.findIndex(key => key.Pid === this.e_Pid);
+                        this.keyProcess.splice(idToRemove, 1);
+                        this.alert = 'This Key Process ' + this.e_Pname + ' has been removed successfully';
+                        toastBootstrap.show();
+                    }
+                }).catch(error => {
+                    console.log(error);
+                });
+            }
+            
         }
     },
     created() {
@@ -353,13 +369,17 @@ export default {
         const promise2 = axios.get(this.keyProcessURL);
         Promise.all([promise1, promise2])
         .then(response => {
-            this.section = response[0].data;
+            this.section = response[0].data.filter((sec) => sec.section_status === 'Active');
+            console.log(this.section);
             for(const key of response[1].data){
-                if(key.stock_point == 0){
-                    Object.assign(key, {stock_point_bool: 'False'});
-                } else {
-                    Object.assign(key, {stock_point_bool: 'True'});
-                }
+                // if(key.stock_point == 0){
+                //     Object.assign(key, {stock_point_bool: 'False'});
+                // } else {
+                //     Object.assign(key, {stock_point_bool: 'True'});
+                // }
+                Object.assign(key, {
+                    stock_point_bool: key.stock_point === 1 ? 'True' : 'False'
+                });
                 for(const sec of this.section){
                     if(key.section_id == sec.section_id){
                         Object.assign(key, {section_code: sec.section_code});
@@ -371,6 +391,13 @@ export default {
             console.log(error);
         });
 
+        axios.get(this.SubProcessURL, {
+
+        }).then(response => {
+            this.subProcess = response.data;
+        }).catch(error => {
+            console.error(error);
+        });
         
     }
 }
