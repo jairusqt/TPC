@@ -4,15 +4,15 @@
           <h3>Tablet Process Card - <em>Setup Section</em></h3>
         </div>
         <div class="col-md-3 float-end">
-          <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+          <button class="btn btn-outline-info w-100 float-end shadow" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
         </div>
     </div>
     <!--Datatable-->
-    <div class="container table-responsive">
+    <div class="container table-responsive shadow p-3 rounded">
         <DataTable
         :data="section"
         :columns="columns"
-        class=" display table table-hover rounded"
+        class=" display table table-hover shadow table-light table-gradient"
         @click="getSection_id"
         :options="tableOptions"
     />
@@ -48,7 +48,7 @@
               </div>
               <div class="col-md-4">
                 <label for="class">Class:</label>
-                <select class="form-select" id="class" v-model="class" ref="class">
+                <select class="form-select" id="class" v-model="section_class" ref="class">
                   <option value="Child">Child</option>
                   <option value="Parent">Parent</option>
                 </select>
@@ -78,11 +78,11 @@
             <div class="col-md-12 row mx-auto">
               <div class="col-md-9">
                 <label for="edit_description">Description:</label>
-                <input type="text" class="form-control" id="edit_description" v-model="e_section_description" ref="description">
+                <input type="text" class="form-control" id="edit_description" v-model="e_section_description" ref="description" disabled>
               </div>
               <div class="col-md-3">
                 <label for="edit_code">Code:</label>
-                <input type="text" class="form-control" id="edit_code" v-model="e_section_code" ref="code">
+                <input type="text" class="form-control" id="edit_code" v-model="e_section_code" ref="code" disabled>
               </div>
               <div class="col-md-3">
                 <label for="edit_status">Status:</label>
@@ -110,7 +110,19 @@
                 <label for="edit_group">Group No.</label>
                 <input type="text" class="form-control" id="edit_group" v-model="e_section_group_no" ref="group">
               </div>
-
+              <div class="col-md-6">
+                <label for="edit_accessed">Access Section:</label>
+                <select id="edit_accessed" multiple class="form-select" v-model="e_accessed_section" @change="getAccessSection">
+                  <option v-for="sec in e_section_options" :value="sec.section_code">{{sec.section_code}} - {{sec.section_description}}</option>
+                </select>
+              </div>
+              <div class="col-6 row p-3">
+                <div class="col-2" v-for="sec in e_accessed_section">
+                  <span class="badge text-bg-primary">
+                    {{sec}}    
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
@@ -177,6 +189,14 @@
         sectionPutURL: 'http://172.16.2.13/tpc-endpoint/PutSection.php',
         sectionDeleteURL: 'http://172.16.2.13/tpc-endpoint/DeleteSection.php',
         keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
+
+        // sectionURL: 'http://172.16.2.13/tpc-endpointDev/GetSection.php',
+        // sectionPostURL: 'http://172.16.2.13/tpc-endpointDev/PostSection.php',
+        // sectionPutURL: 'http://172.16.2.13/tpc-endpointDev/PutSection.php',
+        // sectionDeleteURL: 'http://172.16.2.13/tpc-endpointDev/DeleteSection.php',
+        // keyProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcess.php',
+
+        
         section: [],
         keyProcess: [],
         notifications: [],
@@ -189,7 +209,7 @@
         code: '',
         status: 'Active',
         shared: 0,
-        class: 'Parent',
+        sectiion_class: 'Parent',
         group: 0,
 
         // for edit and delete
@@ -200,6 +220,10 @@
         e_section_group_no: 0,
         e_section_shared: 0,
         e_section_status: '',
+        e_accessed_section: [],
+        e_accessed_section_str: '',
+        e_section_options: [],
+
         tableOptions: { order: [[0, 'desc']]},
 
         columns: [
@@ -229,31 +253,50 @@
       
     },
     methods: {
-
+      getAccessSection(){
+        this.e_accessed_section_str = this.e_accessed_section.toString();
+      },
       getSection_id(event){
         let row = null;
         let cell = null;
+        let accessed;
+        this.e_section_options = [];
+        this.e_accessed_section = []
         if(event.target.tagName === 'BUTTON'){
           row = event.target.parentNode.parentNode;
           cell = row.querySelector('td');
-          this.e_section_description = cell.textContent;
+          this.section.find(sec => {
+            if(cell.textContent === sec.section_description){
+              this.e_section_id = parseInt(sec.section_id);
+            }
+          })
         }
         if(event.target.tagName === 'SPAN'){
           const row = event.target.parentNode.parentNode.parentNode;
           const cell = row.querySelector('td');
-          this.e_section_description = cell.textContent;
+          this.section.find(sec => {
+            if(cell.textContent === sec.section_description){
+              this.e_section_id = parseInt(sec.section_id);
+            }
+          })
         }
         for(const section of this.section){
-          if(section.section_description === this.e_section_description){
-            this.e_section_id = section.section_id;
+          if(parseInt(this.e_section_id) === parseInt(section.section_id)){
+            this.e_section_description = section.section_description;
             this.e_section_code = section.section_code;
             this.e_section_group_no = section.shared_group_no;
             this.e_section_shared = section.shared_section;
             this.e_section_class = section.section_class;
             this.e_section_status = section.section_status;
+            this.e_accessed_section = typeof section.accessed_section === 'string' ? section.accessed_section.split(',') : '';
           }
         }
-
+        this.section.filter(sec => {
+          if(parseInt(this.e_section_id) !== parseInt(sec.section_id)){
+            this.e_section_options.push(sec);
+          }
+        })
+        
       },
       submitSection() {
         const toastLiveExample = document.getElementById('liveToast');
@@ -267,11 +310,10 @@
             section_description: this.description,
             section_code: this.code,
             shared_section: this.shared,
-            section_class: this.class,
+            section_class: this.sectiion_classclass,
             shared_group_no: this.group,
             section_status: this.status
           }).then(response => {
-            console.log(response.data);
             if(response.data.message == 'Duplicate entry'){
               this.submissionAlert = 'Submission Failed, Duplicate entry detected';
               toastBootstrap.show();
@@ -283,7 +325,7 @@
                 section_description: this.description,
                 section_code: this.code,
                 shared_section_boolString: this.shared == 1 ? 'True': 'false',
-                section_class: this.class,
+                section_class: this.section_class,
                 shared_group_no: this.group,
                 section_status: this.status,
                 date_created: new Date().toJSON().slice(0,10),
@@ -292,7 +334,7 @@
               this.code = '';
               this.shared = 0;
               this.group = 0;
-              this.class = 'Parent';
+              this.section_class = 'Parent';
               this.$refs.description.focus();
             } 
           }).catch(error => {
@@ -306,12 +348,11 @@
       updateSection(){
         const toastLiveExample = document.getElementById('liveToast');
         const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-        let exists = this.keyProcess.some(key => this.e_section_id === key.section_id);
-        console.log(exists);
-        if(exists){
-          this.submissionAlert = 'This section is currently in use within other masterfiles, and editing is prohibited';
-          toastBootstrap.show()
-        } else {
+        // let exists = this.keyProcess.some(key => this.e_section_id === key.section_id);
+        // if(exists){
+        //   this.submissionAlert = 'This section is currently in use within other masterfiles, and editing is prohibited';
+        //   toastBootstrap.show()
+        // } else {
           axios.put(this.sectionPutURL,{
             section_description: this.e_section_description,
             section_code: this.e_section_code,
@@ -319,8 +360,10 @@
             section_class: this.e_section_class,
             shared_group_no: this.e_section_group_no,
             section_status: this.e_section_status,
-            section_id: this.e_section_id
+            accessed_section: this.e_accessed_section_str,
+            section_id: this.e_section_id,
           }).then(response => {
+            console.log(response.data)
             if(response.data.message === 'Section updated successfully'){
               for(const sec of this.section){
                 if(this.e_section_id === sec.section_id){
@@ -333,11 +376,13 @@
                   sec.section_status = this.e_section_status;
                 }
               }
+              this.submissionAlert = 'Changes has been saved, please reload the page to see the changes. ';
+              toastBootstrap.show()
             }
           }).catch(error => {
             console.log(error)
           });
-        }
+        // }
         
       },
       deleteSection(){

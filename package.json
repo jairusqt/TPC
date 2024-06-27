@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@chenfengyuan/vue-qrcode": "^2.0.0",
+    "@ckeditor/ckeditor5-vue": "^5.1.0",
     "@splidejs/splide-extension-grid": "^0.4.1",
     "@splidejs/vue-splide": "^0.6.12",
     "animate.css": "^4.1.1",
@@ -19,6 +20,9 @@
     "datatables.net-responsive": "^2.4.1",
     "datatables.net-select": "^1.6.2",
     "datatables.net-vue3": "^2.1.0",
+    "jspdf": "^2.5.1",
+    "mysql2": "^3.9.7",
+    "print-js": "^1.6.0",
     "qrcode": "^1.5.3",
     "vue": "^3.3.2",
     "vue-good-table": "^2.21.11",
@@ -32,5 +36,9 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "@vitejs/plugin-vue-jsx": "^3.0.1",
     "vite": "^4.3.5"
-  }
+  },
+  "description": "This template should help get you started developing with Vue 3 in Vite.",
+  "main": "vite.config.js",
+  "author": "",
+  "license": "ISC"
 }

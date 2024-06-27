@@ -5,17 +5,17 @@
       <h3>Tablet Process Card - <em>Setup Sub Process</em></h3>
     </div>
     <div class="col-md-3">
-      <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#update"><span class=" align-bottom material-symbols-outlined">update</span>Update Sequence</button>
+      <button class="btn btn-outline-info w-100 float-end shadow" data-bs-toggle="modal" data-bs-target="#update"><span class=" align-bottom material-symbols-outlined">update</span>Update Sequence</button>
     </div>
     <div class="col-md-3 float-end">
-      <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+      <button class="btn btn-outline-info w-100 float-end shadow" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
     </div>
   </div>
-  <div class="container table-responsive">
+  <div class="container table-responsive shadow rounded p-3">
     <DataTable
       :data="subProcess"
       :columns="columns"
-      class="display table"
+      class="display table-hover table shadow rounded p-3 table-light"
       @click="getData"
       :options="tableOptions"
     />
@@ -50,10 +50,7 @@
                       <label for="key_code"></label>
                       <input id="key_code" ref="sub_code" type="text" class="form-control" @input="toUpper" v-model="key_code" required disabled>
                     </div>
-                    <div class="col-md-1 p-2">
-                      <span class="material-symbols-outlined text-center">remove</span>
-                    </div>
-                    <div class="col-md-7 p-2">
+                    <div class="col-md-8 p-2">
                       <label for="sub_code">Sub Process Code:</label>
                       <input id="sub_code" ref="sub_code" type="text" class="form-control" @input="toUpper" v-model="sub_code" required>
                     </div>
@@ -156,28 +153,28 @@
             <div v-if="validateSubPname" class="alert alert-warning col-md-12 p-3">
               <p class="text-center">The input for this field "Sub Process" is mandatory.</p>
             </div>
-            <hr>
-              <div class="col-md-12 row">
+            <hr class="p-1">
+              <div class="col-md-12 p-2 row mx-auto">
                 <div class="col-md-9">
-                  <h6 class="p-3">Sub-Process Name</h6>
+                  <em>Sub Process Name</em>
                 </div>
                 <div class="col-md-3 text-center">
-                  <h6 class="p-3">Sequence Number</h6>
+                  <em>Sequence Number</em>
                 </div>
               </div>
-              <div class="col-md-12 border-rounded">
+              <div class="col-md-12 rounded">
                 <draggable :list="subProcessOrder" 
                          item-key="name"
                          @change="onChange"
                          >
                   <template #item="{ element }" :class="">
-                      <div class="col-md-12 row p-3 mx-auto border-bottom rounded">
+                      <div class="col-md-12 row p-3 mx-auto bg-light bg-gradient shadow">
                           <div class="col-md-12 row">
                             <div class="col-md-9">
-                              {{ element.SubPname }}
+                              <em>{{ element.SubPname }}</em>
                             </div>
                             <div class="col-md-3 text-center">
-                              {{ element.sequence_number }}
+                              <em>{{ element.sequence_number }}</em>
                             </div>
                           </div>
                       </div>
@@ -201,6 +198,17 @@
         </div>
         <div class="modal-body">
           <div class="col-md-12 mx-auto row">
+            <div class="col-md-10">
+
+            </div>
+            <div class="col-md-2">
+              <div class="form-check pt-4">
+                <label class="form-check-label" for="fetching" >
+                  Fetching
+                </label>
+                <input class="form-check-input" type="checkbox" @change="checkFetchingValue" id="fetching" :checked="e_fetching === '1' ? true : false">
+              </div>
+            </div>
             <div class="col-md-4 p-2">
               <label for="e_section">Section Code: </label>
               <select class="form-select" v-model="e_section_id" id="e_section" disabled>
@@ -306,11 +314,25 @@ data() {
     SubProcessOptionsGetURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcessOptions.php',
     SubProcessOrderPutURL: 'http://172.16.2.13/tpc-endpoint/PutSubProcessOrder.php',
     SubProcessPutURL: 'http://172.16.2.13/tpc-endpoint/PutSubProcess.php',
+    SubProcessFetchingPutURL: 'http://172.16.2.13/tpc-endpoint/PutSubProcessFetching.php',
     DeleteSubURL: 'http://172.16.2.13/tpc-endpoint/DeleteSubProcess.php',
 
     fetchSubProcessFlowURL: 'http://172.16.2.13/tpc-endpoint/fetchSubProcessFlow.php',
-    // itemConditionDetailsURL: 'http://172.16.2.13/tpcrequesthandlers/ItemConditionRequestHandler.php',
     requestConditionURL: 'http://172.16.2.13/tpc-endpoint/requestItemCondition.php',
+
+    // SubProcessGetURL: 'http://172.16.2.13/tpc-endpointDev/GetSubProcess.php',
+    // SubProcessPostURL: 'http://172.16.2.13/tpc-endpointDev/PostSubProcess.php',
+    // KeyProcessGetURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcess.php',
+    // SectionGetURL: 'http://172.16.2.13/tpc-endpointDev/GetSection.php',
+    // KeyProcessOptionsGetURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcessOptions.php',
+    // SubProcessOptionsGetURL: 'http://172.16.2.13/tpc-endpointDev/GetSubProcessOptions.php',
+    // SubProcessOrderPutURL: 'http://172.16.2.13/tpc-endpointDev/PutSubProcessOrder.php',
+    // SubProcessPutURL: 'http://172.16.2.13/tpc-endpointDev/PutSubProcess.php',
+    // SubProcessFetchingPutURL: 'http://172.16.2.13/tpc-endpointDev/PutSubProcessFetching.php',
+    // DeleteSubURL: 'http://172.16.2.13/tpc-endpointDev/DeleteSubProcess.php',
+
+    // fetchSubProcessFlowURL: 'http://172.16.2.13/tpc-endpointDev/fetchSubProcessFlow.php',
+    // requestConditionURL: 'http://172.16.2.13/tpc-endpointDev/requestItemCondition.php',
 
     section_id: null,
     Pid: null,
@@ -339,6 +361,7 @@ data() {
     e_sequence_number: '',
     e_process_type: '',
     e_status: '',
+    e_fetching: '',
 
     keyProcessOptions: [],
     subProcessList:[],
@@ -354,9 +377,21 @@ data() {
       { title: 'Key Process Description', data: 'Pname' },
       { title: 'Sub Process Description', data: 'SubPname' },
       { title: 'Sub Process Code', data: 'sub_code' },
-      { title: 'Process Type', data: 'process_type' },
+      { title: 'Process Type', data: 'process_type', 
+            render: function (data) { 
+              return `${data === 'Production' ? '<span class="badge rounded-pill text-bg-success">Production</span>' : '<span class="badge rounded-pill text-bg-primary">Quality Control</span>'}`
+        }   },
       { title: 'Sequence Number', data: 'sequence_number' },
-      { title: 'Status', data: 'sub_process_status' },
+      { title: 'Fetching', data: 'fetching', 
+          render: function (data) { 
+            return `${data === '1' ? '<span class="badge rounded-pill text-bg-success">True</span>' : '<span class="badge rounded-pill text-bg-secondary">False</span>'}`
+          } 
+      },
+      { title: 'Status', data: 'sub_process_status', 
+        render: function (data) { 
+            return `${data === 'Active' ? '<span class="badge rounded-pill text-bg-success">Active</span>' : '<span class="badge rounded-pill text-bg-secondary">Inactive</span>'}`
+        } 
+      },
       { title: 'Date Created', data: 'date_created' },
       { title: 'Open', data: null, orderable: false, 
         render: function (data) { 
@@ -383,6 +418,28 @@ computed: {
   }
 },
 methods: {
+  checkFetchingValue(){
+    const toastLiveExample = document.getElementById('liveToast');
+    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
+    let checkVal = document.getElementById('fetching').checked;
+    this.e_fetching = checkVal === true ? 1 : 0;
+    axios.put(this.SubProcessFetchingPutURL, {
+      fetching: this.e_fetching,
+      SubPid: this.e_SubPid,
+    }).then(response => {
+      if(response.data.message === 'Sub Process Fetching updated successfully'){
+        this.alert = 'Your data has been successfully submitted! Thank you for providing the required information. Please reload the page';
+        toastBootstrap.show();
+        for(const sub of this.subProcess){
+          if(this.e_SubPid === sub.SubPid){
+            sub.fetching = this.e_fetching;
+          }
+        }
+      }
+    }).catch(error => {
+      console.log(error);
+    });
+  },
   toUpper(){
     this.sub_code = this.sub_code.toUpperCase();
   },
@@ -407,6 +464,7 @@ methods: {
         this.e_sequence_number = sub.sequence_number;
         this.e_process_type = sub.process_type;
         this.e_status = sub.sub_process_status;
+        this.e_fetching = sub.fetching;
       }
     }
   },
@@ -758,7 +816,6 @@ methods: {
         }
     }).then(response => {
       let exists = response.data.length > 0 ? true : false;
-      console.log(exists)
       if(exists){
         toastBootstrap.show();
         this.alert = 'This sub process is currently in use within other masterfiles, and editing is prohibited';
@@ -803,6 +860,7 @@ async created() {
     await axios.get(this.SubProcessGetURL, {
     }).then(response => {
       for(const sub of response.data){
+        console.log(sub);
         for(const sec of this.section){
           if(sec.section_id == sub.section_id){
             Object.assign(sub, {section_code: sec.section_code});

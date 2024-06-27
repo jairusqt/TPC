@@ -5,10 +5,10 @@
             <h3>Tablet Process Card - <em>Form Assignment</em></h3>
           </div>
           <div class="col-md-3 float-end">
-            <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#createForm" @click="newFormAssignment"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+            <button class="btn btn-outline-info w-100 float-end shadow gradient" data-bs-toggle="modal" data-bs-target="#createForm" @click="newFormAssignment"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
           </div>
           <div class="col-md-3">
-            <button class="btn btn-outline-info w-100 float-end" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
+            <button class="btn btn-outline-info w-100 float-end shadow gradient" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample">
                 View Form Assignments Archive
               </button>
           </div>
@@ -70,11 +70,11 @@
     </div>
 
     <div class="collapse collapse-horizontal show" id="collapseWidthExample">
-        <div class="table-responsive px-5 pt-5">
+        <div class="table-responsive px-5 pt-5 shadow gradient">
             <DataTable
                 :data="formAssignment"
                 :columns="columns"
-                class="display table"
+                class="display table-hover table table-light shadow gradient p-3"
                 @click="getData"
                 :options="tableOptions"
             />
@@ -88,7 +88,7 @@
           <div class="modal-content">
             <div class="modal-body">
                 <div class="col-md-12 row">
-                    <div class="col-xl-4 col-lg-6 mx-auto row h-100 sticky-top">
+                    <div class="col-xl-4 col-lg-6 mx-auto row h-100 sticky-top shadow rounded">
                         <div class="col-lg-6 col-xl-4 p-2">
                             <button ref="new" class="btn btn-outline-primary w-100" @click="newFormAssignment" disabled>New</button>
                         </div>
@@ -224,9 +224,10 @@
                             <div class="progress-bar progress-bar-striped" :style="'width: '+conditionLoader+'%'"></div>
                         </div>
                         <hr>
-                        <table class="table ">
+                        <table class="table shadow table-light">
                             <thead>
                                 <tr>
+                                    <th></th>
                                     <th>Seq No.</th>
                                     <th>Key Process</th>
                                     <th>Sub Process</th>
@@ -243,7 +244,8 @@
                             </thead>
                             <tbody>
                                 <template v-for="flowSub in processFlowSub" :key="flowSub.flow_main_id">
-                                    <tr>
+                                    <tr :style="'border-color: '+flowSub.color" :class="flowSub.sub_status === 'Inactive' ? 'table-secondary' : 'table-light'">
+                                        <td :style="'background-color: '+flowSub.color"></td>
                                         <td>{{flowSub.sequence_number}} .</td>
                                         <td>{{flowSub.Pname}}</td>
                                         <td>{{flowSub.SubPname}}</td>
@@ -305,9 +307,9 @@
                                         </td>
                                     </tr>
                                     <tr v-show="toggle[flowSub.SubPid]">
-                                        <td colspan="12">
-                                            <div class="p-3">
-                                                <table class="table table-responsive">
+                                        <td colspan="13">
+                                            <div class="p-3" :style="'background-color: '+flowSub.color">
+                                                <table class="table table-responsive shadow rounded table-light">
                                                     <thead>
                                                         <tr>
                                                             <th><small>No.</small></th>
@@ -321,7 +323,7 @@
                                                     </thead>
                                                     <tbody>
                                                         <template v-for="item in itemCondition" :key="item.item_id">
-                                                            <tr v-if="flowSub.SubPid == item.SubPid">
+                                                            <tr v-if="flowSub.SubPid == item.SubPid" :class="item.status === 'Inactive' ? 'table-secondary' : 'table-light'">
                                                                 <td><small>{{item.sequence_number}} .</small></td>
                                                                 <td><small>{{item.detail_description}}</small></td>
                                                                 <td><small>{{item.typical_value}}</small></td>
@@ -362,7 +364,7 @@
           <div class="modal-content">
             <div class="modal-body">
                 <div class="col-md-12 row">
-                    <div class="col-md-4 mx-auto row h-100 sticky-top align-items-center">
+                    <div class="col-md-4 mx-auto row h-100 sticky-top align-items-center rounded shadow">
                         <div class="col-md-4 p-2">
                             <button ref="viewDeleteBtn" @click="deleteFormAssignment" data-bs-dismiss="modal" class="btn btn-outline-primary w-100" >Delete</button>
                         </div>
@@ -487,9 +489,10 @@
                             <p class="fs-3 text-center" v-if="viewSection_Code !== ''"><em>{{viewSection_Description}}</em></p>
                         </div>
                         <hr>
-                        <table class="table table-responsive">
+                        <table class="table table-responsive table-light rounded shadow">
                             <thead>
                                 <tr>
+                                    <th></th>
                                     <th>Seq No.</th>
                                     <th>Key Process</th>
                                     <th>Sub Process</th>
@@ -506,7 +509,8 @@
                             </thead>
                             <tbody>
                                 <template v-for="item in viewItem" :key="item.assignment_item_id">
-                                    <tr>
+                                    <tr :style="'border-color: '+item.color" :class="item.assignment_status === 'Inactive' ? 'table-secondary' : 'table-light'">
+                                        <td :style="'background-color: '+item.color"></td>
                                         <td>{{item.sequence_number}} .</td>
                                         <td>{{item.Pname}}</td>
                                         <td>{{item.SubPname}}</td>
@@ -566,9 +570,9 @@
                                         </td>
                                     </tr>
                                     <tr v-show="toggle[item.SubPid]">
-                                        <td colspan="12">
-                                            <div class="p-3">
-                                                <table class="table table-responsive">
+                                        <td colspan="13">
+                                            <div :style="'background-color: '+item.color" class="p-3 shadow rounded">
+                                                <table class="table table-responsive table-light ">
                                                     <thead>
                                                         <tr>
                                                             <th><small>No.</small></th>
@@ -582,7 +586,7 @@
                                                     </thead>
                                                     <tbody>
                                                         <template v-for="itemCondition in viewItemCondition" :key="itemCondition.condition_item_id">
-                                                            <tr v-if="item.SubPid == itemCondition.SubPid">
+                                                            <tr v-if="item.SubPid == itemCondition.SubPid" :class="itemCondition.condition_status === 'Inactive' ? 'table-secondary' : 'table-light'">
                                                                 <td><small>{{itemCondition.sequence_number}} .</small></td>
                                                                 <td><small>{{itemCondition.detail_description}}</small></td>
                                                                 <td><small>{{itemCondition.typical_value}}</small></td>
@@ -590,14 +594,13 @@
                                                                 <td>{{itemCondition.max_value}}</td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
-                                                                        <input :id="'visibility'+itemCondition.condition_item_id" class="form-check-input" type="checkbox" role="switch" :checked="itemCondition.visibility_status" disabled>
+                                                                        <input @change="viewVisibilitySwitch(itemCondition.item_id)" :id="'visibility'+itemCondition.item_id" class="form-check-input" type="checkbox" role="switch" :checked="itemCondition.visibility_status" :disabled="viewStatus === 'Posted'" >
                                                                     </div>
                                                                 </td>
                                                                 <td>
                                                                     <div class="form-check form-switch">
-                                                                        <input :id="'itemCondition'+itemCondition.condition_item_id" class="form-check-input" type="checkbox" role="switch" :checked="itemCondition.condition_status" disabled>
-                                                                        <label v-if="itemCondition.condition_status === true" :for="'itemCondition'+itemCondition.condition_item_id">Active</label>
-                                                                        <label v-else :for="'itemCondition'+itemCondition.condition_item_id">Inactive</label>
+                                                                        <input :id="'viewCondition'+itemCondition.item_id" class="form-check-input" @change="viewConditionSwitch(itemCondition.item_id)" type="checkbox" role="switch" :checked="itemCondition.condition_status_value" :disabled="viewStatus === 'Posted' || !item.assignment_status">
+                                                                        <label :for="'viewCondition'+itemCondition.item_id">{{itemCondition.condition_status}}</label>
                                                                     </div>
                                                                 </td>
                                                             </tr>
@@ -644,42 +647,87 @@
     },
     data() {
         return {
-            formAssignmentURL: 'http://172.16.2.13/tpc-endpoint/GetFormAssignment.php',
-            formAssignmentPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignment.php',
-            formAssignmentItemPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignmentItem.php',
-            itemConditionPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignmentItemCondition.php',
-            sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
-            processFlowURL: 'http://172.16.2.13/tpc-endpoint/GetProcessFlow.php',
-            keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
-            subProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
-            processFlowSubURL: 'http://172.16.2.13/tpc-endpoint/requestProcessFlowSub.php',
-            // itemConditionDetailsURL: 'http://172.16.2.60/tpcrequesthandlers/ItemConditionRequestHandler.php',
-            itemConditionDetailsURL: 'http://172.16.2.13/tpc-endpoint/requestItemConditionFlow.php',
-            StatusPostingURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentStatus.php',
-            insertTPCMainURL: 'http://172.16.2.13/tpc-endpoint/PostTPCMain.php',
+            // formAssignmentURL: 'http://172.16.2.13/tpc-endpoint/GetFormAssignment.php',
+            // formAssignmentPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignment.php',
+            // formAssignmentItemPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignmentItem.php',
+            // itemConditionPostURL: 'http://172.16.2.13/tpc-endpoint/PostFormAssignmentItemCondition.php',
+            // sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
+            // processFlowURL: 'http://172.16.2.13/tpc-endpoint/GetProcessFlow.php',
+            // keyProcessURL: 'http://172.16.2.13/tpc-endpoint/GetKeyProcess.php',
+            // subProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
+            // processFlowSubURL: 'http://172.16.2.13/tpc-endpoint/requestProcessFlowSub.php',
+            // itemConditionDetailsURL: 'http://172.16.2.13/tpc-endpoint/requestItemConditionFlow.php',
+            // StatusPostingURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentStatus.php',
+            // insertTPCMainURL: 'http://172.16.2.13/tpc-endpoint/PostTPCMain.php',
+ 
 
-            DeleteFormURL: 'http://172.16.2.13/tpc-endpoint/DeleteForm.php',
-            DeleteItemURL: 'http://172.16.2.13/tpc-endpoint/DeleteItem.php',
-            DeleteItemConditionURL: 'http://172.16.2.13/tpc-endpoint/DeleteItemCondition.php',
+            
+            // DeleteFormURL: 'http://172.16.2.13/tpc-endpoint/DeleteForm.php',
+            // DeleteItemURL: 'http://172.16.2.13/tpc-endpoint/DeleteItem.php',
+            // DeleteItemConditionURL: 'http://172.16.2.13/tpc-endpoint/DeleteItemCondition.php',
 
-            CCILotRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCILotRequest.php',
-            CCIPoRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCIPoRequest.php',
-            CCICustomerDetailsURL: 'http://172.16.2.13/tpc-endpoint/HandleCCICustomerDetails.php',
-            POLRequestURL: 'http://172.16.2.13/tpc-endpoint/HandlePOLRequest.php',
-            CWPRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCWPRequest.php',
-            SWPRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleSWPRequest.php',
-            FormRequestURL: 'http://172.16.2.13/tpc-endpoint/requestFormAssignment.php',
+            // CCILotRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCILotRequest.php',
+            // CCIPoRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCIPoRequest.php',
+            // CCICustomerDetailsURL: 'http://172.16.2.13/tpc-endpoint/HandleCCICustomerDetails.php',
+            // POLRequestURL: 'http://172.16.2.13/tpc-endpoint/HandlePOLRequest.php',
+            // CWPRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCWPRequest.php',
+            // SWPRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleSWPRequest.php',
+            // FormRequestURL: 'http://172.16.2.13/tpc-endpoint/requestFormAssignment.php',
 
-            CWPQuantityURL: 'http://172.16.2.13/tpc-endpoint/GenerateCWPQuantity.php',
-            POLQuantityURL: 'http://172.16.2.13/tpc-endpoint/GeneratePOLQuantity.php',
-            SWPQuantityURL: 'http://172.16.2.13/tpc-endpoint/GenerateSWPQuantity.php',
+            // CWPQuantityURL: 'http://172.16.2.13/tpc-endpoint/GenerateCWPQuantity.php',
+            // POLQuantityURL: 'http://172.16.2.13/tpc-endpoint/GeneratePOLQuantity.php',
+            // SWPQuantityURL: 'http://172.16.2.13/tpc-endpoint/GenerateSWPQuantity.php',
 
-            updateItemStatusURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentItemStatus.php',
+            // updateItemStatusURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentItemStatus.php',
+            // updateItemConditionURL: 'http://172.16.2.13/tpc-endpoint/PutFormAssignmentItemCondition.php',
 
-            searchRequestURL: 'http://172.16.2.13/tpc-endpoint/requestSearchFormAssignment.php',
+            // searchRequestURL: 'http://172.16.2.13/tpc-endpoint/requestSearchFormAssignment.php',
 
-            itemURL: 'http://172.16.2.13/tpc-endpoint/GetItem.php',
-            itemConditionURL: 'http://172.16.2.13/tpc-endpoint/GetItemCondition.php',
+            // itemURL: 'http://172.16.2.13/tpc-endpoint/GetItem.php',
+            // itemConditionURL: 'http://172.16.2.13/tpc-endpoint/GetItemCondition.php',
+            // requestCondition: 'http://172.16.2.13/tpc-endpoint/requestCondition.php',
+
+
+            
+            formAssignmentURL: 'http://172.16.2.13/tpc-endpointDev/GetFormAssignment.php',
+            formAssignmentPostURL: 'http://172.16.2.13/tpc-endpointDev/PostFormAssignment.php',
+            formAssignmentItemPostURL: 'http://172.16.2.13/tpc-endpointDev/PostFormAssignmentItem.php',
+            itemConditionPostURL: 'http://172.16.2.13/tpc-endpointDev/PostFormAssignmentItemCondition.php',
+            sectionURL: 'http://172.16.2.13/tpc-endpointDev/GetSection.php',
+            processFlowURL: 'http://172.16.2.13/tpc-endpointDev/GetProcessFlow.php',
+            keyProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcess.php',
+            subProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetSubProcess.php',
+            processFlowSubURL: 'http://172.16.2.13/tpc-endpointDev/requestProcessFlowSub.php',
+            itemConditionDetailsURL: 'http://172.16.2.13/tpc-endpointDev/requestItemConditionFlow.php',
+            StatusPostingURL: 'http://172.16.2.13/tpc-endpointDev/PutFormAssignmentStatus.php',
+            insertTPCMainURL: 'http://172.16.2.13/tpc-endpointDev/PostTPCMain.php',
+            
+            DeleteFormURL: 'http://172.16.2.13/tpc-endpointDev/DeleteForm.php',
+            DeleteItemURL: 'http://172.16.2.13/tpc-endpointDev/DeleteItem.php',
+            DeleteItemConditionURL: 'http://172.16.2.13/tpc-endpointDev/DeleteItemCondition.php',
+
+            CCILotRequestURL: 'http://172.16.2.13/tpc-endpointDev/HandleCCILotRequest.php',
+            CCIPoRequestURL: 'http://172.16.2.13/tpc-endpointDev/HandleCCIPoRequest.php',
+            CCICustomerDetailsURL: 'http://172.16.2.13/tpc-endpointDev/HandleCCICustomerDetails.php',
+            POLRequestURL: 'http://172.16.2.13/tpc-endpointDev/HandlePOLRequest.php',
+            CWPRequestURL: 'http://172.16.2.13/tpc-endpointDev/HandleCWPRequest.php',
+            SWPRequestURL: 'http://172.16.2.13/tpc-endpointDev/HandleSWPRequest.php',
+            FormRequestURL: 'http://172.16.2.13/tpc-endpointDev/requestFormAssignment.php',
+
+            CWPQuantityURL: 'http://172.16.2.13/tpc-endpointDev/GenerateCWPQuantity.php',
+            POLQuantityURL: 'http://172.16.2.13/tpc-endpointDev/GeneratePOLQuantity.php',
+            SWPQuantityURL: 'http://172.16.2.13/tpc-endpointDev/GenerateSWPQuantity.php',
+
+            updateItemStatusURL: 'http://172.16.2.13/tpc-endpointDev/PutFormAssignmentItemStatus.php',
+            updateItemConditionURL: 'http://172.16.2.13/tpc-endpointDev/PutFormAssignmentItemCondition.php',
+
+            searchRequestURL: 'http://172.16.2.13/tpc-endpointDev/requestSearchFormAssignment.php',
+
+            itemURL: 'http://172.16.2.13/tpc-endpointDev/GetItem.php',
+            itemConditionURL: 'http://172.16.2.13/tpc-endpointDev/GetItemCondition.php',
+            requestCondition: 'http://172.16.2.13/tpc-endpointDev/requestCondition.php',
+
+
             
             alert: '',
 
@@ -746,14 +794,15 @@
             viewDate_Issued: '',
 
             viewItem: [],
-            viewItemConditon: [],
+            viewItemCondition: [],
 
             conditionLoader: 0,
 
             section_code: '',
             flow_main_id: '',
             tableOptions: {
-                order: [[0, 'desc']]
+                order: [[0, 'desc']],
+                select: true
             },
             search: '',
             columns: [
@@ -779,7 +828,6 @@
                             return '<button data-bs-toggle="modal" data-bs-target="#viewForm" class="btn w-100"><span class="material-symbols-outlined">visibility</span></button'} 
                         },
             ],
-            socket: '',
         }
     },
     methods: {
@@ -830,6 +878,32 @@
                 if(parseInt(id) === parseInt(item.assignment_item_id)){
                     item.assignment_status = status;
                     item.assignment_status_str = status ? "Active" : "Inactive";
+                    for(const condition of this.viewItemCondition){
+                        if(parseInt(item.SubPid) === parseInt(condition.SubPid)){
+                            condition.condition_status = status ? "Active" : "Inactive";
+                            condition.condition_status_value = status;
+                        }
+                    }
+                }
+            }
+        },
+        viewConditionSwitch(id){
+            let status = document.getElementById(`viewCondition${id}`).checked;
+            for(const condition of this.viewItemCondition){
+                if(parseInt(condition.item_id) === parseInt(id)){
+                    condition.condition_status_value = status;
+                    condition.condition_status = condition.condition_status_value === true ? "Active" : "Inactive";
+                    console.log(condition)
+                }
+            }
+        },
+        viewVisibilitySwitch(id){
+            let status = document.getElementById(`visibility${id}`).checked;
+            for(const condition of this.viewItemCondition){
+                if(parseInt(condition.item_id) === parseInt(id)){
+                    condition.visibility_status_value = status;
+                    condition.visibility_status = status ? 1 : 0;
+                    console.log(condition)
                 }
             }
         },
@@ -840,7 +914,7 @@
             this.$router.push({ name: 'formAttachments', query: { assignment_id: this.viewForm_Id} });
         },
         routeViewInstruction(){
-           location.replace('http://172.16.2.13/SI-TPC/');
+           window.open(`https://172.16.2.13/Special-Instruction/?assignmentid=${this.viewForm_Id}`);
         },
         posting(){
             if(this.viewStatus === 'Posted'){
@@ -887,6 +961,7 @@
                                         batching_type: item.batching_type,
                                         result_type: item.result_type
                                     }).then(response => {
+                                        console.log(response.data);
                                     }).catch(error => {
                                         console.log(error);
                                     });
@@ -904,6 +979,20 @@
                                         console.log(error);
                                     });
                                 }
+                                for(const condition of this.viewItemCondition){
+                                    axios.put(this.updateItemConditionURL, {
+                                        condition_code: condition.condition_code,
+                                        option_value: condition.option_value,
+                                        visibility_status: condition.visibility_status,
+                                        condition_status: condition.condition_status,
+                                        with_judgement: condition.with_judgement,
+                                        item_id: condition.item_id,
+                                    }).then(response => {
+                                        console.log(response.data)
+                                    }).catch(error => {
+                                        console.log(error);
+                                    })
+                                }
                             }
                         }
                         this.$refs.viewSaveBtn.disabled = true;
@@ -916,7 +1005,6 @@
                 this.alert = `Please check the status it must be posted`;
                 toastBootstrap.show();
             }
-            
         },
         generateQuantity(){
             this.order_quantity = 0;
@@ -1079,6 +1167,8 @@
             }).then(response => {
                 this.viewItem = response.data;
                 for(const item of this.viewItem){
+                    let hue = Math.floor(Math.random() * 360);
+                    let pastel = 'hsl(' + hue + ', 100%, 80%)';
                     for(const key of this.keyProcess){
                         if(parseInt(item.Pid) === parseInt(key.Pid)){
                             Object.assign(item, {Pname: key.Pname});
@@ -1090,6 +1180,7 @@
                         }        
                     }
                     Object.assign(item, {
+                        color: pastel,
                         sampling_status: item.check_sampling === 'True' ? true : false,
                         uncontrolled_status: item.check_uncontrolled === 'True' ? true : false 
                     });
@@ -1116,15 +1207,34 @@
                 }
             }).then(response => {
                 this.viewItemCondition = response.data;
-                this.viewItemCondition.sort((a,b) => a.sequence_number - b.sequence_number).map((item) => { 
-                    item.condition_status = item.condition_status === 'Active' ? true : false;
-                    item.visibility_status = item.visibility_status === 1 ? true : false;
-                    // if(item.condition_status === 'Active'){
-                    //     item.condition_status = true;
-                    // } else {
-                    //     item.condition_status = false;
-                    // }
-                });
+                for(const condition of this.viewItemCondition){
+                    Object.assign(condition, {
+                        condition_status_value: condition.condition_status ==='Active' ? true : false,
+                        visibility_status_value: condition.visibility_status === 1 ? true : false,
+                    })
+                    axios.get( this.requestCondition, {
+                        method: 'GET',
+                        headers: {
+                            'Content-type': 'application/x-www-form-urlencoded'
+                        },
+                        params: {
+                            item_id: condition.item_id,
+                        }
+                    }).then(response => {
+                        for(const data of response.data){
+                            if(parseInt(condition.item_id) === parseInt(data.item_id)){
+                                Object.assign(condition, {
+                                condition_code: data.condition_code,
+                                option_value: data.option_value,
+                                with_judgement: data.with_judgement
+                            })
+                            }
+                        }
+                    }).catch(error => {
+                        console.log(error)
+                    });
+                }
+                this.viewItemCondition.sort((a,b) => a.sequence_number - b.sequence_number);
             }).catch(error => {
                 console.log(error);
             });
@@ -1152,7 +1262,7 @@
             assignment_id: this.viewForm_Id
         }).then(response => {
             if(response.data.message === 'Form Assignment deleted successfully'){
-                this.socket.send(`delete, ${this.viewForm_Id}`);
+                
             }
         }).catch(error => {
             console.log(error);
@@ -1248,12 +1358,16 @@
                         }
                     }).catch(error => {console.log(error); });
                 } else if(sec.section_code.split('-').includes('POL')){
-                   await axios.get(this.POLRequestURL, axiosParams)
+                   await axios.get(this.CWPRequestURL, axiosParams)
                     .then(response => {
                         for(const lot of response.data){
                             if(!selectedLotNumber.has(lot.cwp_input_plan_pol_orderno)){
                                 this.lotNumber.push({lot_number: lot.cwp_input_plan_pol_orderno});
                                 selectedLotNumber.add(lot.cwp_input_plan_pol_orderno);
+                            } else {
+                                this.lotNumber.push({
+                                    lot_number: 'TEST 1'
+                                })
                             }
                          }
                     }).catch(error => {console.log(error); });
@@ -1314,15 +1428,15 @@
             }
         }).then(response => {
             for(const flowSub of response.data){
-                console.log(flowSub);
-                // console.log(this.revision_number);
-                // console.log(this.flow_main_id);
                 for(const key of this.keyProcess){
                     if(flowSub.Pid === parseInt(key.Pid)){
                         Object.assign(flowSub, {Pname: key.Pname});
                         for(const sub of this.subProcess){
                             if(flowSub.SubPid === parseInt(sub.SubPid)){
+                                let hue = Math.floor(Math.random() * 360);
+                                let pastel = 'hsl(' + hue + ', 100%, 80%)';
                                 Object.assign(flowSub, {
+                                    color: pastel,
                                     SubPname: sub.SubPname,
                                     process_type: sub.process_type,
                                     sub_status_checked: flowSub.sub_status === "Active" ? true : false,
@@ -1353,10 +1467,9 @@
                         this.itemCondition.push(item);
                         this.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
                     }
-                    console.log(this.itemCondition);
                 }).catch(error => {
                     console.log(error);
-                });
+                });   
                 this.processFlowSub.push(flowSub);
                 this.processFlowSub.sort((a, b) => a.sequence_number - b.sequence_number);
             }
@@ -1493,7 +1606,6 @@
             has_instruction: this.hasInstruction
         }).then(response => {
             if(response.data.message === 'Form Assignment inserted successfully' && this.processFlowSub.length > 0){
-                this.socket.send(`insert, ${response.data.assignment_id}`);
                 assignment_id = response.data.assignment_id;
                 this.$refs.section.disabled = true;
                 this.$refs.parts_number.disabled = true;
@@ -1501,7 +1613,6 @@
                 this.$refs.wafer_no_from.disabled = true;
                 this.$refs.wafer_no_to.disabled = true;
                 this.$refs.instruction.disabled = true;
-                this.$refs.material_lot_number.disabled = true;
                 this.$refs.attachment.disabled = true;
                 this.$refs.item_code.disabled = true;
                 this.$refs.jo_number.disabled = true;
@@ -1564,6 +1675,7 @@
         for(const item of this.itemCondition){
             await axios.post(this.itemConditionPostURL, {
                 assignment_id: assignment_id,
+                item_id: item.item_id,
                 sequence_number: item.sequence_number,
                 SubPid: item.SubPid,
                 detail_description: item.detail_description,
@@ -1681,68 +1793,6 @@
             console.log(error);
         });
 
-        this.socket = new WebSocket('ws://172.16.2.60:8080');
-        
-        this.socket.addEventListener('open', async(event) => {
-            console.log('Socket Server Up');
-        });
-        this.socket.addEventListener('message', (event) => {
-            const toastLiveExample = document.getElementById('liveToast');
-            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
-            if(event.data.split(',').includes('insert')){
-                let data = event.data.split(',');
-                let id = data[1].trim();
-                
-                axios.get(this.FormRequestURL, {
-                    method: 'GET',
-                    headers: {
-                        'Content-type': 'application/x-www-form-urlencoded'
-                    },
-                    params: {
-                        assignment_id: id
-                    }  
-                }).then(response => {
-                    for(const form of response.data){
-                        for(const sec of this.section){
-                            if(parseInt(form.section_id ) === parseInt(sec.section_id)){
-                                this.formAssignment.push({
-                                   assignment_id: form.assignment_id,
-                                   section_id: form.section_id,
-                                   section_code: sec.section_code,
-                                   lot_number: form.lot_number,
-                                   po_number: form.po_number? this.po_number: '-',
-                                   item_parts_number: form.item_parts_number,
-                                   quantity: form.quantity,
-                                   delivery_date: form.delivery_date? this.delivery_date: null,
-                                   jo_number: form.jo_number? this.jo_number: '-',
-                                   revision_number: form.revision_number,
-                                   date_issued: form.date_issued,
-                                   assigned_by: form.assigned_by,
-                                   date_created: form.date_created,
-                                   wafer_number_from: form.wafer_number_from,
-                                   wafer_number_to: form.wafer_number_to,
-                                   item_code: form.item_code,
-                                   assignment_status: form.assignment_status,
-                                   has_attachment: form.hasAttachment,
-                                   has_instruction: form.hasInstruction
-                                });
-                            }
-                        }
-                    }
-                }).catch(error => {
-                    console.log(error);
-                })
-            }
-            if(event.data.split(',').includes('delete')){
-                let data = event.data.split(',');
-                let id = data[1].trim();
-                let idToRemove = parseInt(id);
-                let index = this.formAssignment.findIndex((form) => form.assignment_id === idToRemove);
-                this.formAssignment.splice(index, 1);
-                this.alert = `Form Assignment: ${idToRemove} has been removed to the system successfully`;
-                toastBootstrap.show();
-            }
-        });
 
         this.date_created = new Date().toJSON().slice(0, 10);
         this.hasAttachment = false;

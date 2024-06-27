@@ -2,170 +2,83 @@
 </script>
 
 <template>
-  <div class="container mx-auto bg-light">
-    <p class="fs-3 p-3 text-center"><em>Tablet Process Card - Reports</em></p>
-    <!-- <div class="col-md-12 row mx-auto">
-
-      <div class="col-md-4">
-        <div class="card text-bg-light mb-3 shadow" style="height: 400px;">
-          <div class="card-body">
-            <h5 class="card-title">Light card title</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-          </div>
-        </div>
+  <div class="container p-5 bg-light bg-gradient shadow-lg">
+    <div class="row">
+      <div class="col-md-4 p-3 py-2" v-for="route in Route">
+        <RouterLink :to="route.url" class="btn btn-light w-100 shadow">
+            <span class="material-symbols-outlined display-1">{{route.icon}}</span>
+            <hr class="shadow">
+            <p class="fs-5" style="color: #155e75"><em><b>{{route.label}}</b></em></p>
+        </RouterLink>
       </div>
-      <div class="col-md-4">
-        <div class="card text-bg-light mb-3 shadow" style="height: 400px;">
-          <div class="card-header">Header</div>
-          <div class="card-body">
-            <h5 class="card-title">Light card title</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-          </div>
-        </div>
+      <div class="col-md-4 p-3 py-2" v-for="route in Apps">
+        <a :href="route.url" class="btn btn-light w-100 shadow">
+          <span class="material-symbols-outlined display-1">{{route.icon}}</span>
+          <hr>
+          <p class="fs-5" style="color: #155e75"><em><b>{{route.label}}</b></em></p>
+        </a>
       </div>
-      <div class="col-md-4">
-        <div class="card text-bg-light mb-3 shadow" style="height: 400px;">
-          <div class="card-header">Header</div>
-          <div class="card-body">
-            <h5 class="card-title">Light card title</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="card text-bg-success mb-3 shadow" >
-          <div class="card-body">
-            <h5 class="card-title">Task</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-          <div class="card-footer">
-            <a class="link-light" href="">Generate Report</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-bg-danger mb-3 shadow" >
-          <div class="card-body">
-            <h5 class="card-title">Report</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-          <div class="card-footer">
-            <a class="link-light" href="">Generate Report</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-bg-warning mb-3 shadow" >
-          <div class="card-body">
-            <h5 class="card-title">Pending</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-          <div class="card-footer">
-            <a class="link-light" href="">Generate Report</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-bg-primary mb-3 shadow" >
-          <div class="card-body">
-            <h5 class="card-title">Request</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-          <div class="card-footer">
-            <a class="link-light" href="">Generate Report</a>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-md-6">
-        <div class="card text-bg-light mb-3 shadow" style="height: 300px">
-          <div class="card-header">
-            Graphs
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">Request</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card text-bg-light mb-3 shadow" style="height: 300px;">
-          <div class="card-header">
-            Graphs
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">Request</h5>
-            <p class="card-text">Lorem Ipsum</p>
-          </div>
-        </div>
-      </div>
-      
-
-      <div class="col-md-12 table-responsive p-3 border rounded">
-        <input type="text" class="form-control w-25 float-end">
-
-        <table class="table ">
-          <thead>
-            <tr>
-              <th>SAMPLE HEADER</th>
-              <th>SAMPLE HEADER</th>
-              <th>SAMPLE HEADER</th>
-              <th>SAMPLE HEADER</th>
-              <th>SAMPLE HEADER</th>
-              <th>SAMPLE HEADER</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-            </tr>
-            <tr>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-            </tr>
-            <tr>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-            </tr>
-            <tr>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-            </tr>
-            <tr>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-              <td>SAMPLE DATA</td>
-            </tr>
-          </tbody>
-        </table>
-      </div> -->
-    <!-- </div> -->
+    </div>
   </div>
   
+  
 </template>
+
 <script>
-</script>
+  import * as bootstrap from 'bootstrap';
+  import { RouterLink, RouterView, useRoute } from 'vue-router';
+  import axios from 'axios';
+  // import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+  
+  export default {
+    data() {
+      return {
+        toggler: false,
+        Route: [
+          {url: '/', icon: 'home', label: 'Home', active: false}, 
+          {url: '/section', icon: 'warehouse', label: 'Section', active: false},
+          {url: '/keyProcess', icon: 'key', label: 'Key Process', active: false},
+          {url: '/subProcess', icon: 'account_tree', label: 'Sub Process', active: false},
+          // {url: '/processFlow', icon: 'schema', label: 'Process Flow Assignment (DEV)', active: false},
+          {url: '/processFlow', icon: 'schema', label: 'Process Flow Assignment', active: false},
+          {url: '/formAssignment', icon: 'assignment', label: 'Form Assignment', active: false},
+          {url: '/formQRGenerator', icon: 'qr_code_2', label: 'QR Code Generator', active: false},
+          // {url: '/formAssignmentv2', icon: 'assignment', label: 'Form Assignment', active: false},
+          {url: '/ReasonNG', icon: 'data_alert', label: 'NG Reason', active: false},
+        ],
+        Apps: [
+          {url: 'http://172.16.2.13/YAO/', icon: 'place_item', label: 'Item Condition'},
+          {url: 'https://172.16.2.13/tpc_ver2', icon: ' grading', label: 'TPC Main Form'}
+        ]
+      }
+    },
+    methods: {
+      sizeToggler(){
+        this.toggler = !this.toggler;      
+      },
+      activeRoute(url){
+        for(const path of this.Route){
+          if(url === path.url){
+            path.active = true;
+          } else {
+            path.active = false;
+          }
+        }
+      }
+    },
+    created(){
+  
+    },
+    mounted(){
+  
+    },
+    components: {
+      RouterLink,
+      RouterView
+    }
+  }
+  </script>
+
 <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0');
   @import 'animate.css';
@@ -176,4 +89,11 @@
   .bg {
     background-color: #67e8f9;
   }
+  .text-color {
+    font-size: 72px;
+    background: -webkit-linear-gradient(#7dd3fc, #0ea5e9);
+    -webkit-text-fill-color: transparent;
+  }
+
+
 </style>

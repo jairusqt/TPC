@@ -10,14 +10,6 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
-    },
-    {
       path: '/section',
       name: 'section',
       component: () => import('../views/SectionView.vue')
@@ -32,24 +24,39 @@ const router = createRouter({
       name: 'subProcess',
       component: () => import('../views/SubProcessView.vue')
     },
-    {
-      path: '/processFlow',
-      name: 'processFlow',
-      component: () => import('../views/ProcessFlowView.vue')
-    },
-    {
-      path: '/processFlowv2',
-      name: 'processFlowv2',
-      component: () => import('../views/ProcessFlowViewv2.vue')
-    },
+    // {
+    //   path: '/processFlow',
+    //   name: 'processFlow',
+    //   component: () => import('../views/ProcessFlowView.vue')
+    // },
     {
       path: '/processFlowv3',
       name: 'processFlowv3',
       component: () => import('../views/ProcessFlowViewv3.vue')
     },
     {
+      path: '/processFlowViewing',
+      name: 'processFlowViewing',
+      component: () => import('../views/ProcessFlowViewing.vue')
+    },
+    {
+      path: '/processFlow',
+      name: 'processFlow',
+      component: () => import('../views/ProcessFlow.vue')
+    },
+    {
       path: '/formAssignment',
       name: 'formAssignment',
+      component: () => import('../views/formAssignment.vue')
+    },
+    {
+      path: '/conditionFetch',
+      name: 'conditionFetch',
+      component: () => import('../views/conditionFetch.vue')
+    },
+    {
+      path: '/formAssignmentView',
+      name: 'formAssignmentView',
       component: () => import('../views/formAssignmentView.vue')
     },
     {
@@ -68,10 +75,30 @@ const router = createRouter({
       component: () => import('../views/GenerateQrCodeView.vue')
     },
     {
+      path: '/formQRGenerator',
+      name: 'formQRGenerator',
+      component: () => import('../views/formQRGenerator.vue')
+    },
+    {
       path: '/ReasonNG',
       name: 'ReasonNG',
       component: () => import('../views/ReasonNGView.vue')
-    }
+    },
+    {
+      path: '/ItemCodeLoader',
+      name: 'ItemCodeLoader',
+      component: () => import('../views/ItemCodeLoader.vue')
+    },
+    {
+      path: '/404',
+      name: '404',
+      component: () => import('../views/404.vue')
+    },
+    {
+      path: '/TransferDeliveryDate',
+      name: 'TransferDeliveryDate',
+      component: () => import('../views/TransferDeliveryDate.vue')
+    },
   ]
 })
 

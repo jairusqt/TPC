@@ -1,59 +1,58 @@
 <template>
     <div class=" border rounded">
-        <div class="col-md-12 mx-auto justify-content-end align-items-center row sticky-top bg-light p-2 border rounded">
+        <div class="col-md-12 mx-auto justify-content-end align-items-center row sticky-top bg-light p-2 rounded">
             <div class="col-md-2">
-                <span class="navbar-brand mb-0 h1 fs-3">Tablet Process Card</span>
+                <span class="navbar-brand mb-0 h1 fs-3"><em>Tablet Process Card</em></span>
             </div>
             <div class="col-md-8 mx-auto">
-                <p class="fs-3 text-center">Form Assignment - File Attachment</p>
+                <p class="fs-4 text-center"><em><b>Form Assignment - File Attachment</b></em></p>
             </div>
             <div class="col-md-2 float-end">
                 <button @click="returnForm" class="btn btn-outline-dark float-end w-100 h-50 "> <span class="material-symbols-outlined align-bottom">keyboard_return</span> Return</button>
             </div>
-            <div class="col-md-12 mx-auto row bg-light border rounded p-3">
+            <div class="col-md-12 mx-auto row shadow-lg rounded p-3">
                 <div class="col-md-3">
-                    <p class=""><strong>Form Assignment No :</strong> {{assignment_id}}</p>
-                    <p class=""><strong>Date Created :</strong> {{date_created}}</p>
-                    <p class=""><strong>Section :</strong> {{section_code}}</p>
-                    <p class=""><strong>Parts Number :</strong> {{parts_number}}</p>
-                    
+                    <p><em><strong>Form Assignment No :</strong> {{assignment_id}}</em></p>
+                    <p><em><strong>Date Created :</strong> {{date_created}}</em></p>
+                    <p><em><strong>Section :</strong> {{section_code}}</em></p>
+                    <p><em><strong>Parts Number :</strong> {{parts_number}}</em></p>  
                 </div>
                 <div class="col-md-3">
-                    <p><strong>Lot Number :</strong> {{lot_number}}</p>
-                    <p><strong>Wafer Number From :</strong> {{wafer_number_from}}</p>
-                    <p><strong>Wafer Number To :</strong> {{wafer_number_to}}</p>
-                    <p><strong>Item Code :</strong> {{item_code}}</p>
+                    <p><em><strong>Lot Number :</strong> {{lot_number}}</em></p>
+                    <p><em><strong>Wafer Number From :</strong> {{wafer_number_from}}</em></p>
+                    <p><em><strong>Wafer Number To :</strong> {{wafer_number_to}}</em></p>
+                    <p><em><strong>Item Code :</strong> {{item_code}}</em></p>
                 </div>
                 <div class="col-md-3">
-                    <p><strong>Revision Number :</strong> {{revision_number}}</p>
-                    <p><strong>Quantity Ordered :</strong> {{quantity_ordered}}</p>
-                    <p><strong>Delivery Date :</strong> {{delivery_date}}</p>
-                    <p><strong>JO Number :</strong> {{jo_number}}</p>
+                    <p><em><strong>Revision Number :</strong> {{revision_number}}</em></p>
+                    <p><em><strong>Quantity Ordered :</strong> {{quantity_ordered}}</em></p>
+                    <p><em><strong>Delivery Date :</strong> {{delivery_date}}</em></p>
+                    <p><em><strong>JO Number :</strong> {{jo_number}}</em></p>
                 </div>
                 <div class="col-md-3">
-                    <p><strong>Date Issued :</strong> {{date_issued}}</p>
-                    <p><strong>PO Number :</strong> {{po_number}}</p>
-                    <p><strong>Assignment Status :</strong> {{assignment_status}}</p>
-                    <p><strong>Total Sub Process Count :</strong></p>
+                    <p><em><strong>Date Issued :</strong> {{date_issued}}</em></p>
+                    <p><em><strong>PO Number :</strong> {{po_number}}</em></p>
+                    <p><em><strong>Assignment Status :</strong> {{assignment_status}}</em></p>
+                    <p><em><strong>Total Sub Process Count :</strong></em></p>
                 </div>
             </div>
         </div>
         <div class="container mx-auto p-3">
-            <div class="col-md-12 row border rounded">
+            <div class="col-md-12 row rounded">
                 <template v-for="sub in sortedItem" :key="sub.SubPid">
                     <div v-if="sub.assignment_status === 'Active'" class="col-md-3 p-2" >
-                        <div class="card h-100">
-                            <button class="btn" data-bs-toggle="modal" :data-bs-target="'#file'+sub.SubPid">
-                                <span class="material-symbols-outlined border-bottom rounded text-center" style="font-size: 250px">
+                        <div class="card shadow-lg h-100">
+                            <button class="btn btn-outline-dark" data-bs-toggle="modal" :data-bs-target="'#file'+sub.SubPid">
+                                <span class="material-symbols-outlined text-center" style="font-size: 100px">
                                     folder
                                 </span>
                             </button>
                             <div class="card-body d-flex flex-column bg-light">
-                              <h5 class="card-title text-center">{{sub.sequence_number}} - {{sub.SubPname}}</h5>
-                              <button v-if="assignment_status === 'Unposted'" type="button" class="btn btn-outline-primary w-100 mx-auto mt-auto" data-bs-toggle="modal" :data-bs-target="'#file'+sub.SubPid">
+                              <b class="card-title text-center"><em>{{sub.sequence_number}} - {{sub.SubPname}}</em></b>
+                              <button v-if="assignment_status === 'Unposted'" type="button" class="btn btn-outline-dark w-100 mx-auto mt-auto" data-bs-toggle="modal" :data-bs-target="'#file'+sub.SubPid">
                                 Upload Files
                               </button>
-                              <button v-else type="button" class="btn btn-outline-primary w-100 mx-auto mt-auto" data-bs-toggle="modal" :data-bs-target="'#file'+sub.SubPid">
+                              <button v-else type="button" class="btn btn-outline-dark w-100 mx-auto mt-auto" data-bs-toggle="modal" :data-bs-target="'#file'+sub.SubPid">
                                 View Files
                               </button>
                             </div>
@@ -67,12 +66,12 @@
         <div class="modal-dialog modal-xl">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" :id="'modal'+sub.SubPid">{{sub.SubPname}}</h1>
+              <h1 class="modal-title fs-5" :id="'modal'+sub.SubPid"><em>{{sub.SubPname}}</em></h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <div class="col-md-12 mx-auto row">
-                <div v-if="assignment_status === 'Unposted'" class="col-md-12 border rounded bg-light mx-auto">
+                <div v-if="assignment_status === 'Unposted'" class="col-md-12 shadow-lg rounded mx-auto">
                         <div class="col-md-12 pt-2 text-center">
                             <span class="material-symbols-outlined" style="font-size:75px">
                                 upload
@@ -80,7 +79,7 @@
                         </div>
                         <p class="text-center">Select a file to upload.</p>
                         <div class="col-md-2 pb-5 mx-auto">
-                            <label class="btn btn-outline-primary w-100">
+                            <label class="btn btn-outline-dark w-100">
                                 Select a file <input class="d-none" type="file" @change="previewFiles(sub.SubPid)" accept=".xlsx,.xls, .png, .jpeg, .jpg, .doc, .docx,.ppt, .pptx,.pdf" multiple>    
                             </label>
                         </div>
@@ -135,6 +134,7 @@
     export default {
             data() {
             return {
+                
                 formAssignmentURL: 'http://172.16.2.13/tpc-endpoint/GetFormAssignment.php',
                 sectionURL: 'http://172.16.2.13/tpc-endpoint/GetSection.php',
                 subProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
@@ -143,6 +143,16 @@
                 itemConditionURL: 'http://172.16.2.13/tpc-endpoint/GetItemCondition.php',
                 postFormAttachments: 'http://172.16.2.13/tpc-endpoint/PostFormAttachments.php',
                 requestFormAttachment: 'http://172.16.2.13/tpc-endpoint/requestFormAttachment.php',
+
+                // formAssignmentURL: 'http://172.16.2.13/tpc-endpointDev/GetFormAssignment.php',
+                // sectionURL: 'http://172.16.2.13/tpc-endpointDev/GetSection.php',
+                // subProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetSubProcess.php',
+                // keyProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcess.php',
+                // itemURL: 'http://172.16.2.13/tpc-endpointDev/GetItem.php',
+                // itemConditionURL: 'http://172.16.2.13/tpc-endpointDev/GetItemCondition.php',
+                // postFormAttachments: 'http://172.16.2.13/tpc-endpointDev/PostFormAttachments.php',
+                // requestFormAttachment: 'http://172.16.2.13/tpc-endpointDev/requestFormAttachment.php',
+
                 formAssignment: [],
                 section: [],
                 keyProcess: [],
@@ -198,17 +208,12 @@
                     }
                 },
                 returnForm(){
-                    this.$router.push({ name: 'formAssignmentv2' });
+                    this.$router.push({ name: 'formAssignmentView', query: { assignment_id: this.assignment_id} });
                 },
                 removeFile(i){
                     this.files.splice(i, 1);
                 },
                 saveAttachments(SubPid){
-                    for(const item of this.item){
-                        if(item.SubPid === SubPid){
-                        
-                        }
-                    }
                     const toastLiveExample = document.getElementById('liveToast');
                     const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
                     let disableRemarks = false;
@@ -242,6 +247,7 @@
                                   'Content-Type': 'multipart/form-data',
                                 }
                                 }).then(response => {
+                                    console.log(response.data);
                                     if(response.data.message === 'File Attachment inserted successfully'){
                                         item.files = []
                                         if(this.$refs.remarks && Array.isArray(this.$refs.remarks)){

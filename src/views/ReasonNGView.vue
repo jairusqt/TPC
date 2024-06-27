@@ -4,9 +4,19 @@
           <h3>Tablet Process Card - <em>NG Reason</em></h3>
         </div>
         <div class="col-md-10 mx-auto row p-1">
+            <div class="col-md-6 p-1">
+                <select @change="addKeyList(section_id)" id="section" class="form-select" v-model="section_id">
+                    <option v-for="sec in section" :value="sec.section_id">{{sec.section_code}}</option>
+                </select>
+            </div>
+            <div class="col-md-6 p-1">
+                <select @change="addSubList(Pid)" id="key" class="form-select" v-model="Pid">
+                    <option v-for="key in keyProcessList" :value="key.Pid">{{key.Pname}}</option>
+                </select>
+            </div>
             <div class="col-md-5 p-1">
                 <select id="sub" class="form-select" v-model="SubPid" @change="fetchNGReason">
-                    <option v-for="sub in subProcess" :key="sub.SubPid" :value="sub.SubPid" >
+                    <option v-for="sub in subProcessList" :key="sub.SubPid" :value="sub.SubPid" >
                         {{sub.SubPname}}
                     </option>
                 </select>
@@ -90,7 +100,21 @@
         insertNGReasonURL: 'http://172.16.2.13/tpc-endpoint/PostNGReason.php',
         requestNGReasonURL: 'http://172.16.2.13/tpc-endpoint/requestNGReason.php',
         deleteNGReasonURL: 'http://172.16.2.13/tpc-endpoint/DeleteNGReason.php',
+
+        // sectionURL: 'http://172.16.2.13/tpc-endpointDev/GetSection.php',
+        // sectionPostURL: 'http://172.16.2.13/tpc-endpointDev/PostSection.php',
+        // sectionPutURL: 'http://172.16.2.13/tpc-endpointDev/PutSection.php',
+        // sectionDeleteURL: 'http://172.16.2.13/tpc-endpointDev/DeleteSection.php',
+        // keyProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcess.php',
+        // subProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetSubProcess.php',
+
+        // insertNGReasonURL: 'http://172.16.2.13/tpc-endpointDev/PostNGReason.php',
+        // requestNGReasonURL: 'http://172.16.2.13/tpc-endpointDev/requestNGReason.php',
+        // deleteNGReasonURL: 'http://172.16.2.13/tpc-endpointDev/DeleteNGReason.php',
+        
         section: [],
+        keyProcessList: [],
+        subProcessList: [],
         keyProcess: [],
         subProcess: [],
         submissionAlert: '',
@@ -99,7 +123,7 @@
         SubPid: '',
         reason: '',
 
-        // for edit and delete
+        // for edit an d delete
 
         tableOptions: { order: [[0, 'desc']]},
       } 
@@ -108,6 +132,25 @@
       
     },
     methods: {
+        addKeyList(section_id){
+            this.keyProcessList = [];
+            this.subProcessList = [];
+            this.ngReason = [];
+            for(const key of this.keyProcess){
+                if(parseInt(section_id) === parseInt(key.section_id)){
+                    this.keyProcessList.push(key);
+                }
+            }
+        },
+        addSubList(Pid){
+            this.subProcessList = [];
+            this.ngReason = [];
+            for(const sub of this.subProcess){
+                if(parseInt(Pid) === parseInt(sub.Pid)){
+                    this.subProcessList.push(sub);
+                }
+            }
+        },
         addReason(){
             const toastLiveExample = document.getElementById('liveToast');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
@@ -168,8 +211,20 @@
     },
     
     created() {
-        axios.get(this.subProcessURL, {
+        axios.get(this.sectionURL , {
+        }).then(response => {
+            this.section = response.data;
+        }).catch(error => {
+            console.log(error)
+        })
+        axios.get(this.keyProcessURL, {
 
+        }).then(response => {
+            this.keyProcess = response.data;
+        }).catch(error => {
+            console.log(error);
+        })
+        axios.get(this.subProcessURL, {
         }).then(response => {
             this.subProcess = response.data;
         }).catch(error => {

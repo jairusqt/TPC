@@ -5,14 +5,14 @@
           <h3>Tablet Process Card - <em>Setup Key Process</em></h3>
         </div>
         <div class="col-md-3 float-end">
-          <button class="btn btn-outline-info w-100 float-end" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
+          <button class="btn btn-outline-info w-100 float-end shadow" data-bs-toggle="modal" data-bs-target="#create"><span class=" align-bottom material-symbols-outlined">add</span>Create</button>
         </div>
     </div>
-    <div class="container table-responsive">
+    <div class="container table-responsive shadow rounded p-3">
         <DataTable
             :data="keyProcess"
             :columns="columns"
-            class="display table table-hover"
+            class="display table table-hover table-light shadow"
             @click="getProcess_id"
             :options="tableOptions"
         />
@@ -161,8 +161,15 @@ export default {
             KeyProcessPostURL: 'http://172.16.2.13/tpc-endpoint/PostKeyProcess.php',
             KeyProcessPutURL: 'http://172.16.2.13/tpc-endpoint/PutKeyProcess.php',
             KeyProcessDeleteURL: 'http://172.16.2.13/tpc-endpoint/DeleteKeyProcess.php',
-            
             SubProcessURL: 'http://172.16.2.13/tpc-endpoint/GetSubProcess.php',
+
+            
+            // sectionURL: 'http://172.16.2.13/tpc-endpointDev/GetSection.php',
+            // keyProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetKeyProcess.php',
+            // KeyProcessPostURL: 'http://172.16.2.13/tpc-endpointDev/PostKeyProcess.php',
+            // KeyProcessPutURL: 'http://172.16.2.13/tpc-endpointDev/PutKeyProcess.php',
+            // KeyProcessDeleteURL: 'http://172.16.2.13/tpc-endpointDev/DeleteKeyProcess.php',
+            // SubProcessURL: 'http://172.16.2.13/tpc-endpointDev/GetSubProcess.php',
 
             section: [],
             keyProcess: [],
@@ -242,7 +249,6 @@ export default {
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample);
             let dupPname = false;
             let dupKey_Code = false; 
-            console.log(this.section_id)
             for(const key of this.keyProcess){
                 if(parseInt(key.section_id) === parseInt(this.section_id)){
                     if(this.Pname.toUpperCase() === key.Pname.toUpperCase()){
@@ -370,7 +376,6 @@ export default {
         Promise.all([promise1, promise2])
         .then(response => {
             this.section = response[0].data.filter((sec) => sec.section_status === 'Active');
-            console.log(this.section);
             for(const key of response[1].data){
                 // if(key.stock_point == 0){
                 //     Object.assign(key, {stock_point_bool: 'False'});
