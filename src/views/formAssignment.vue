@@ -544,7 +544,7 @@
                                         </label>
                                     </td>
                                     <td>
-                                        <button @click="toggleAccordion(flowSub.SubPid)" class="btn btn-light">
+                                        <button @click="toggleAccordion(flowSub.SubPid)" :class="flowSub.condition_count === 0 ? 'btn btn-warning' : 'btn btn-light'">
                                             <span class="material-symbols-outlined">
                                                 {{ toggle[flowSub.SubPid]? 'expand_less' : 'expand_more' }}
                                             </span>
@@ -553,6 +553,7 @@
                                 </tr>
                                 <tr v-show="toggle[flowSub.SubPid]">
                                     <td colspan="14" :style="'background-color: '+flowSub.color">
+                                        <p>Condition Count - {{flowSub.condition_count}}</p>
                                         <div class="table-responsive bg-light border rounded shadow p-3">
                                             <table class="table table-hover">
                                                 <thead class="text-bg-primary bg-gradient">
@@ -1874,109 +1875,56 @@
                     })
                 }
             },
-            getProcessFlow(){
+            async getProcessFlow(){
                 this.processFlowSub = [];
-                this.processFlow.find((flow) => {
+                let flow = this.processFlow.find((flow) => {
                     if(parseInt(flow.section_id) === parseInt(this.section_id) && flow.item_code === this.item_code && parseInt(flow.revision_number) === parseInt(this.revision_number) && flow.flow_status === 'Posted'){
-                        axios.get(this.processFlowSubURL,{
-                            method: 'GET',
-                            headers: {
-                                'Content-type': 'application/x-www-form-urlencoded'
-                            },
-                            params: {
-                                section_id: flow.section_id,
-                                flow_main_id: flow.flow_main_id,
-                                revision_number: flow.revision_number
-                            }
-                        }).then(response => {
-                            for(const flowSub of response.data){
-                                this.subProcess.filter((sub) => {
-                                    if(parseInt(sub.SubPid) === parseInt(flowSub.SubPid)){
-                                        this.keyProcess.filter((key) => {
-                                            if(parseInt(sub.Pid) === parseInt(key.Pid)){
-                                                Object.assign(flowSub, {
-                                                    Pname: key.Pname,
-                                                    SubPname: sub.SubPname,
-                                                    process_type: sub.process_type,
-                                                    sampling: flowSub.check_sampling === "True" ? true : false,
-                                                    uncontrolled: flowSub.check_uncontrolled === "True" ? true : false,
-                                                    status: flowSub.sub_status === "Active" ? true : false,
-                                                    condition: [],
-                                                });
-                                            }
-                                        })
-                                    }
-                                }),
-                                this.processFlowSub.push(flowSub);
-                                this.processFlowSub.sort((a,b) => a.sequence_number - b.sequence_number);
-                            }
-                        }).catch(error => {
-                            console.log(error);
-                        })
-                        axios.get(this.itemConditionDetailsURL, {
-                            method: 'GET',
-                            headers: {
-                                'Content-type': 'application/x-www-form-urlencoded'
-                            },
-                            params: {
-                                flow_main_id: flow.flow_main_id
-                            }
-                        }).then(response => {
-                            this.processFlowSub.forEach(flowSub => {
-                                response.data.forEach(condition => {
-                                    if(parseInt(flowSub.SubPid) === parseInt(condition.SubPid)){
-                                        condition.with_judgement = condition.with_judgement === null ? 0 : condition.with_judgement;
-                                        condition.min_value = condition.min_value === null ? 0 : condition.min_value;
-                                        condition.max_value = condition.max_value === null ? 0 : condition.max_value;
-                                        condition.condition_status = 'Active';
-                                        flowSub.condition.push(condition)
+                        return flow;
+                    }
+                })
+                await axios.get(`http://172.16.2.13:3000/flowSub/${flow.flow_main_id}`, {
+                }).then(response =>{
+                    for(const flowSub of response.data){
+                        this.subProcess.filter((sub) => {
+                            if(parseInt(sub.SubPid) === parseInt(flowSub.SubPid)){
+                                this.keyProcess.filter((key) => {
+                                    if(parseInt(sub.Pid) === parseInt(key.Pid)){
+                                        Object.assign(flowSub, {
+                                            Pname: key.Pname,
+                                            SubPname: sub.SubPname,
+                                            process_type: sub.process_type,
+                                            sampling: flowSub.check_sampling === "True" ? true : false,
+                                            uncontrolled: flowSub.check_uncontrolled === "True" ? true : false,
+                                            status: flowSub.sub_status === "Active" ? true : false,
+                                            condition: [],
+                                        });
                                     }
                                 })
-                            })
-                            // for(const condition of response.data){
-                            //     axios.get(this.requestCondition, {
-                            //         method: 'GET',
-                            //         headers: {
-                            //             'Content-type': 'application/x-www-form-urlencoded'
-                            //         },
-                            //         params: {
-                            //             item_id: condition.item_id,
-                            //         }
-                            //     }).then(response => {
-                            //         if(response.data.length === 0){
-                            //             Object.assign(condition, {
-                            //                 condition_code: '',
-                            //                 option_value: '',
-                            //                 with_judgement: '',
-                            //                 visibility_bool: condition.visibility_status === 1 ? true : false,
-                            //                 condition_bool: condition.condition_status === 'Active' ? true : false,
-                            //             })
-                            //         }
-                            //         for(const data of response.data){                                                
-                            //             if(parseInt(condition.item_id) === parseInt(data.item_id)){
-                            //                 Object.assign(condition, {
-                            //                     condition_code: data.condition_code ? data.condition_code : '',
-                            //                     option_value: data.option_value ? data.option_value : '',
-                            //                     with_judgement: data.with_judgement ? data.with_judgement : 0,
-                            //                     visibility_bool: condition.visibility_status === 1 ? true : false,
-                            //                     condition_bool: condition.condition_status === 'Active' ? true : false,
-                            //                 })
-                            //             }
-                            //         }
-                            //     }).catch(error => {
-                            //         console.log(error)
-                            //     });
-                            //     this.processFlowSub.find(flowSub => {
-                            //         if(parseInt(flowSub.SubPid) === parseInt(condition.SubPid)){
-                            //             flowSub.condition.push(condition)
-                            //             flowSub.condition.sort((a,b) => a.sequence_number - b.sequence_number);
-                            //         }
-                            //     })
-                            // }
-                        }).catch(error => {
-                            console.log(error);
-                        })
+                            }
+                        }),
+                        this.processFlowSub.push(flowSub);
+                        this.processFlowSub.sort((a,b) => a.sequence_number - b.sequence_number);
                     }
+                }).catch(error => {
+                    console.log(error);
+                })
+                await axios.get(`http://172.16.2.13:3000/conditions/${flow.flow_main_id}`, {
+                }).then(response => {
+                    this.processFlowSub.forEach(flowSub => {
+                        response.data.forEach(condition => {
+                            if(parseInt(flowSub.SubPid) === parseInt(condition.SubPid)){
+                                condition.with_judgement = condition.with_judgement === null ? 0 : condition.with_judgement;
+                                condition.min_value = condition.min_value === null ? 0 : condition.min_value;
+                                condition.max_value = condition.max_value === null ? 0 : condition.max_value;
+                                condition.condition_status = 'Active';
+                                flowSub.condition.push(condition)
+                            }
+                        })
+                        flowSub.condition.sort((a , b) => a.sequence_number - b.sequence_number);
+                        flowSub.condition_count = flowSub.condition.length;
+                    })
+                }).catch(error => {
+                    console.log(error)
                 })
             },
         },

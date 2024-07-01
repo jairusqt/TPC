@@ -26,30 +26,51 @@
         <div class="modal-content">
           <div class="modal-header shadow">
             <h1 class="modal-title fs-5" id="exampleModalLabel">Create Process Flow</h1>
-            <div class="col-md-4 row">
-                <div class="col-md-4">
-                    <button class="btn btn-sm btn-outline-dark w-100 shadow" data-bs-dismiss="modal">Close</button>
+            <div class="col-4 row">
+                <div class="col-6">
+                    <p v-if="loader" class="text-center">Submitting Data: {{ totalProcessSubmitted }} / {{ totalProcessCount }}</p>
                 </div>
-                <div class="col-md-4">
-                    <button class="btn btn-sm btn-outline-dark w-100 shadow">Clear</button>
+                <div class="col-2">
+                    <button class="btn btn-sm w-100 btn-outline-dark shadow float-end">Clear</button>
                 </div>
-                <div class="col-md-4">
-                    <button class="btn btn-sm btn-outline-dark w-100 shadow" @click="submitFlow">Save</button>
+                <div class="col-2">
+                    <button class="btn btn-sm w-100 btn-outline-dark shadow float-end" @click="submitFlow">Save</button>
+                </div>
+                <div class="col-2">
+                    <button class="btn btn-sm shadow float-end" data-bs-dismiss="modal">
+                        <span class="material-symbols-outlined">
+                            close
+                        </span>
+                    </button>
                 </div>
             </div>
           </div>
           <div class="modal-body">
+            <div class="position-relative" v-if="loader">
+                <div class="mx-auto position-absolute top-50 start-50">
+                    <div class="spinner-grow" role="status">
+                        <span class="sr-only"></span>
+                    </div>
+                    <div class="spinner-grow" role="status">
+                      <span class="sr-only"></span>
+                    </div>
+                    <div class="spinner-grow" role="status">
+                      <span class="sr-only"></span>
+                    </div>
+                </div>
+            </div>
+        <template v-else>
             <div class="col-12 row shadow rounded p-3 mx-auto">
                 <div class="col-11"></div>
                 <div class="col-1 float-end">
                     <div class="form-check form-switch" v-if="cloning">
-                      <input class="form-check-input" type="checkbox" role="switch" id="enableCloning" @change="enableCloning">
+                      <input class="form-check-input" type="checkbox" role="switch" id="enableCloning" @change="enableCloning" :disabled="dataSaved">
                       <label class="form-check-label" for="enableCloning">Clone Flow</label>
                     </div>
                 </div>
                 <div class="col-2">
                     <label for="flow_type">Flow Type:</label>
-                    <select id="flow_type" class="form-select shadow" v-model="flow_type">
+                    <select id="flow_type" class="form-select shadow" v-model="flow_type" :disabled="dataSaved">
                         <option value="" selected disabled></option>
                         <option value="Manual">Manual</option>
                         <option value="Auto">Auto</option>
@@ -57,7 +78,7 @@
                 </div>
                 <div class="col-2">
                     <label for="section">Section:</label>
-                    <select id="section" class="form-select shadow" v-model="section_id" @change="setAccessedSection">
+                    <select id="section" class="form-select shadow" v-model="section_id" @change="setAccessedSection" :disabled="dataSaved">
                         <option value="" selected disabled></option>
                         <template v-for="s in section">
                             <option :value="s.section_id">{{ s.section_code }} - {{ s.section_description }}</option>
@@ -66,7 +87,7 @@
                 </div>
                 <div class="col-2">
                     <label for="item_code">Item Code:</label>
-                    <select id="item_code" class="form-select shadow" v-model="item_code" @change="getFlow">
+                    <select id="item_code" class="form-select shadow" v-model="item_code" @change="getFlow" :disabled="dataSaved">
                         <option value="" selected disabled></option>
                         <template v-for="item in itemMaster">
                             <option :value="item.item_code">{{ item.item_code }}</option>
@@ -100,7 +121,7 @@
                     </div>
                     <div class="col-2">
                         <label for="">Source Item Code:</label>
-                        <select name="" id="" class="form-select shadow" v-model="sourceItemCode"> 
+                        <select name="" id="" class="form-select shadow" v-model="sourceItemCode" @change="setCloneRevision"> 
                             <option value="" selected disabled></option>
                             <template v-for="item in itemMaster">
                                 <option :value="item.item_code">{{ item.item_code }}</option>
@@ -109,10 +130,10 @@
                     </div>
                     <div class="col-2">
                         <label for="">Source Revision Number:</label>
-                        <select name="" id="" class="form-select shadow" v-model="sourceRevisionCode"> 
+                        <select name="" id="" class="form-select shadow" v-model="sourceRevisionNumber" @change="getClone"> 
                             <option value="" selected disabled></option>
-                            <template v-for="item in itemMaster">
-                                <option :value="item.item_code">{{ item.item_code }}</option>
+                            <template v-for="source in sourceRevisionList">
+                                <option :value="source.revision_number">{{ source.revision_number }}</option>
                             </template>
                         </select>
                     </div>
@@ -134,14 +155,17 @@
                 </div>
                 <div class="col-2">
                     <label for="encoded_by">Encoded By:</label>
-                    <input id="encoded_by" type="text" class="form-control shadow" v-model="encoded_by">
+                    <input id="encoded_by" type="text" :class="encodedByValidation === true ? 'form-control shadow is-invalid' : 'form-control shadow'" v-model="encoded_by" :disabled="dataSaved">
+                    <div class="invalid-feedback">
+                        Please fill this up!
+                    </div>
                 </div>
                 <div class="col-6">
                     <label for="remarks">Remarks:</label>
-                    <textarea id="remarks" class="form-control shadow" v-model="remarks"></textarea>
-                </div>
-                <div class="p-3">
-                    <button class="btn btn-outline-dark btn-sm float-end shadow" @click="setReorder" data-bs-target="#reorder" data-bs-toggle="modal">Reorder</button>
+                    <textarea id="remarks" :class="remarksValidation === true ? 'form-control shadow is-invalid' : 'form-control shadow'" v-model="remarks" :disabled="dataSaved"></textarea>
+                    <div class="invalid-feedback">
+                        Please fill this up!
+                      </div>
                 </div>
             </div>
             <div class="col-12 row shadow rounded p-2 mx-auto">
@@ -184,7 +208,7 @@
                                         <small>{{ key.sequence_number }}</small>
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control form-control-sm" v-model="key.operation_number">
+                                        <input type="number" class="form-control form-control-sm" v-model="key.operation_number" :disabled="dataSaved">
                                     </td>
                                     <td>
                                         <select v-if="key.section_id === ''" class="form-select form-select-sm" v-model="key.section_id" @change="setSectionCode">
@@ -407,91 +431,14 @@
                                 </tr>
                             </template>
                         </tbody>
-                        <tbody>
-                            <tr>
-                                <td colspan="12"></td>
-                                <td colspan="2">
-                                    <button class="btn btn-sm btn-outline-dark w-100">
-                                        View
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
                     </table>
                 </div>
             </div>
+        </template>
           </div>
         </div>
       </div>
     </div>
-
-      <div class="modal fade" id="reorder" aria-hidden="true" aria-labelledby="reorder" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="reorder">Reorder</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <div class="row mx-auto shadow-lg">
-                <div class="col-4 shadow border">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Sequence Number</th>
-                                <th>Key Process</th>
-                                <th>Edit Sequence</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-for="(k, index) in tempKey">
-                                <tr>
-                                    <td>
-                                        <input v-if="k.edit === true" @keyup.enter="reSequence(k.Pid, k.sequence_number)" type="number" class="form-control form-control-sm" v-model="k.sequence_number">
-                                         <p v-else>{{ k.sequence_number }}</p>
-                                    </td>
-                                    <td>{{ k.Pname }}</td>
-                                    <td> 
-                                        <button :id="'k-'+index" class="btn btn-sm w-100"  @click="editSequence(k.Pid, k.sequence_number)">
-                                            <span class="material-symbols-outlined fs-6"> 
-                                                edit
-                                            </span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-8 shadow border">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Sequence Number</th>
-                                <th>Parent Sequence</th>
-                                <th>Sub Process</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-for="s in tempSub">
-                                <tr>
-                                    <td>{{ s.sequence_number }}</td>
-                                    <td>{{ s.parent_sequence }}</td>
-                                    <td>{{ s.SubPname }}</td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-dark" @click="Sync">Sync</button>
-                <button class="btn btn-primary" data-bs-target="#createProcessFlow" data-bs-toggle="modal">Back to first</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
     <div class="modal fade" id="error" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog">
@@ -621,8 +568,6 @@ export default {
             // SubProcessPostRequest:  'http://localhost:3000/insertSubFlow',
             // ConditionProcessPostRequest: 'http://localhost:3000/insertConditionFlow',
 
-           
-
 
             flow_status: 'Unposted',
             flow_type: 'Manual',
@@ -648,12 +593,23 @@ export default {
 
             sectionOptions: [],
 
+            sourceSection: '',
+            sourceItemCode: '',
+            sourceRevisionNumber: '',
+            sourceRevisionList: [],
+
+            encodedByValidation: false,
+            remarksValidation: false,
+
+            dataSaved: false,
+
             connect_err: false,
 
             processFlow:[],
             tableOptions: {
                 order: [[0, 'desc']]
             },
+            loader: false,
             cloning: false,
             cloningSwitch: false,
             columns: [
@@ -689,6 +645,29 @@ export default {
             if(this.cloningSwitch){
                 this.clearFlow();
             }
+        },
+        setCloneRevision(){
+            this.sourceRevisionList = [];
+            if(this.sourceSection === ''){
+                prompt('Missing Section');
+                this.sourceItemCode = '';
+            } else {
+                this.processFlow.find(flow => {
+                    if(parseInt(flow.section_id) === parseInt(this.sourceSection) && flow.item_code === this.sourceItemCode){
+                        this.sourceRevisionList.push(flow)
+                    }
+                })
+            }
+        },
+        getClone(){
+            this.keyProcessFlow = [];
+            this.subProcessFlow = [];
+            this.processConditionCount = 0;
+            this.processFlow.find((f) => {
+                if(parseInt(f.section_id) === parseInt(this.sourceSection) && f.item_code === this.sourceItemCode && parseInt(f.revision_number) === parseInt(this.sourceRevisionNumber)){
+                    this.fetchFlowDetails(f.flow_main_id)                        
+                }
+            })
         },
         viewing(event){
             if(event.target.tagName == 'BUTTON'){
@@ -729,7 +708,8 @@ export default {
             this.keyProcessFlow.sort((a,b) => a.sequence_number - b.sequence_number);
             this.subProcessFlow.sort((a,b) => a.sequence_number - b.sequence_number);
         },
-        submitFlow(){
+        async submitFlow() {
+            this.loader = true;
             this.conProcessFlow = [];
             let flow_main_id = '';
             let main = {
@@ -744,32 +724,54 @@ export default {
                 date_encoded: this.date_encoded,
                 flow_type: this.flow_type,
                 sub_process_count: this.subProcessCount,
-            }
+            };
+        
             this.subProcessFlow.forEach(s => {
-                for(const c of s.condition){
-                    this.conProcessFlow.push(c)
+                for (const c of s.condition) {
+                    this.conProcessFlow.push(c);
                 }
-            })
+            });
+        
             this.totalProcessCount = this.keyProcessCount + this.subProcessCount + this.processConditionCount;
-            axios.post(this.MainProcessPostRequest, main).then(response => {
-                if(response.status === 200 && response.data.message === "Process Flow Main inserted successfully"){            
-                    flow_main_id = response.data.flow_main_id;
-                        let submit = async (flow_main_id) => {
-                            let myModal = new bootstrap.Modal(document.getElementById("error"))
-                            myModal.show();
-                            await this.submitKey(flow_main_id);
-                            await this.submitSub(flow_main_id)
-                            await this.submitCondition(flow_main_id);
-                        }
-                        submit(flow_main_id);
+        
+            if (this.encoded_by === '') {
+                this.encodedByValidation = true;
+            } else if (this.remarks === '') {
+                this.remarksValidation = true;
+            } else {
+                try {
+                    const response = await axios.post(this.MainProcessPostRequest, main);
+                    if (response.status === 200 && response.data.message === "Process Flow Main inserted successfully") {
+                        flow_main_id = response.data.flow_main_id;
+                        await this.submitKey(flow_main_id);
+                        await this.submitSub(flow_main_id);
+                        await this.submitCondition(flow_main_id);
+                        this.section.find(s => {
+                            if(parseInt(s.section_id) === parseInt(this.section_id)){
+                                this.processFlow.push({
+                                    flow_main_id: flow_main_id,
+                                    item_parts_number: this.item_parts_number,
+                                    item_code: this.item_code,
+                                    item_description: this.item_description,
+                                    section_id: this.section_id,
+                                    section_code: s.section_code,
+                                    revision_number: this.revision_number,
+                                    flow_status: this.flow_status,
+                                    flow_remarks: this.remarks,
+                                    encoded_by: this.encoded_by,
+                                    date_encoded: this.date_encoded,
+                                    flow_type: this.flow_type,
+                                    sub_process_count: this.subProcessCount,
+                                })
+                            }
+                        })
                     }
-            }).catch(error => {
-                if(error.message === 'Network Error'){
-                    let myModal = new bootstrap.Modal(document.getElementById("error"))
-                    myModal.show();
+                } catch (error) {
+                   console.log(error)
                 }
-            })
-            
+            }
+            this.dataSaved = true;
+            this.loader = false;
         },
 
         async submitKey(flow_main_id){
@@ -787,7 +789,6 @@ export default {
                         machine_time: k.machine_time,
                         item_code: this.item_code,   
                     })
-                    console.log(response.data)
                     if(response.data.message === 'Process Flow Key inserted successfully' && response.status === 200){
                         this.totalProcessSubmitted++;
                     }
@@ -824,14 +825,11 @@ export default {
                         with_quantity: s.with_quantity,
                         condition_process_count: s.condition_process_count
                     })
-                    console.log(response.data)
                     if(response.data.message === 'Process Flow Sub inserted successfully' && response.status === 200){
                         this.totalProcessSubmitted++;
                     }
                } catch (error) {
-                    if(error.message === 'Network Error'){
-                        window.prompt('NETWORK ERROR')
-                    }
+                    console.log(error)
                }
             }
         },
@@ -861,7 +859,6 @@ export default {
                         eng_db_username: c.eng_db_username,
                         eng_db_password: c.eng_db_password
                     })
-                    console.log(response.data)
                     if(response.data.message === 'Process Flow Condition inserted successfully' && response.status === 200){
                         this.totalProcessSubmitted++;
                     }
@@ -888,93 +885,6 @@ export default {
                     myModal.show();
                 }
             }
-        },
-        editSequence(Pid, sequence_number){
-            let sequence = 1;
-            this.tempKey.map((k, index) => {
-                document.getElementById(`k-${index}`).disabled = true;
-            });
-            this.tempKey.filter(k => {
-                if(parseInt(k.sequence_number) !== parseInt(sequence_number)){
-                    k.sequence_number = sequence;
-                    sequence++
-                } else {
-                    k.edit = true;
-                    k.sequence_number = 0;
-                }
-            })
-            this.tempKey.sort((a,b) => a.sequence_number - b.sequence_number);
-        },
-        reSequence(Pid, sequence_number){
-            if(sequence_number > 0 && sequence_number <= this.tempKey.length && sequence_number !== ''){
-                this.tempKey.find(k => {
-                    if(parseInt(Pid) === parseInt(k.Pid) && parseInt(sequence_number) === parseInt(k.sequence_number)){
-                        k.edit = false;
-                    }
-                })
-                this.tempKey.filter((k, index) => {
-                    if(sequence_number <= k.sequence_number && index !== 0){
-                      k.sequence_number += 1;
-                    }
-                })
-                this.tempKey.sort((a,b) => a.sequence_number - b.sequence_number);
-                this.tempKey.map((k, index) => {
-                    document.getElementById(`k-${index}`).disabled = false;
-                })
-            }
-            this.reArrangeSub();
-        },
-        async reArrangeSub(){
-            let newSubSet = [];
-            for(const k of this.tempKey){
-                await axios.get(this.requestSubURL,{
-                    method: 'GET',
-                    headers: {
-                        'Content-type': 'application/x-www-form-urlencoded'
-                    },
-                    params: {
-                        Pid: k.Pid    
-                    }
-                }).then(response => {
-                    for(const s of response.data){
-                        newSubSet.push({
-                            Pid: s.Pid,
-                            SubPid: s.SubPid,
-                            SubPname: s.SubPname,
-                            parent_sequence: k.sequence_number,
-                            sequence: s.sequence_number
-                        })
-                    }
-                }).catch(error => {
-                    console.log(error)
-                })
-            }
-            let sequence_no = 1;
-            for(const s of newSubSet){
-                s.sequence_number = sequence_no;
-                sequence_no++;
-            }
-            console.log(newSubSet);
-            this.tempSub = newSubSet;
-        },
-        setReorder(){
-            this.tempKey = this.keyProcessFlow.map(k => {
-                return {
-                    Pid: k.Pid,
-                    sequence_number: k.sequence_number,
-                    Pname: k.Pname,
-                    edit: false
-                }
-            })
-            this.tempSub = this.subProcessFlow.map(s => {
-                return {
-                    Pid: s.Pid,
-                    SubPid: s.SubPid,
-                    sequence_number: s.sequence_number,
-                    parent_sequence: s.parent_sequence,
-                    SubPname: s.SubPname,
-                }
-            })
         },
         async removeKey(index, Pid, p_sequence){
             this.subProcessFlow.find(s => {
@@ -1142,7 +1052,6 @@ export default {
             this.item_parts_number = '';
             this.item_description = '';
             this.revision_number = '';
-            this.date_encoded = '';
             this.encoded_by = '';
             this.remarks = '';
             this.keyProcessFlow = [];

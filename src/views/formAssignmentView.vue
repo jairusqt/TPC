@@ -433,7 +433,7 @@ ng<template>
                             </span>
                         </td>
                         <td>
-                            <button @click="toggleAccordion(i.SubPid)" class="btn btn-light">
+                            <button @click="toggleAccordion(i.SubPid)" :class="i.condition_count === 0 ? 'btn btn-warning' : 'btn btn-light'">
                                 <span class="material-symbols-outlined">
                                     {{ toggle[i.SubPid]? 'expand_less' : 'expand_more' }}
                                 </span>
@@ -442,7 +442,33 @@ ng<template>
                     </tr>
                     <tr v-show="toggle[i.SubPid]">
                         <td colspan="12">
-                            <div class="table-responsive border rounded shadow">
+                            <p>Condition Count - {{i.condition_count}}</p>
+                            <div class="text-end">
+                                <button class="btn btn-outline-dark btn-sm m-1" @click="refetchConditions(i.SubPid)" :id="'sync-'+i.SubPid">
+                                    <span class="material-symbols-outlined align-bottom">
+                                        sync
+                                    </span>
+                                </button>
+                                <button class="btn btn-outline-dark btn-sm m-1" @click="saveConditions(i.SubPid)" :id="'save-'+i.SubPid" disabled>
+                                    <span class="material-symbols-outlined align-bottom">
+                                        save
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="text-center" v-if="conditionLoader">
+                                <div class="mx-auto">
+                                    <div class="spinner-grow" role="status">
+                                        <span class="sr-only"></span>
+                                    </div>
+                                    <div class="spinner-grow" role="status">
+                                      <span class="sr-only"></span>
+                                    </div>
+                                    <div class="spinner-grow" role="status">
+                                      <span class="sr-only"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive border rounded shadow" v-else>
                                 <table class="table shadow table-hover">
                                     <thead class="text-bg-primary bg-gradient">
                                         <tr>
@@ -538,51 +564,53 @@ ng<template>
                     </tr>
                     <tr v-show="toggle[i.SubPid]">
                         <td colspan="12">
-                            <div class="table-responsive border rounded shadow">
-                                <table class="table shadow table-hover">
-                                    <thead class="text-bg-primary bg-gradient">
-                                        <tr>
-                                            <th><em><small>Sequence No.</small></em></th>
-                                            <th><em><small>Process Detail Description</small></em></th>
-                                            <th><em><small>Typical Value</small></em></th>
-                                            <th><em><small>Minimum Value</small></em></th>
-                                            <th><em><small>Maximum Value</small></em></th>
-                                            <th><em><small>Visibility Status</small></em></th>
-                                            <th><em><small>Condition Status</small></em></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="table-light">
-                                        <template v-for="c in i.itemCondition" :key="c.condition_item_id">
+                            <template>
+                                <div class="table-responsive border rounded shadow">
+                                    <table class="table shadow table-hover">
+                                        <thead class="text-bg-primary bg-gradient">
                                             <tr>
-                                                <td>{{c.sequence_number}}.</td>
-                                                <td><em><b>{{c.detail_description}}</b></em></td>
-                                                <td><em><b><u>{{c.typical_value}}</u></b></em></td>
-                                                <td>{{c.min_value}}</td>
-                                                <td>{{c.max_value}}</td>
-                                                <td>
-                                                    <!-- <div class="form-check form-switch">
-                                                        <input class="form-check-input" type="checkbox" role="switch" :checked="c.visibility_status_checked" disabled>
-                                                    </div> -->
-                                                    <span :class="c.visibility_status_checked === true ? 'badge text-bg-primary mx-auto' : 'badge text-bg-secondary'">
-                                                        {{i.visibility_status_checked === true ? 'Visible' : 'Not Visible'}}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <div class="form-check form-switch">
-                                                        <!-- <input class="form-check-input" :id="'condition_status'+c.condition_item_id" type="checkbox" role="switch" :checked="c.condition_status_checked" disabled>
-                                                        <label :for="'condition_status'+c.condition_item_id">
-                                                            
-                                                        </label> -->
-                                                        <span :class="c.condition_status === 'Active' ? 'badge text-bg-success' : 'badge text-bg-secondary'">
-                                                            {{c.condition_status}}
-                                                        </span>
-                                                    </div>
-                                                </td>
+                                                <th><em><small>Sequence No.</small></em></th>
+                                                <th><em><small>Process Detail Description</small></em></th>
+                                                <th><em><small>Typical Value</small></em></th>
+                                                <th><em><small>Minimum Value</small></em></th>
+                                                <th><em><small>Maximum Value</small></em></th>
+                                                <th><em><small>Visibility Status</small></em></th>
+                                                <th><em><small>Condition Status</small></em></th>
                                             </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody class="table-light">
+                                            <template v-for="c in i.itemCondition" :key="c.condition_item_id">
+                                                <tr>
+                                                    <td>{{c.sequence_number}}.</td>
+                                                    <td><em><b>{{c.detail_description}}</b></em></td>
+                                                    <td><em><b><u>{{c.typical_value}}</u></b></em></td>
+                                                    <td>{{c.min_value}}</td>
+                                                    <td>{{c.max_value}}</td>
+                                                    <td>
+                                                        <!-- <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" :checked="c.visibility_status_checked" disabled>
+                                                        </div> -->
+                                                        <span :class="c.visibility_status_checked === true ? 'badge text-bg-primary mx-auto' : 'badge text-bg-secondary'">
+                                                            {{i.visibility_status_checked === true ? 'Visible' : 'Not Visible'}}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <!-- <input class="form-check-input" :id="'condition_status'+c.condition_item_id" type="checkbox" role="switch" :checked="c.condition_status_checked" disabled>
+                                                            <label :for="'condition_status'+c.condition_item_id">
+                                                                
+                                                            </label> -->
+                                                            <span :class="c.condition_status === 'Active' ? 'badge text-bg-success' : 'badge text-bg-secondary'">
+                                                                {{c.condition_status}}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>   
+                            </template>
                         </td>
                     </tr>
                 </template>
@@ -714,6 +742,8 @@ ng<template>
                 DeleteFormURL: 'http://172.16.2.13/tpc-endpoint/DeleteForm.php',
                 DeleteItemURL: 'http://172.16.2.13/tpc-endpoint/DeleteItem.php',
                 DeleteItemConditionURL: 'http://172.16.2.13/tpc-endpoint/DeleteItemCondition.php',
+                DeleteItemConditionBySubPidURL: 'http://172.16.2.13/tpc-endpoint/DeleteItemConditionBySubPid.php',
+
     
                 CCILotRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCILotRequest.php',
                 CCIPoRequestURL: 'http://172.16.2.13/tpc-endpoint/HandleCCIPoRequest.php',
@@ -844,6 +874,8 @@ ng<template>
                 hasAttachment: 0,
                 hasInstruction: 0,
                 
+                conditionLoader: false,
+
                 submitting: false,
 
                 itemLoader: 0,
@@ -870,6 +902,82 @@ ng<template>
             
         },
         methods: {
+            async refetchConditions(SubPid){
+                try {
+                // Simulate axios.post call
+                await axios.post(this.DeleteItemConditionBySubPidURL, {
+                    assignment_id: this.assignment_id,
+                    SubPid: SubPid
+                });
+                let flow = this.processFlow.find(p => {
+                    if (parseInt(this.section_id) === parseInt(p.section_id) && this.item_code === p.item_code && parseInt(this.revision_number) === parseInt(p.revision_number)){
+                        return p;
+                    }
+                })
+
+                const response = await axios.get(`http://172.16.2.61:8000/api/getProcessFlowConditionBySubPid/${flow.flow_main_id}/${SubPid}`);
+                
+                this.item.find(i => {
+                    if (parseInt(i.SubPid) === parseInt(SubPid)) {
+                        i.itemCondition = [];
+                        i.condition_count = 0;
+                        response.data.find(c => {
+                            if (parseInt(c.SubPid) === parseInt(SubPid)) {
+                                c.with_judgement = c.with_judgement === null ? 0 : c.with_judgement;
+                                c.min_value = c.min_value === null ? 0 : c.min_value;
+                                c.max_value = c.max_value === null ? 0 : c.max_value;
+                                c.condition_status = 'Active';
+                                i.itemCondition.push(c);
+                            }
+                        });
+                        i.condition_count = i.itemCondition.length;
+                        i.itemCondition.sort((a, b) => a.sequence_number - b.sequence_number);
+                    }
+                });
+                document.getElementById(`sync-${SubPid}`).disabled = true;
+                document.getElementById(`save-${SubPid}`).disabled = false;
+                this.conditionLoader = false;
+            } catch (error) {
+                console.log(error);
+            }
+            },  
+            async saveConditions(SubPid){
+                try {
+                    this.conditionLoader = true;
+                    const promises = [];
+
+                    this.item.find(i => {
+                        if (parseInt(i.SubPid) === parseInt(SubPid)) {
+                            for (const itemCondition of i.itemCondition) {
+                                const promise = axios.post(this.itemConditionPostURL, {
+                                    assignment_id: this.assignment_id,
+                                    item_id: itemCondition.item_id,
+                                    sequence_number: itemCondition.sequence_number,
+                                    SubPid: itemCondition.SubPid,
+                                    detail_description: itemCondition.detail_description,
+                                    field_type: itemCondition.field_type,
+                                    min_value: itemCondition.min_value,
+                                    max_value: itemCondition.max_value,
+                                    typical_value: itemCondition.typical_value,
+                                    condition_code: itemCondition.condition_code,
+                                    option_value: itemCondition.option_value,
+                                    with_judgement: itemCondition.with_judgement,
+                                    visibility_status: itemCondition.visibility_status,
+                                    condition_status: itemCondition.condition_status
+                                });
+                                promises.push(promise);
+                            }
+                        }
+                    });
+                
+                    // Wait for all axios.post requests to complete
+                    await Promise.all(promises);
+                    document.getElementById(`save-${SubPid}`).disabled = true;
+                    this.conditionLoader = false;
+                } catch (error) {
+                    console.log(error);
+                }
+            },
             showHidden(){
                 this.showHiddenSubs = !this.showHiddenSubs
             },
@@ -1051,7 +1159,7 @@ ng<template>
             
         async created() {
             this.assignment_id = parseInt(this.$route.query.assignment_id);
-            console.log(this.assignment_id)
+            
             await axios.get(this.sectionURL, {}).
             then(response => {
                 this.section = response.data;
@@ -1091,7 +1199,6 @@ ng<template>
                     assignment_id: this.assignment_id
                 }
             }).then(response => {
-                console.log(response.data)
                 this.formAssignment = response.data;
                 for(const fa of this.formAssignment){
                     for(const sec of this.section){
@@ -1151,9 +1258,8 @@ ng<template>
             }).catch(error => {
                 console.log(error)
             })
-            console.log(this.section_id)
+
             this.flow = this.processFlow.find(flow => parseInt(flow.section_id) === parseInt(this.section_id) && flow.item_code === this.item_code && parseInt(flow.revision_number) === parseInt(this.revision_number) && flow.flow_status === 'Posted');
-            console.log(this.flow)
             this.flow_main_id = this.flow.flow_main_id === null ? '' : this.flow.flow_main_id;
 
             await axios.get(this.processFlowSubURL,{
@@ -1209,6 +1315,8 @@ ng<template>
                         item.itemCondition.push(condition);
                     }
                 })
+                item.itemCondition.sort((a,b) => a .sequence_number - b.sequence_number)
+                item.condition_count = item.itemCondition.length;
             }
             switch(this.section_code){
                 case 'CWP':

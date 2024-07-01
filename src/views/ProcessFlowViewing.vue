@@ -1,6 +1,16 @@
 
 <template>
+    
     <div class="row shadow mx-auto bg-light p-1">
+        <div class="col-11">
+        </div>
+        <div class="col-1 float-end">
+            <button class="btn btn-outline-dark btn-sm float-end" id="delete" @click="DestroyFlow(flow_main_id)" :disabled="flow_status === 'Posted'">
+                <span class="material-symbols-outlined align-bottom">
+                    delete
+                </span>
+            </button> 
+        </div>
         <div class="col-1 p-1">
             <label for="">Flow ID:</label>
             <input type="text" class="form-control" v-model="flow_main_id" disabled>
@@ -55,21 +65,20 @@
             <label for="" class="fs-6">Remarks:</label>
             <textarea  name="" id="" class="form-control" v-model="remarks" disabled></textarea>
         </div>
-        <div class="col-4 row">
-            <div class="col-4"><span class="badge text-bg-dark">Key Count - {{key.length}}</span></div>
-            <div class="col-4"><span class="badge text-bg-dark">Sub Count - {{sub.length}}</span></div>
-            <div class="col-4"><span class="badge text-bg-dark">Condition Count - {{condition_count}}</span></div>
-        </div>
-        <div class="col-5"></div>
-        <div class="col-1 p-3">
-            <button class="btn btn-outline-dark w-100 btn-sm" id="fs" @click="fetchMissingSub" data-bs-target="#fetchMissingSub" data-bs-toggle="modal" :disabled="flow_status === 'Posted'">Fetch Sub</button> 
-        </div>
-        <div class="col-1 p-3">
-            <button class="btn btn-outline-dark w-100 btn-sm" id="ro" @click="setReorder" data-bs-target="#reorder" data-bs-toggle="modal" :disabled="flow_status === 'Posted'">Reorder</button> 
-        </div>
-        <div class="col-1 p-3">
-            <button class="btn btn-outline-dark w-100 btn-sm" id="delete" @click="DestroyFlow(flow_main_id)" :disabled="flow_status === 'Posted'">Delete</button> 
-        </div>
+       <div class="float-end">
+        <button class="btn btn-outline-dark btn-sm float-end m-2" id="fs" @click="fetchMissingSub" data-bs-target="#fetchMissingSub" data-bs-toggle="modal" :disabled="flow_status === 'Posted'">
+            Fetch Missing Sub
+            <span class="material-symbols-outlined align-bottom">
+                rule
+            </span>
+        </button> 
+        <button class="btn btn-outline-dark btn-sm float-end m-2" id="ro" @click="setReorder" data-bs-target="#reorder" data-bs-toggle="modal" :disabled="flow_status === 'Posted'">
+            Reorder
+            <span class="material-symbols-outlined align-bottom">
+                sync
+            </span>
+        </button> 
+       </div>
     </div>
    <div class="position-relative" v-if="loader">
     <div class="mx-auto position-absolute top-50 start-50">
@@ -86,6 +95,7 @@
    </div>
     <div class="row mx-auto border shadow-lg" v-else>
         <div class="table-responsive col-4 shadow-lg bg-light">
+            <span class="badge text-bg-dark">Key Count - {{key.length}}</span>
             <table class="table rounded">
                 <thead>
                     <tr>
@@ -94,6 +104,7 @@
                         <th>Section</th>
                         <th>Key Code</th>
                         <th>Key Process</th>
+                        <th></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -104,7 +115,7 @@
                         <td>
                             <input v-if="k.keyEditable" type="number" class="form-control" v-model="k.operation_number" @keyup.enter="updateKey(k.Pid, k.sequence_number)">
                             <input v-if="k.operation_number === '' || k.Pid === ''" type="number" class="form-control" v-model="k.operation_number">
-                            <p v-else>{{ k.operation_number }}</p>
+                            <p v-if="!k.keyEditable">{{ k.operation_number }}</p>
                         </td>
                         <td>
                             <select v-if="k.section_id === ''" v-model="k.section_id" class="form-select" @change="selectSection(k.sequence_number)">
@@ -148,10 +159,12 @@
                     </tr>
                   </template>
                     <tr>
-                        <td colspan="6"></td>
+                        <td colspan="5"></td>
                         <td colspan="2">
-                            <button id="addProcess" class="btn btn-outline-dark btn-sm w-100" @click="addKey" :disabled="flow_status === 'Posted'">
-                                Add Process
+                            <button id="addProcess" class="btn btn-outline-dark btn-sm w-100 shadow" @click="addKey" :disabled="flow_status === 'Posted'">
+                                <span class="material-symbols-outlined">
+                                    add
+                                </span>
                             </button>
                         </td>
                     </tr>
@@ -159,6 +172,8 @@
             </table>
         </div>
         <div class="table-responsive col-8 shadow-lg bg-light">
+            <span class="badge text-bg-dark">Sub Count - {{sub.length}}</span>
+            <span class="badge text-bg-dark">Condition Count - {{condition_count}}</span>
             <table class="table rounded">
                 <thead>
                     <tr>
@@ -364,7 +379,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div v-else class="table table-responsive border-1 border border-primary rounded" >
+                                <div v-else class="table table-responsive border-1 border border-primary rounded shadow" >
                                     <table class="table">
                                         <thead>
                                             <tr>
@@ -506,10 +521,13 @@
                         </tr>
                     </template>
                     <tr>
-                        <td colspan="14"></td>
-                        <td colspan="2">
+                        <td colspan="12"></td>
+                        <td colspan="4">
                             <button class="btn btn-sm btn-outline-dark w-100" @click="removeHiddenSubs" :disabled="flow_status === 'Posted'">
                                 Confirm Sub Removal
+                                <span class="material-symbols-outlined align-bottom">
+                                    check_circle
+                                </span>
                             </button>
                         </td>
                     </tr>
@@ -525,7 +543,21 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <div class="row mx-auto shadow-lg">
+
+              <div class="position-relative" v-if="loader">
+                  <div class="mx-auto position-absolute top-50 start-50">
+                      <div class="spinner-grow" role="status">
+                          <span class="sr-only"></span>
+                      </div>
+                      <div class="spinner-grow" role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                      <div class="spinner-grow" role="status">
+                        <span class="sr-only"></span>
+                      </div>
+                  </div>
+              </div>
+              <div class="row mx-auto shadow-lg" v-else>
                 <div class="col-4 shadow border">
                     <table class="table">
                         <thead>
@@ -1426,6 +1458,7 @@ export default {
             this.tempKey.sort((a,b) => a.sequence_number - b.sequence_number);
         },
         reSequence(Pid, sequence_number){
+        this.loader = true;
             if(sequence_number > 0 && sequence_number <= this.tempKey.length && sequence_number !== ''){
                 this.tempKey.find(k => {
                     if(parseInt(Pid) === parseInt(k.Pid) && parseInt(sequence_number) === parseInt(k.sequence_number)){
@@ -1474,11 +1507,12 @@ export default {
                 s.sequence_number = sequence_no;
                 sequence_no++;
             }
-            console.log(newSubSet);
             this.tempSub = newSubSet;
             document.getElementById('Sync').disabled = false;
+            this.loader = false;
         },
         async Sync(){
+            this.loader = true;
             let keyFlow = [];
             let subFlow = [];
 
@@ -1503,9 +1537,9 @@ export default {
             this.key.sort((a,b) => a.sequence_number - b.sequence_number);
             this.sub.sort((a,b) => a.sequence_number - b.sequence_number);
             await this.saveFlowSequence();
+            await this.removeHiddenSubs();
         },
         async removeKey(index, Pid, p_sequence){
-            this.loader = true
             let Pos = this.sub.findIndex(sub => parseInt(sub.Pid) === parseInt(Pid) && parseInt(sub.parent_sequence) === parseInt(p_sequence));
             let Span = this.sub.filter(sub => parseInt(sub.Pid) === parseInt(Pid) && parseInt(sub.parent_sequence) === parseInt(p_sequence)).length;
             await this.removeFlowSequence(index, Pos, Span, Pid);
@@ -1550,58 +1584,37 @@ export default {
                 }
             }
         },  
-        async removeConSequence(Pos, Span){
-            let sub = this.sub.splice(Pos, Span);
-            sub.forEach(async (s) => {
-               
+        async saveFlowSequence(){
+            this.key.forEach(async (k) => {
+                try {
+                    let res1 = await axios.put(this.updateKeySequenceURL, {
+                        flow_main_id: this.flow_main_id,
+                        flow_key_id: k.flow_key_id,
+                        Pid: k.Pid,
+                        sequence_number: k.sequence_number
+                    })
+                } catch (error) {
+                    console.log(error);
+                }
             })
-        },
-        async saveFlowSequence() {
-            try {
-                await Promise.all(this.key.map(async (k) => {
-                    try {
-                        const res1 = await axios.put(this.updateKeySequenceURL, {
-                            flow_main_id: this.flow_main_id,
-                            flow_key_id: k.flow_key_id,
-                            Pid: k.Pid,
-                            sequence_number: k.sequence_number
-                        });
-                        console.log(res1.data);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                }));
-            
-                await Promise.all(this.sub.map(async (s) => {
-                    try {
-                        const res2 = await axios.put(this.updateSubSequenceURL, {
-                            flow_main_id: this.flow_main_id,
-                            flow_sub_id: s.flow_sub_id,
-                            SubPid: s.SubPid,
-                            sequence_number: s.sequence_number,
-                            parent_sequence: s.parent_sequence
-                        });
-                        console.log(res2.data);
-                    
-                        const res3 = await axios.put(this.updateConSequenceURL, {
-                            flow_main_id: this.flow_main_id,
-                            SubPid: s.SubPid,
-                            parent_sequence: s.parent_sequence
-                        });
-                        console.log(res3.data);
-                    } catch (error) {
-                        console.error(error);
-                    }
-                }));
-            } catch (error) {
-                console.error(error);
-            } finally {
-                this.loader = false;
-            }
-        },
-
-        removeProcess(){
-            
+            this.sub.forEach(async (s) => {
+                try {
+                    let res2 = await axios.put(this.updateSubSequenceURL, {
+                        flow_main_id: this.flow_main_id,
+                        flow_sub_id: s.flow_sub_id,
+                        SubPid: s.SubPid,
+                        sequence_number: s.sequence_number,
+                        parent_sequence: s.parent_sequence
+                    })
+                    const res3 = await axios.put(this.updateConSequenceURL, {
+                        flow_main_id: this.flow_main_id,
+                        SubPid: s.SubPid,
+                        parent_sequence: s.parent_sequence
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
+            })
         },
         ToggleView(id){
             this.viewToggle[id] = !this.viewToggle[id];
