@@ -17,6 +17,8 @@
                         <tr>
                             <th>Assignment No.</th>
                             <th>Delivery Date</th>
+                            <th>PO Number</th>
+                            <th>Quantity</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -25,10 +27,14 @@
                             <td>
                                 <input type="date" class="form-control" v-model="a.delivery_date">
                             </td>
+                            <td><input type="text" :id="`poNumber_${a.assignment_id}`" :value="`${a.po_number}`" class="form-control" @keyup.enter="getPOData(a.assignment_id)"></td>
+                            <td><input type="text" :id="`poQuantity_${a.assignment_id}`" :value="`${a.quantity}`" class="form-control" readonly></td>
                         </tr>
                     </tbody>
                     <tbody>
                         <tr>
+                            <td></td>
+                            <td></td>
                             <td></td>
                             <td>
                                 <button class="btn btn-outline-primary float-end" @click="updateDeliveryDate">
@@ -50,7 +56,7 @@ import axios from 'axios';
         data(){
             return{
                 qr_data: '',
-                formsList: []
+                formsList: [],
             }
         },
         methods: {
@@ -68,7 +74,7 @@ import axios from 'axios';
                 axios.get(`http://172.16.2.13:3000/getFormAssignment/${assignment_id}`, {
                 }).then(response => {
                     response.data.forEach(d => {
-                        console.log(d.delivery_date)
+                        console.log(d)
                         d.delivery_date = d.delivery_date.split('T')[0];
                         this.formsList.push(d)
                         this.qr_data = '';
@@ -79,9 +85,13 @@ import axios from 'axios';
             },
             updateDeliveryDate(){
                 this.formsList.forEach(f => {
+                    const po_number= document.getElementById(`poNumber_${f.assignment_id}`).value;
+                    const quantity = document.getElementById(`poQuantity_${f.assignment_id}`).value;
                     axios.post('http://172.16.2.13:3000/updateDeliveryDate',{
                         assignment_id: f.assignment_id,
-                        delivery_date: f.delivery_date
+                        delivery_date: f.delivery_date,
+                        po_number: po_number,
+                        quantity: quantity
                     }).then(response => {
                         console.log(response.data);
                     }).catch(error => {
@@ -89,12 +99,29 @@ import axios from 'axios';
                     })
                     axios.post('http://172.16.2.13:3000/updateDeliveryDateHeader',{
                         assignment_id: f.assignment_id,
-                        delivery_date: f.delivery_date
+                        delivery_date: f.delivery_date,
+                        po_number: po_number,
+                        quantity: quantity
                     }).then(response => {
                         console.log(response.data);
                     }).catch(error => {
                         console.log(error)
                     })
+                })
+            }
+            ,
+            getPOData(assignment_id){
+                const po_number = document.getElementById(`poNumber_${assignment_id}`);
+                axios.get(`http://172.16.2.13:3000/getPoNumber/${po_number.value}`,{
+                })
+                .then(response => {
+                    const po_quantity = document.getElementById(`poQuantity_${assignment_id}`);
+                    for(let d of response.data.result){
+                        po_quantity.value = d.hct_OrderQuantity;
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
                 })
             }
         },

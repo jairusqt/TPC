@@ -12,10 +12,7 @@
                 <div class="col-2">
                     <button class="btn btn-sm btn-outline-dark w-100 shadow"  data-bs-toggle="modal" data-bs-target="#exampleModal">Load Item Code</button>
                 </div>
-                <div class="col-7"></div>
-                <div class="col-3">
-                    <input type="text" class="form-control shadow">
-                </div>
+                <div class="col-10"></div>
             </div>
             <table class="table border shadow">
                 <thead>
@@ -23,18 +20,42 @@
                         <th>Item Code</th>
                         <th>Item Parts Number</th>
                         <th>Item Description</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <template v-for="i of itemmaster">
+                    <template v-for="i of displayedRows">
                         <tr>
                             <td>{{ i.item_code }}</td>
                             <td>{{ i.item_parts_number }}</td>
                             <td>{{ i.item_description }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-dark" @click="deleteItemCode(i.id_itemmaster)">
+                                    <span class="material-symbols-outlined">
+                                        delete
+                                    </span>
+                                </button>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
             </table>
+            <div class="d-flex justify-content-center">
+              <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                  <li class="page-item" :disabled="currentPage === 1">
+                    <a class="page-link" @click="previousPage" aria-label="Previous" >
+                      <span aria-hidden="true">«</span>
+                    </a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" @click="nextPage" aria-label="Next">
+                      <span aria-hidden="true">»</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
         </div>
     </div>
 
@@ -96,11 +117,41 @@ import axios from 'axios';
                 item_code: '',
                 item_parts_number: '',
                 item_description: '',
+                currentPage: 1,
             }
         },
+        computed: {
+            displayedRows(){
+                const startIndex = (this.currentPage - 1) * 10;
+                const endIndex = startIndex + 10;
+                return this.itemmaster.slice(startIndex, endIndex);
+            },
+            
+        },
         methods: {
+            deleteItemCode(id){
+                let deleteItemCode = 'http://172.16.2.13:3000/deleteItemCode';
+                axios.post(deleteItemCode, {
+                    id_itemmaster: id,
+                }).then(response => {
+                    if(response.data.message === 'Item Code deleted successfully'){
+                        const indexToDelete = this.itemmaster.findIndex(item => item.id_itemmaster === id);
+                        if (indexToDelete !== -1) {
+                            this.itemmaster.splice(indexToDelete, 1);
+                        }
+                    }
+                }).catch(error => {
+                    console.log(error)
+                })
+            },
+            previousPage(){
+                this.currentPage -= 1;
+            },
+            nextPage(){
+                this.currentPage += 1;
+            },
             search(){
-                this.itemmasterURL = `http://172.16.2.99:3000/itemMaster/${this.search_param}`;
+                this.itemmasterURL = `http://172.16.2.13:3000/itemMaster/${this.search_param}`;
                 axios.get(this.itemmasterURL, {
                 }).then(response => {
                     this.itemmaster = response.data;;
@@ -110,7 +161,13 @@ import axios from 'axios';
                 })
             },
             load(){
-                this.itemmasterInsertURL = 'http://172.16.2.99:3000/insertItemCode';
+                this.itemmasterInsertURL = 'http://172.16.2.13:3000/insertItemCode';
+                const dup = this.itemmaster.some(item => item.item_code === this.item_code)
+                
+                if(dup){
+                    this.border = 'border-warning';
+                    this.prompt = 'Duplicate item code found.';
+                } else {
                 axios.post(this.itemmasterInsertURL, {
                     item_code: this.item_code,
                     item_parts_number: this.item_parts_number,
@@ -129,10 +186,11 @@ import axios from 'axios';
                         this.prompt = 'Data Not inserted';
                     }
                 })
+                }
             },
         },
         created(){
-            axios.get('http://172.16.2.99:3000/itemmaster_main', {
+            axios.get('http://172.16.2.13:3000/itemmaster_main', {
             }).then(response => {
                 this.itemmaster = response.data
             }).catch(error => {

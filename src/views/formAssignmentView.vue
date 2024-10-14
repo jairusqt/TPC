@@ -433,7 +433,7 @@ ng<template>
                             </span>
                         </td>
                         <td>
-                            <button @click="toggleAccordion(i.SubPid)" :class="i.condition_count === 0 ? 'btn btn-warning' : 'btn btn-light'">
+                            <button @click="toggleAccordion(i.SubPid)" :class="(i.condition_count === 0) ? 'btn btn-warning' : (i.condition_count < i.maxSequence) ? 'btn btn-danger' : (i.condition_count > i.maxSequence) ? 'btn btn-danger' : 'btn btn-light'">
                                 <span class="material-symbols-outlined">
                                     {{ toggle[i.SubPid]? 'expand_less' : 'expand_more' }}
                                 </span>
@@ -442,7 +442,7 @@ ng<template>
                     </tr>
                     <tr v-show="toggle[i.SubPid]">
                         <td colspan="12">
-                            <p>Condition Count - {{i.condition_count}}</p>
+                            <p>Condition Count - {{i.condition_count}} / Max Sequence {{i.maxSequence}}</p>
                             <div class="text-end">
                                 <button class="btn btn-outline-dark btn-sm m-1" @click="refetchConditions(i.SubPid)" :id="'sync-'+i.SubPid">
                                     <span class="material-symbols-outlined align-bottom">
@@ -915,7 +915,7 @@ ng<template>
                     }
                 })
 
-                const response = await axios.get(`http://172.16.2.61:8000/api/getProcessFlowConditionBySubPid/${flow.flow_main_id}/${SubPid}`);
+                const response = await axios.get(`http://172.16.2.13:8000/api/getProcessFlowConditionBySubPid/${flow.flow_main_id}/${SubPid}`);
                 
                 this.item.find(i => {
                     if (parseInt(i.SubPid) === parseInt(SubPid)) {
@@ -1445,6 +1445,14 @@ ng<template>
                 });
                 break;
             }
+
+            this.item.forEach(i => {
+                const maxSequence = Math.max(...i.itemCondition.map(c => (Number.isFinite(c.sequence_number)) ? c.sequence_number : 0));
+                Object.assign(i ,{
+                    maxSequence: maxSequence === -Infinity ? 0 : maxSequence
+                })
+                console.log(i)
+            })
 
             this.date_created = new Date().toJSON().slice(0, 10);
             let curDate = new Date();

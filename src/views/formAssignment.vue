@@ -434,6 +434,15 @@
                             <option v-for="pn in partsNumberList" :value="pn.parts_number">{{pn.parts_number}}</option>
                         </select>
                     </div>
+                    <!-- ADDED BY JOHN DEE -->
+                    <div v-if="section_code === 'CWP' && cwp_type === 'STD'" class="col-md-2">
+                        <label for="item_parts_number">Parts Number :</label>
+                        <select id="item_parts_number" class="form-select shadow" v-model="item_parts_number" @change="requestLotNumber" :disabled="submittedSuccess === true">
+                            <option value="" selected disabled></option>
+                            <option v-for="pn in partsNumberList" :value="pn.parts_number">{{pn.parts_number}}</option>
+                        </select>
+                    </div>
+                     <!-- END OF ADDED -->
                     <div v-if="section_code === 'CWP' && cwp_type === 'Hi-k'|| section_code === 'CWP' && cwp_type === 'STD' || section_code === 'CCI'" class="col-md-2">
                         <label for="lot_number">Lot Number :</label>
                         <select id="lot_number" class="form-select shadow" v-model="lot_number" @change="getQuantityAndMaterialLotNo(section_code, item_parts_number, lot_number)" :disabled="submittedSuccess === true">
@@ -1082,7 +1091,7 @@
                         console.log(error);
                     })
                 } else if(this.section_code === 'CWP' && this.cwp_type === 'STD') {
-                    this.lotNumberList = [];
+                    // this.lotNumberList = [];
                     const selectedLotNumber = new Set();
                     await axios.get(url, std_params).
                     then(response => {
@@ -1091,6 +1100,9 @@
                             if(!selectedLotNumber.has(d.std_material_lot_number)){
                                 this.lotNumberList.push({lot_number: d.std_material_lot_number});
                                 selectedLotNumber.add(d.std_material_lot_number);
+                            }
+                            if(d.std_k_value){
+                                this.partsNumberList.push({parts_number : d.std_k_value});
                             }
                         }
                     }).catch(error => {

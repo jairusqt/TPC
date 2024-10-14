@@ -354,12 +354,12 @@
                                         </p>
                                     </div>
                                     <div class="col">
-                                        <button class="btn btn-sm float-end" @click="submitBySub(s.SubPid)" :disabled="flow_status === 'Posted'">
+                                        <button class="btn btn-sm float-end" :id="'conditionSave-'+s.SubPid" @click="submitBySub(s.SubPid)" disabled>
                                             <span class="material-symbols-outlined">
                                                 save
                                             </span>
                                         </button>
-                                        <button class="btn btn-sm float-end" @click="reFetchConditions(s.SubPid)" :disabled="flow_status === 'Posted'">
+                                        <button class="btn btn-sm float-end" :id="'conditionRefresh-'+s.SubPid" @click="reFetchConditions(s.SubPid)" :disabled="flow_status === 'Posted' ">
                                             <span class="material-symbols-outlined">
                                                 refresh
                                             </span>
@@ -991,6 +991,7 @@ export default {
                 console.error(error);
             } finally {
                 this.conditionLoader = false;
+                document.getElementById(`conditionSave-`+SubPid).disabled = true
             }
         },
         async reFetchConditions(SubPid) {
@@ -1032,6 +1033,8 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+            document.getElementById(`conditionRefresh-`+SubPid).disabled = true
+            document.getElementById(`conditionSave-`+SubPid).disabled = false
         },
         insertMissingSub(){
             this.missingSub.forEach(s => {
@@ -1285,6 +1288,7 @@ export default {
                     await this.itemCondition(s.SubPid, sequence, s.sequence_number);
                     this.sub.sort((a,b) => a.origin_sequence - b.origin_sequence);
                     this.subSequence();
+                    
                 }
             }
             this.submitSub(sequence);
@@ -1302,6 +1306,7 @@ export default {
                     SubPid: SubPid
                 }
             }).then(response => {
+                console.log(response.data);
                 this.sub.find(s => {
                     if(parseInt(s.SubPid) === parseInt(SubPid) && parseInt(s.parent_sequence) === parseInt(sequence)){
                         s.condition_process_count = response.data.length;
@@ -1747,6 +1752,7 @@ export default {
             for(const flow of response.data){
                 this.section.find((sec) => {
                     if(parseInt(flow.section_id) === parseInt(sec.section_id) && parseInt(flow_id) === parseInt(flow.flow_main_id)){
+                        console.log(sec.section_id, flow_id);
                         Object.assign(flow, {section_code: sec.section_code})
                         this.flow_main_id = flow.flow_main_id;
                         this.flow_type = flow.flow_type;
@@ -1820,6 +1826,7 @@ export default {
         
         this.requestFlowSubURL = `http://172.16.2.13:3000/flowSub/${flow_id}`
         await axios.get(this.requestFlowSubURL, params).then(response => {
+            console.log(response.data);
             for(const s of response.data){
                 Object.assign(s, {
                     condition: []
@@ -1864,7 +1871,7 @@ export default {
         if(this.sub_count > this.sub.length){
             this.missingSubData = true;
         }
-
+        console.log(`this.sub_count: ${this.sub_count}, this.sub.length: ${this.sub.length}`);
         for(const s of this.sub){
             if(s.sequence_number > this.maxSubSequence){
                 this.maxSubSequence = s.sequence_number
@@ -1876,7 +1883,9 @@ export default {
                 })
                 this.missingData = true;
             }
+           
         }
+        
         if(this.maxSubSequence > this.sub.length){
             for(let i = 1; i <= this.maxSubSequence; i++){
                 if(!this.sub.some(s => s.sequence_number === i)){

@@ -365,10 +365,10 @@
                                         </small>
                                     </td>
                                     <td>
-                                        <small>{{ sub.batching_type }}</small>
+                                        <small>{{ sub.key_code.includes("CCI") ? 'Parallel' : 'Standard' }}</small>
                                     </td>
                                     <td>
-                                        <small>{{ sub.result_type }}</small>
+                                        <small>{{ sub.key_code.includes("CCI") ? 'Chips' : 'Wafer' }}</small>
                                     </td>
                                     <td>
                                         <small>{{ sub.standard_time }}</small>
@@ -961,6 +961,7 @@ export default {
                         flow_main_id: flow_main_id
                     }
                 }).then(response => {
+                    console.log(response.data);
                     for(const k of response.data){
                         this.section.find(sec => {
                             if(parseInt(k.section_id) === parseInt(sec.section_id)){
@@ -1144,7 +1145,7 @@ export default {
                             SubPname: sub.SubPname,
                             standard_time: 0,
                             machine_time: 0,
-                            batching_type: 'Standard',
+                            batching_type: this.section_code === 'CCI' ? 'Parallel' : 'Standard',
                             result_type: 'Chips',
                             check_sampling: 'False',
                             check_uncontrolled: 'False',
@@ -1244,15 +1245,15 @@ export default {
                                 field_name5: c.fieldname_5,
                                 visibility_status: 0,
                             })
-                            s.condition.push(c)
+                            s.condition.push(c);
                         }
+                       
                     })
                 }
                 this.processConditionCount += response.data.length;
                 this.subProcessFlow.find(s => {
                     if(parseInt(SubPid) === parseInt(s.SubPid)){
                         s.condition_process_count = response.data.length;
-                        console.log(s)
                     }
                 })
             }).catch(error => {

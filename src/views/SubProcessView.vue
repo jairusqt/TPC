@@ -206,7 +206,7 @@
                 <label class="form-check-label" for="fetching" >
                   Fetching
                 </label>
-                <input class="form-check-input" type="checkbox" @change="checkFetchingValue" id="fetching" :checked="e_fetching === '1' ? true : false">
+                <input class="form-check-input" type="checkbox" @change="checkFetchingValue" id="fetching" :checked="e_fetching === 1 ? true : false">
               </div>
             </div>
             <div class="col-md-4 p-2">
@@ -860,7 +860,6 @@ async created() {
     await axios.get(this.SubProcessGetURL, {
     }).then(response => {
       for(const sub of response.data){
-        console.log(sub);
         for(const sec of this.section){
           if(sec.section_id == sub.section_id){
             Object.assign(sub, {section_code: sec.section_code});
